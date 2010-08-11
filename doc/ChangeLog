@@ -1,0 +1,90 @@
+===============================================================
+
+Tag name: 3.0.0
+Originator(s): Charles Bardeen
+Date: August 11, 2010
+
+One-line Summary:
+
+Initial release of the F90 version of CARMA based upon F77 CARMA 2.3
+
+Purpose of changes:
+
+A major revision of CARMA 2.3, with design goals of porting it to
+Fortran 90, and designing it to be embedded in other models like CAM
+and GEOS.
+
+Changes for F90:
+- All code converted to F90 (wrappers to keep core code similar to F77 code)
+- Use modules to replace common blocks
+- Dynamic memory allocation
+- Thread safe
+- Use array operations when possible
+
+Changes for embedded models:
+- Single column
+- Programmatic interface to define microphysical model
+- Initialize from parent model state (mks units)
+- Step() can be multithreaded
+- Generate optical properties (mie coefficients)
+- Scale for cloud fraction
+- Detrain particles
+- Store information about CARMA needed for parent models (e.g. wet deposition coefficients, diagnostic group, ...)
+- Allow a fixed defintion of latent heat, consitent with parent model
+
+Updated algortihms:
+- Aerosol freezing (Koop 2000)
+- Water saturation vapor pressure (Murphy & Koop 2005)
+
+New algorithms:
+- Nucleation of glassy aerosols (Murray et al. 2010)
+- Ice particle density as a function of size (Heymsfield & Schmitt, 2010)
+- Ice fall velocity (Heymsfield & Westbrook, 2010)
+- Particle swelling with relative humidity, wet radius (Gerber 1985; Fitzgerald 1975)
+- Brownian Diffusion
+
+New features:
+- Allow specification of minimum mass rather than just radius
+- Variable density (per bin) within an element
+- Determine sedimentation to the surface
+- Dynamically allocate ACAP in miess based upon NXM1
+
+Performance:
+- Only initialize the components needed for the model configuration
+- Add retry logic to newstate/microfast, to minimize the number of substeps needed
+- Reduce size of data structures used by CARMA
+- Reorder some operations for faster array access
+- Optional initialization to a fixed reference temperature profile
+- Optional explicit sedimentation (substepped)
+- Reuse allocated memory in CARMASTATE to reduce memory allocation
+
+Bugs fixed:
+- Mass & energy conservation
+- Various bugs in fall velocity calculation
+- Scaling problems with rlheat
+- Optional Initialize every timestep for maximum accuracy
+- Various problems with setting up the model configuration (nucleation tables, scrit, nucgas, ...)
+- Improved growth stability and convergence
+- Improved stability of aerosol freezing (tabazadeh 2000)
+- Evaporation bugs (cmf not getting set, total evaporation ncore=0)
+- Modified growth equation for better approximation
+- Correct usage of SMALL_PC and FEW_PC
+
+Algorithms eliminated:
+- Horizontal advection
+- Hydrostatic approximation
+- Eddy diffusion
+- Mixed phase particles
+- Radiative Transfer
+
+Known Issues:
+- PPM advection code has noisy sedimentation when using hybrid coordinates
+- Growth code is not mass or energy conserving, so rlheat and gc are recalculated based upon condensed mass change
+- PPM advection code does not return fluxes out the top and bottom of the column, so a kludge was added to get flux out the bottom as column difference
+- Estimates for the number of substeps needed (ntsubsteps) are not very accurate
+- Full initialization (rather than to reference T) can be very slow, particularly for coagulation
+- Parameterizations for latent heats give odd values at low temperatures, use fixed values instead
+- Standard fall velocity routine has odd kinks in areas where it transitions between different Reynolds regimes
+- Standard shape fall velocity routine is not handling all shapes and aspect ratios correctly
+- Mie calculation code can still exceed IACAP estimates and even though dynamically allocating ACAP
+===============================================================

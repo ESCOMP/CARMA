@@ -1,0 +1,76 @@
+This project contains files to build version 3.0 of the Community Aerosol and
+Radiation Model for Atmospheres (CARMA) that is based off of the 2.3 release,
+but has been ported to Fortran 90 and repackaged so that it can be used as a
+cloud and aerosol physics package embedded into GCMs. The project consists of
+4 components that are each located in their own subdirectories:
+
+  - bin    : the F90doc documentation generation tool
+  - doc    : the change log and HTML based documentation
+  - source : the CARMA microphysics layer
+  - tests  : the test routines
+  
+Two script files have been provided to build and run the model or its
+components. To build carma and the test cases, issue the following command
+rom the root directory:
+
+  make-carma.csh
+  
+This will build all the files in a subdirectory called build/carma. To run
+a sample carma model, execute the following command from the root directory:
+
+  run-carma.csh
+  
+This will copy the CARMA.exe executable to the directory run/carma and then
+will execute it with all output going to the run/carma directory. The
+dependency hierarchy is set up in the make files, so rebuilding should only
+rebuild what is necessary. There are only two #defines that can be set in the
+makefile to control the build. One specifies the precision (SINGLE) and the other
+is used to build a version with extra debug information (DEBUG). The scripts can
+also be used to build individual executables. For example, to build and run the
+NUCTEST test routine and to have the run performed in a directory named nuctest
+(this part is optional) execute:
+
+  setenv CARMA_CASE nuctest
+  
+  make-carma.csh NUCTESTexe
+  run-carma.csh NUCTEST.exe
+
+NOTE: bash and ksh users will need to use export rather than setenv.
+
+Documentation of the code is generated automatically by the make scripts using
+the prgoram f90doc, which is located in the bin directory. The generated
+documentation is stored as html files in the directory doc/f90doc. To start
+browing the documentation, open the file doc/index.html.
+
+The model supports OPEN/MP, which will allow the model to use multiple
+processors if the model is called with multiple columns. You need to add
+a compiler directive to enable OPEN/MP (-openmp for ifort) and you need
+to specify the number of threads when you run. The  run script uses the
+CARMA_THREADS flag to determine how many threads to allow during execution.
+The dault is 1 thread. To run with 4 threads issue the command
+
+  setenv CARMA_THREADS 4
+
+before using the run script.
+
+Several test cases have been developed to show how the CARMA model
+can be used and to test that the model physics is performing correctly. The
+source code for these tests are located in the tests subdirectory.
+
+The entire project can be put into a tar file, using the command
+
+  make-carma.csh tar
+  
+This will create a tar file called CARMA.tgz in the current build directory,
+which defaults to build/carma. NOTE: This tar file does not contain the
+contain the contents of the build, doc or run directories since they are
+products of the make and run scripts.
+
+CARMA has a ChangeLog in the doc directory. It contains the revision history
+of CARMA. When changes are made, please prepend the ChangeLog with a
+description of the change based upon filling out the ChangeLog_template
+which is also stored in the doc directory.
+
+
+Chuck Bardeen, Pete Colarco and Jamie Smith
+Aug-2010
