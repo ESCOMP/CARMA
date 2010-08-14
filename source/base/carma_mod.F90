@@ -335,7 +335,7 @@ contains
     logical, intent(in), optional       :: do_substep    !! do substepping
     logical, intent(in), optional       :: do_print_init !! do prinit initializtion information
     logical, intent(in), optional       :: do_thermo     !! do thermodynamics
-    logical, intent(in), optional       :: do_vdiff      !! do Brownin diffusion
+    logical, intent(in), optional       :: do_vdiff      !! do Brownian diffusion
     logical, intent(in), optional       :: do_vtran      !! do sedimentation
     real(kind=f), intent(in), optional  :: vf_const      !! if specified and non-zero, constant fall velocity for all particles [cm/s]
     integer, intent(in), optional       :: minsubsteps   !! minimum number of substeps, default = 1

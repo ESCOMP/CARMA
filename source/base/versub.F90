@@ -55,7 +55,7 @@ subroutine versub(carma, cstate, pcmax, cvert, itbnd, ibbnd, ftop, fbot, cvert_t
   ! Compute the maximum CFL for each bin that has a significant concentration
   ! of particles.
   cfl_max = 0._f
-  
+
   do iz = 1, NZ
     if (pcmax(iz) > SMALL_PC) then
       cfl_max = max(cfl_max, max(abs(up(iz)), abs(up(iz+1)), abs(dn(iz)), abs(dn(iz+1))) * dtime / dz(iz))
@@ -64,11 +64,17 @@ subroutine versub(carma, cstate, pcmax, cvert, itbnd, ibbnd, ftop, fbot, cvert_t
 
   ! Use the maximum CFL determined above to figure out how much substepping is
   ! needed to sediment explicitly without violating the CFL anywhere in the column.
-  if (cfl_max > 0._f) then
+  if (cfl_max >= 0._f) then
     nstep_sed = int(1._f + cfl_max)
   else
     nstep_sed = 0
   endif
+  
+  ! If velocities are in both directions, then more steps are needed to make sure
+  ! that no more than half of the concentration can be transported in either direction.
+  if (maxval(up(:) * dn(:)) > 0._f) then
+    nstep_sed = nstep_sed * 2
+  end if
 
   ! Determine the top and bottom boundary fluxes, keeping in mind that
   ! the velocities and grid coordinates are reversed in sigma or hybrid

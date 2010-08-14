@@ -35,7 +35,7 @@ subroutine setupbdif(carma, cstate, rc)
   integer, intent(inout)               :: rc      !! return code, negative indicates failure
 
   ! Local declarations  
-  integer                 :: igroup, i, j, k, k1, k2, ibin, iz, nzm1
+  integer                 :: igroup, ibin, iz, k1, k2, nzm1
 
   !  Define formats
   2 format(/,'Brownian diffusion coefficient (prior to interpolation)')
@@ -47,39 +47,39 @@ subroutine setupbdif(carma, cstate, rc)
   do igroup = 1, NGROUP
       
     ! Loop over particle size bins.
-    do i = 1,NBIN
+    do ibin = 1,NBIN
 
       ! Loop over all atltitudes.
-      do k = 1, NZ
+      do iz = 1, NZ
 
         ! Vertical brownian diffusion coefficient
-        dkz(k,i,j) = (BK*t(k)*bpm(k,i,j)) / (6._f*PI*rmu(k)*r_wet(k,i,j))
+        dkz(iz,ibin,igroup) = (BK*t(iz)*bpm(iz,ibin,igroup)) / (6._f*PI*rmu(iz)*r_wet(iz,ibin,igroup))
 
       enddo
     enddo
   enddo
     
   ! Print out diffusivities.
-!#ifdef DEBUG
+#ifdef DEBUG
   if (do_print_init) then
    
     write(LUNOPRT,2)
 
-    do j = 1, NGROUP
+    do igroup = 1, NGROUP
         
-      write(LUNOPRT,3) j
+      write(LUNOPRT,3) igroup
       
-      do i = 1,NBIN
+      do ibin = 1,NBIN
     
-        do k = NZ, 1, -1
-          write(LUNOPRT,4) i,k,p(k),t(k),r(i,j),r_wet(k,i,j),dkz(k,i,j)
+        do iz = NZ, 1, -1
+          write(LUNOPRT,4) ibin,iz,p(iz),t(iz),r(ibin,igroup),r_wet(iz,ibin,igroup),dkz(iz,ibin,igroup)
         end do
       enddo
     enddo
   
     write(LUNOPRT,*) ""
   end if
-!#endif
+#endif
 
   !  Interpolate <dkz> from layer mid-pts to layer boundaries.
   !  <dkz(k)> is the diffusion coefficient at the lower edge of the layer

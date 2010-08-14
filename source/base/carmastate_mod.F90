@@ -814,6 +814,10 @@ contains
       ! Initialize the vertical transport.
       if (cstate%carma%do_vtran .or. cstate%carma%do_coag .or. cstate%carma%do_grow) then
         call setupvf(cstate%carma, cstate, rc)
+
+        if (cstate%carma%do_vdiff) then
+          call setupbdif(cstate%carma, cstate, rc)
+        end if
       end if
   
       ! Intialize the nucleation, growth and evaporation.      

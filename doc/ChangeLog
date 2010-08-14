@@ -20,6 +20,7 @@ Changes for F90:
 - Dynamic memory allocation
 - Thread safe
 - Use array operations when possible
+- Use implicit none
 
 Changes for embedded models:
 - Single column
@@ -86,5 +87,6 @@ Known Issues:
 - Parameterizations for latent heats give odd values at low temperatures, use fixed values instead
 - Standard fall velocity routine has odd kinks in areas where it transitions between different Reynolds regimes
 - Standard shape fall velocity routine is not handling all shapes and aspect ratios correctly
-- Mie calculation code can still exceed IACAP estimates and even though dynamically allocating ACAP
+- Mie calculation code can still exceed IACAP estimates even though dynamically allocating ACAP
+- Core mass is sometimes larger than total mass, can happen from parent model advection, but perhaps other sources
 ===============================================================

@@ -46,4 +46,7 @@ carma_swelltest.o : carma_swelltest.F90 atmosphere_mod.mod carma_mod.mod carma_c
 	
 carma_test.o : carma_test.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
 	$(FORTRAN) $(CPPFLAGS) -c $<
+	
+carma_vdiftest.o : carma_vdiftest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
+	$(FORTRAN) $(CPPFLAGS) -c $<
 

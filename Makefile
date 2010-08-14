@@ -66,9 +66,11 @@ NUCTEST.exe : $(CARMA_OBJ) carma_nuctest.o
 	$(FORTRAN) $(CPPFLAGS) -o NUCTEST.exe carma_nuctest.o atmosphere_mod.o $(CARMA_OBJ)
 SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o
 	$(FORTRAN) $(CPPFLAGS) -o SWELLTEST.exe carma_swelltest.o atmosphere_mod.o $(CARMA_OBJ)
+VDIFTEST.exe : $(CARMA_OBJ) carma_vdiftest.o
+	$(FORTRAN) $(CPPFLAGS) -o VDIFTEST.exe carma_vdiftest.o atmosphere_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe CARMA.exe
+all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe CARMA.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)
