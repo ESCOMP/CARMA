@@ -12,9 +12,12 @@
 !! NOTE: This implementation assumes that the aerosol being nucleated is the total
 !! aerosol population and not just the fraction of aerosols that are glassy. To
 !! account for homogenous freezing of the aerosol population, the routine freezaerl
-!! is also called from this routine and the overall nucleation rate is the sum of
-!! the rates for homogeneous freezing and for heterogenous nucleation. The 
-!! parameter fglass is the fraction of the total aerosol population that will be
+!! also needs to be called and the overall nucleation rate is the sum of
+!! the rates for homogeneous freezing and for heterogenous nucleation. Using I_GLFREEZE
+!! will just compute a nucleation rate for the glassy aerosols, while using I_GLAERFREEZE
+!! will do both.
+!!
+!! The parameter fglass is the fraction of the total aerosol population that will be
 !! in a glassy state for T <= 212K.
 !! 
 !! The loss rates for all particle elements in a particle group are equal.

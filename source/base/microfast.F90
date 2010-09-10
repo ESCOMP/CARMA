@@ -71,15 +71,18 @@ subroutine microfast(carma, cstate, iz, rc)
     call actdropl(carma, cstate, iz, rc)
     if (rc < RC_OK) return
 
-    ! The Koop and Tabazadeh routines provide different schemes for aerosol freezing.
+    ! The Koop, Tabazadeh and Mohler routines provide different schemes for aerosol freezing.
     ! Only one of these parameterizatons should be active at one time.  However, either
     ! of these routines can be used in conjunction with heterogenous nucleation of glassy
     ! aerosols. To use both, set the nucleation process to I_GLAERFREEZE.
-!    call freezaerl_tabazadek2000(carma, cstate, iz, rc)
+!    call freezaerl_tabazadeh2000(carma, cstate, iz, rc)
 !    if (rc < RC_OK) return
 
     call freezaerl_koop2000(carma, cstate, iz, rc)
     if (rc < RC_OK) return
+
+!    call freezaerl_mohler2010(carma, cstate, iz, rc)
+!    if (rc < RC_OK) return
 
     call freezglaerl_murray2010(carma, cstate, iz, rc)
     if (rc < RC_OK) return

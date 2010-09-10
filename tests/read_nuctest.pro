@@ -149,7 +149,7 @@ satice[0,*] = !Values.F_NAN
     ; Show the saturation evolution.
     plot, satice[*], xtitle = 'Time Step', ytitle = 's', thick=4, $
         title = 'Gas Saturation Ratio', $
-        yrange=[0, 5], charsize=2.0 
+        yrange=[0, 2], charsize=2.0 
         
     oplot, [0, nt], [1., 1.], thick=2
 

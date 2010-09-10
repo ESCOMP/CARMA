@@ -46,10 +46,10 @@ subroutine test_nuc_ttl()
   
 
 
-!  real(kind=f), parameter   :: dtime  = 1._f
+  real(kind=f), parameter   :: dtime  = 1._f
 !  real(kind=f), parameter   :: dtime  = 5._f
 !  real(kind=f), parameter   :: dtime  = 10._f
-  real(kind=f), parameter   :: dtime  = 20._f
+!  real(kind=f), parameter   :: dtime  = 20._f
 !  real(kind=f), parameter   :: dtime  = 100._f
 !  real(kind=f), parameter   :: dtime  = 1000._f
 !  real(kind=f), parameter   :: dtime  = 1800._f
@@ -190,7 +190,8 @@ subroutine test_nuc_ttl()
   call CARMA_AddGrowth(carma, 2, 1, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
-  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE, 0._f, rc, igas=1, ievp2elem=1)
+!  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE, 0._f, rc, igas=1, ievp2elem=1)
+  call CARMA_AddNucleation(carma, 1, 3, I_GLAERFREEZE, 0._f, rc, igas=1, ievp2elem=1)
   if (rc /=0) stop "    *** FAILED ***"
 
 
@@ -269,13 +270,15 @@ subroutine test_nuc_ttl()
   ! 90 hPa, 190 K, 17 km, 3.5e-6 g/g, 5 um, 0.1/cm^3.
   p(1,:,:)         = 90._f * 100._f
   zc(1,:,:)        = 17000._f
-  t(1,:,:)         = 190._f
+!  t(1,:,:)         = 190._f
+  t(1,:,:)         = 205._f
   zl(1,:,:)        = zc(1,:,:) - deltaz
   zl(2,:,:)        = zc(1,:,:) + deltaz
   rho(1,:,:)       = (p(1,:,:) * 10._f) / (R_AIR * t(1,:,:)) * (1e-3_f * 1e6_f)
   pl(1,:,:)        = p(1,:,:) - (zl(1,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
   pl(2,:,:)        = p(1,:,:) - (zl(2,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
-  mmr_gas(:,:,:,:) = 3.5e-6_f
+!  mmr_gas(:,:,:,:) = 3.5e-6_f
+  mmr_gas(:,:,:,:) = 4e-5_f
   
   ! Put in an intial distribution of sulfates.
   call CARMAGROUP_Get(carma, 1, rc, r=r, dr=dr, rmass=rmass)
@@ -354,42 +357,50 @@ subroutine test_nuc_ttl()
                           yc(:,iy,ix), dy(:,iy,ix), &
                           zc(:,iy,ix), zl(:,iy,ix), p(:,iy,ix), &
                           pl(:,iy,ix), t(:,iy,ix), rc)
+      if (rc /=0) stop "    *** FAILED ***"
 		
       ! Send the bin mmrs to CARMA
       do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_SetBin(cstate(ithread), ielem, ibin, &
+          call CARMASTATE_SetBin(cstate(ithread), ielem, ibin, &
                                 mmr(:,iy,ix,ielem,ibin), rc)
+          if (rc /=0) stop "    *** FAILED ***"
         end do
       end do
 			
       ! Send the gas mmrs to CARMA
       do igas = 1, NGAS
-         call CARMASTATE_SetGas(cstate(ithread), igas, &
+        call CARMASTATE_SetGas(cstate(ithread), igas, &
                                 mmr_gas(:,iy,ix,igas), rc)
+        if (rc /=0) stop "    *** FAILED ***"
       end do
 
       ! Execute the step
       call CARMASTATE_Step(cstate(ithread), rc)
+      if (rc /=0) stop "    *** FAILED ***"
        
       ! Get the updated bin mmr.
       do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_GetBin(cstate(ithread), ielem, ibin, &
+          call CARMASTATE_GetBin(cstate(ithread), ielem, ibin, &
                                 mmr(:,iy,ix,ielem,ibin), rc)
+          if (rc /=0) stop "    *** FAILED ***"
         end do
       end do
 
       ! Get the updated gas mmr.
       do igas = 1, NGAS
-         call CARMASTATE_GetGas(cstate(ithread), igas, &
+        call CARMASTATE_GetGas(cstate(ithread), igas, &
                                 mmr_gas(:,iy,ix,igas), rc, &
                                 satliq=satliq(:,iy,ix,igas), &
                                 satice=satice(:,iy,ix,igas))
+        if (rc /=0) stop "    *** FAILED ***"
       end do
 
       ! Get the updated temperature.
       call CARMASTATE_GetState(cstate(ithread), rc, t=t(:,iy,ix))
+      if (rc /=0) stop "    *** FAILED ***"
+
     enddo
     !$OMP END PARALLEL DO
 

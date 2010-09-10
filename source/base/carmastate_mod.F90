@@ -161,7 +161,14 @@ contains
     cstate%pcd(:,:,:)     = 0._f
     
     if (carma_ptr%do_substep) then
-      if (present(told)) cstate%told(:) = told
+      if (present(told)) then
+        cstate%told(:) = told
+      else
+        if (carma_ptr%do_print) write(carma_ptr%LUNOPRT,*) "CARMASTATE_Create: Error - Need to specify told when substepping."
+        rc = RC_ERROR
+        
+        return
+      end if
     end if 
     
     ! Calculate the metrics, ...
@@ -211,7 +218,7 @@ contains
       cstate%pc_topbnd(:,:) = 0._f
       cstate%pc_botbnd(:,:) = 0._f
     end if
-    
+        
     return
   end subroutine CARMASTATE_Create
 
@@ -429,6 +436,7 @@ contains
         cstate%pc_surf(NBIN,NELEM), &
         cstate%gc(NZ,NGAS), &
         cstate%cldfrc(NZ), &
+        cstate%rhcrit(NZ), &
         cstate%rhop(NZ,NBIN,NGROUP), &
         cstate%r_wet(NZ,NBIN,NGROUP), &
         cstate%rhop_wet(NZ,NBIN,NGROUP), &
@@ -455,6 +463,7 @@ contains
       cstate%pcd(:,:,:)     = 0._f
       cstate%pc_surf(:,:)   = 0._f
       cstate%cldfrc(:)      = 1._f
+      cstate%rhcrit(:)      = 1._f
       
       ! Allocate the last fields if they are needed for substepping.
       if (cstate%carma%do_substep) then
@@ -631,6 +640,7 @@ contains
         cstate%pc_surf, &
         cstate%gc, &
         cstate%cldfrc, &
+        cstate%rhcrit, &
         cstate%rhop, &
         cstate%r_wet, &
         cstate%rhop_wet, &
@@ -768,26 +778,27 @@ contains
   !!
   !! @author Chuck Bardeen
   !! @version Feb-2009
-  subroutine CARMASTATE_Step(cstate, rc, cldfrc)
+  subroutine CARMASTATE_Step(cstate, rc, cldfrc, rhcrit)
     type(carmastate_type), intent(inout)  :: cstate
     integer, intent(out)                  :: rc
-    real(kind=f), intent(in), optional    :: cldfrc(cstate%NZ)      !! Cloud fraction [fraction]
+    real(kind=f), intent(in), optional    :: cldfrc(cstate%NZ)   !! cloud fraction [fraction]
+    real(kind=f), intent(in), optional    :: rhcrit(cstate%NZ)   !! relative humidity for onset of liquid clouds [fraction]
     
     integer                               :: iz     ! vertical index
     integer                               :: igas   ! gas index
     integer                               :: ielem
     integer                               :: ibin
     integer                               :: igroup
-!    real(kind=f)                          :: dgc_subgrid(cstate%NZ, cstate%carma%NGAS)
-!    real(kind=f)                          :: alpha
   
     ! Assume success.
     rc = RC_OK
     
     ! Store the cloud fraction if specified
     cstate%cldfrc(:) = 1._f
+    cstate%rhcrit(:) = 1._f
     
     if (present(cldfrc)) cstate%cldfrc(:) = cldfrc(:)
+    if (present(rhcrit)) cstate%rhcrit(:) = rhcrit(:)
     
     ! Determine the gas supersaturations.
     do iz = 1, cstate%NZ
@@ -1277,6 +1288,7 @@ contains
     
     real(kind=f)                          :: tnew(cstate%NZ)
     integer                               :: iz
+    logical                               :: calculateOld
     
     ! Assume success.
     rc = RC_OK
@@ -1290,44 +1302,70 @@ contains
     end if
     
     if (cstate%carma%do_substep) then
-      if (present(mmr_old)) cstate%gcl(:, igas) = mmr_old(:) * cstate%rhoa_wet(:) * cstate%t(:) / cstate%told(:)
+      if (.not. present(mmr_old)) then
+        if (cstate%carma%do_print) write(cstate%carma%LUNOPRT,*) "CARMASTATE_SetGas: Error - Need to specify mmr_old, satic_old, satliq_old when substepping."
+        rc = RC_ERROR
+        
+        return
+        
+      else
+        cstate%gcl(:, igas) = mmr_old(:) * cstate%rhoa_wet(:) * cstate%t(:) / cstate%told(:)
       
-      ! A value of -1 for the saturation ratio means that it needs to be calculated from the old temperature
-      ! and the old gc.
-      !
-      ! NOTE: This is typically just a problem for the first step, so we just need to get close.
-      if (present(mmr_old) .and. &
-          ((present(satice_old) .and. any(satice_old(:) == -1._f)) .or. &
-           (present(satliq_old) .and. any(satliq_old(:) == -1._f)))) then
-      
-        ! This is a bit of a hack, because of the way CARMA has the vapor pressure and saturation
-        ! routines implemented.
+        ! A value of -1 for the saturation ratio means that it needs to be calculated from the old temperature
+        ! and the old gc.
+        !
+        ! NOTE: This is typically just a problem for the first step, so we just need to get close.
+        calculateOld = .false.
+        if (present(satice_old) .and. present(satliq_old)) then
+          if (any(satice_old(:) == -1._f) .or. any(satliq_old(:) == -1._f)) calculateOld = .true.
+        else 
+          calculateOld = .true.
+        end if
         
-        ! Temporarily set the temperature and gc of to the old state
-        
-        tnew(:)      = cstate%t(:)
-        cstate%t(:)  = cstate%told(:)
-     
-        cstate%gc(:, igas) = mmr_old(:) * cstate%rhoa_wet(:)
-        
-        do iz = 1, cstate%NZ
-          call supersat(cstate%carma, cstate, iz, igas, rc)
-          if (rc /= RC_OK) return
-        
-          if (present(satice_old)) then
-            if (satice_old(iz) == -1._f) satice_old(iz) = cstate%supsati(iz, igas) + 1._f
-          end if
+        if (calculateOld) then
           
-          if (present(satliq_old)) then
-            if (satliq_old(iz) == -1._f) satliq_old(iz) = cstate%supsatl(iz, igas) + 1._f
-          end if
-        end do
+          ! This is a bit of a hack, because of the way CARMA has the vapor pressure and saturation
+          ! routines implemented.
+          
+          ! Temporarily set the temperature and gc of to the old state
+          
+          tnew(:)      = cstate%t(:)
+          cstate%t(:)  = cstate%told(:)
+       
+          cstate%gc(:, igas) = mmr_old(:) * cstate%rhoa_wet(:)
+          
+          do iz = 1, cstate%NZ
+            call supersat(cstate%carma, cstate, iz, igas, rc)
+            if (rc /= RC_OK) return
+          
+            if (present(satice_old)) then
+              if (satice_old(iz) == -1._f) then
+                cstate%supsatiold(iz, igas) = cstate%supsati(iz, igas)
+              else
+                cstate%supsatiold(iz, igas) = satice_old(iz) - 1._f
+              endif
+            else
+              cstate%supsatiold(iz, igas) = cstate%supsati(iz, igas)
+            end if
+            
+            if (present(satliq_old)) then
+              if (satliq_old(iz) == -1._f) then
+                cstate%supsatlold(iz, igas) = cstate%supsatl(iz, igas)
+              else
+                cstate%supsatlold(iz, igas) = satliq_old(iz) - 1._f
+              endif
+            else
+              cstate%supsatlold(iz, igas) = cstate%supsatl(iz, igas)
+            end if
+          end do
+          
+          cstate%t(:) = tnew(:)
         
-        cstate%t(:) = tnew(:)
+        else
+          cstate%supsatiold(:, igas) = satice_old(:) - 1._f
+          cstate%supsatlold(:, igas) = satliq_old(:) - 1._f
+        end if
       end if
-      
-      if (present(satice_old)) cstate%supsatiold(:, igas) = satice_old(:) - 1._f
-      if (present(satliq_old)) cstate%supsatlold(:, igas) = satliq_old(:) - 1._f
     end if
 
     ! Use the specified mass mixing ratio and the air density to determine the mass

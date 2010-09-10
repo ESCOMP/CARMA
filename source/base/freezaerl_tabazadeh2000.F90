@@ -44,6 +44,7 @@ subroutine freezaerl_tabazadeh2000(carma, cstate, iz, rc)
   integer                              :: ienucto !! index of target nucleation element
   integer                              :: ignucto !! index of target nucleation group
   integer                              :: inucto  !! index of target nucleation bin
+  integer                              :: isol
   real(kind=f)                         :: A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10
   real(kind=f)                         :: c0, C1, C2, C3, C4, c5
   real(kind=f)                         :: d0, d1, d2, d3, d4, d5
@@ -69,13 +70,15 @@ subroutine freezaerl_tabazadeh2000(carma, cstate, iz, rc)
   real(kind=f)                         :: delfg
   real(kind=f)                         :: expon
   real(kind=f)                         :: ssl
+  real(kind=f)                         :: fkelv
 
 
   ! Loop over particle groups.
   do igroup = 1,NGROUP
 
-    igas = inucgas(igroup)                ! condensing gas
-    iepart = ienconc( igroup )            ! particle number density element
+    igas   = inucgas(igroup)
+    iepart = ienconc(igroup)
+    isol   = isolelem(iepart)
 
     if( igas .ne. 0 )then
 
@@ -138,6 +141,11 @@ subroutine freezaerl_tabazadeh2000(carma, cstate, iz, rc)
         
                     ! Equilibrium H2SO4 weight percent for fixed water activity
                     act = min(1.0_f, ssl + 1._f)
+
+                    ! Kelvin effect on water activity
+                    fkelv = exp(akelvin(iz,igas) / r(ibin,igroup))                                ! ?
+                    act   = act / fkelv
+
                     IF(act .LT. 0.05_f) THEN
                       CONTL = 12.37208932_f * (act**(-0.16125516114_f)) - &
                               30.490657554_f * act  - 2.1133114241_f
@@ -161,7 +169,7 @@ subroutine freezaerl_tabazadeh2000(carma, cstate, iz, rc)
                     WT = 100._f * WT
         
                     ! Volume ratio of wet/dry aerosols.
-                    vrat = rhosol(1)/RHO_W * ((100._f-wt)/wt) + 1._f
+                    vrat = rhosol(isol)/RHO_W * ((100._f-wt)/wt) + 1._f
         
                     ! Calculation sulfate solution density from Myhre et al. (1998).
                     wtfrac = WT/100._f
@@ -275,7 +283,8 @@ subroutine freezaerl_tabazadeh2000(carma, cstate, iz, rc)
                            sqrt(sigsulice*t(iz)) * &
                            vrat*vol(ibin,igroup) * exp( expon )
                            
-                    
+if ((rnuclg(ibin,igroup,ignucto) < 0._f) .or. (rnuclg(ibin,igroup,ignucto) > 1e10_f)) write(*,*), iz, t(iz), ibin, rnuclg(ibin,igroup,ignucto)
+
                     ! This parameterizations has problems that sometimes yield negative nucleation
                     ! rates. It would be best to fix the parameterization, but at least keep negative
                     ! values from being return.

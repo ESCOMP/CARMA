@@ -49,16 +49,17 @@ cd $blddir
 make $bldtgt
 
 # Create the documentation.
-echo "Creating the documentation in the directory $docdir"
+if ($bldtgt != tar) then
+  echo "Creating the documentation in the directory $docdir"
 
-# Create a directory for the build.
-cd ../..
-mkdir -p $docdir
+  # Create a directory for the build.
+  cd ../..
+  mkdir -p $docdir
 
-# Copy the makefile to the doc directory.
-cp Makefile $docdir/Makefile
+  # Copy the makefile to the doc directory.
+  cp Makefile $docdir/Makefile
 
-cd $docdir
-make doc
-
+  cd $docdir
+  make doc
+endif
 

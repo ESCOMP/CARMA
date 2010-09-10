@@ -381,6 +381,7 @@ contains
     ! Substepping
     carma%minsubsteps = 1         ! minimum number of substeps
     carma%maxsubsteps = 1         ! maximum number of substeps
+    carma%maxretries  = 1         ! maximum number of retries
     carma%conmax      = 1.e-1_f
     
     if (present(minsubsteps)) carma%minsubsteps = minsubsteps

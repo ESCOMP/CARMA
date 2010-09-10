@@ -62,7 +62,7 @@ subroutine nsubsteps(carma, cstate, iz, dtime_save, ntsubsteps, rc)
         if( pconmax(iz,ig) .gt. FEW_PC) then
   
           ibin_small(ig) = NBIN
-  
+
           ! element of particle number concentration  
           iepart = ienconc(ig)
           
@@ -118,7 +118,7 @@ subroutine nsubsteps(carma, cstate, iz, dtime_save, ntsubsteps, rc)
 
         if (igas /= 0) then
   
-          if( pconmax(iz,ig) .gt. conmax ) then
+          if( pconmax(iz,ig) .gt. FEW_PC ) then
     
             if( itype(iepart) .eq. I_VOLATILE ) then
     
@@ -133,7 +133,10 @@ subroutine nsubsteps(carma, cstate, iz, dtime_save, ntsubsteps, rc)
               g0 = gro(iz,ibin_small(ig),ig)
               g1 = gro1(iz,ibin_small(ig),ig)
               dmdt = abs( pvap * ss * g0 / ( 1._f + g0*g1*pvap ) )
-              dt_adv = min( dt_adv, dm(ibin_small(ig),ig)/dmdt )
+              
+              if (dmdt /= 0._f) then
+                dt_adv = min( dt_adv, dm(ibin_small(ig),ig)/dmdt )
+              end if
             endif
           endif
         endif

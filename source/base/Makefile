@@ -21,7 +21,8 @@ downgevapply.o evapp.o evap_poly.o evap_mono.o \
 evap_ingrp.o tsolve.o miess.o vaporp_h2o_buck1981.o wetr.o \
 vaporp_h2o_murphy2005.o maxconc.o setupbdif.o setupvf_std.o \
 setupvf_std_shape.o totalcondensate.o versub.o freezaerl_tabazadeh2000.o \
-freezaerl_koop2000.o rhoice_heymsfield2010.o setupvf_heymsfield2010.o
+freezaerl_koop2000.o rhoice_heymsfield2010.o setupvf_heymsfield2010.o \
+freezaerl_mohler2010.o 
 
 CARMA_DOC = carma_constants_mod.html carma_types_mod.html \
 carmagroup_mod.html carmagas_mod.html carmaelement_mod.html carmasolute_mod.html \
@@ -36,7 +37,8 @@ downgevapply.html evapp.html evap_poly.html evap_mono.html \
 evap_ingrp.html tsolve.html miess.html vaporp_h2o_buck1981.html wetr.html \
 vaporp_h2o_murphy2005.html  maxconc.html setupbdif.html setupvf_std.html \
 setupvf_std_shape.html totalcondensate.html versub.html freezaerl_tabazadeh2000.html \
-freezaerl_koop2000.html rhoice_heymsfield2010.html setupvf_heymsfield2010.html
+freezaerl_koop2000.html rhoice_heymsfield2010.html setupvf_heymsfield2010.html \
+freezaerl_mohler2010.html 
 
 carma_precision_mod.o : carma_precision_mod.F90
 	$(FORTRAN) $(CPPFLAGS) -c $<
@@ -106,6 +108,9 @@ freezaerl_tabazadeh2000.o : freezaerl_tabazadeh2000.F90 carma_globaer.h carma_mo
 	$(FORTRAN) $(CPPFLAGS) -c $<
 
 freezaerl_koop2000.o : freezaerl_koop2000.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 
+	$(FORTRAN) $(CPPFLAGS) -c $<
+
+freezaerl_mohler2010.o : freezaerl_mohler2010.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 
 	$(FORTRAN) $(CPPFLAGS) -c $<
 
 freezglaerl_murray2010.o : freezglaerl_murray2010.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 

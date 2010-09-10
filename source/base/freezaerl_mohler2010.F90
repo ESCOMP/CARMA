@@ -5,17 +5,17 @@
 !! This routine evaluates particle loss rates due to nucleation <rnuclg>:
 !! aerosol freezing only.
 !!
-!! The parameterization described by Koop et al., Nature 406, 611-614, 2000
-!! is used.
+!! The parameterization described by Mohler et al., presented at the AMS
+!! Cloud physics workshop (2010) is used.
 !! 
 !! The loss rates for all particle elements in a particle group are equal.
 !!
 !! To avoid nucleation into an evaporating bin, this subroutine must
 !! be called after growp, which evaluates evaporation loss rates <evaplg>.
 !!
-!! @author Eric Jensen, Chuck Bardeen
-!! @version Dec-2003, Apr-2010
-subroutine freezaerl_koop2000(carma, cstate, iz, rc)
+!! @author Chuck Bardeen
+!! @version Aug-2010
+subroutine freezaerl_mohler2010(carma, cstate, iz, rc)
 
   ! types
   use carma_precision_mod
@@ -114,6 +114,10 @@ subroutine freezaerl_koop2000(carma, cstate, iz, rc)
   
                   ssi = supsati(iz,igas)
                   ssl = supsatl(iz,igas)
+                  
+                  ! Adjust ssi for the Kelvin effect.
+                  fkelvi = exp(akelvini(iz,igas) / r(ibin,igroup))
+                  ssi = ssi / fkelvi
   
                   ! Calculate approximate critical saturation needed for homogeneous freezing
                   ! of sulfate aerosols (see Jensen and Toon, GRL, 1994).
@@ -123,53 +127,20 @@ subroutine freezaerl_koop2000(carma, cstate, iz, rc)
                   ! and SI > <sifreeze>.
                   if (ssi > sifreeze) then
   
-                    !  Koop et al. nucleation rate parameterization
-                    td    = t(iz)
-                    rlnt  = log(td)
-                    dmy   = 210368._f + 131.438_f * td - (3.32373e6_f / td) - 41729.1_f * rlnt    ! eqn 2, potential difference [J mol-1]
-                    rsi   = RGAS / 1.e7_f       ! gas constant [J mol-1 K-1]
-                    awi   = exp(dmy / (rsi * td))                                                 ! Notes (p: ambient vs. at pressure) ?
-  
-                    vw0   = -230.76_f - 0.1478_f * td + (4099.2_f / td) + 48.8341_f * rlnt        ! eqn 4
-                    vi    = 19.43_f - 2.2e-3_f * td + 1.08e-5_f * td * td                         ! eqn 5
-                    
-                    pp    = 1.e-10_f * p(iz)  ! pressure [GPa]
-                    pp2   = pp * pp * 0.5_f
-                    pp3   = pp2 * pp / 3._f
-                    riv   = vw0 * (pp - kt0 * pp2 - dkt0dp * pp3) - vi * (pp - kti * pp2 - dktidp * pp3) ! eqn 3
-      
-                    riv   = riv * 1.e3_f      ! [GPa cm3 mol-1] to [Pa m3 mol-1] 
-  
-                    ! NOTE: The wieght percent can become negative from this parameterization,
+                    ! Mohler et al. 2010? nucleation rate parameterization
+                    rlogj = 97.973292_f - 154.67476 * (ssi + 1._f) - 0.84952712_f * t(iz) + 1.0049467_f * (ssi + 1._f) * t(iz)
+                    rjj   = 10._f**(rlogj)              ! [cm-3 s-1]
+
+                    ! NOTE: The weight percent can become negative from this parameterization,
                     ! which is not physicsal. With small supersaturations, the water activity 
                     ! becomes postive (>1.013) the weight percent becomes negative. Don't allow
                     ! the the supsatl to be greater than 0.
                     ssl = max(-1.0_f, min(0._f, ssl))
   
-                    ! Water activity
-                    aw    = 1._f + ssl                                                            ! ?
-
                     ! Kelvin effect on water activity
-                    fkelv = exp(akelvin(iz,igas) / r(ibin,igroup))                                ! ?
+                    aw    = 1._f + ssl                                                            ! ?
+                    fkelv = exp(akelvin(iz,igas) / r(ibin,igroup))
                     aw    = aw / fkelv
-
-                    ! Adjust awi for kelvin effect.
-                    !
-                    ! Koop indicates that Si = aw / awi, so ...
-                    fkelvi = exp(akelvini(iz,igas) / r(ibin,igroup))                                ! ?
-                    awi = awi * fkelvi / fkelv
-                    
-                    ! Nucleation rate
-                    !
-                    ! NOTE: This formulation is only valid for daw in the range of
-                    ! 0.26 < daw < 0.34, so limit daw to that range.
-                    daw   = aw * exp(riv / (rsi*td)) - awi                                        ! eqn 6
-                    daw = min(0.34_f, max(daw, 0.26_f))                                           ! eqn 7
-                    
-                    rlogj = ((29180._f * daw - 26924._f) * daw + 8502._f) * daw - 906.7_f         ! eqn 7
-                    rlogj = min(rlogj, POWMAX*0.3_f)
-                    rjj   = 10._f**(rlogj)                                                        ! [cm-3 s-1]
-    
 
                     ! Calculate volume ratio of wet/dry aerosols
                     if (aw < 0.05_f) then
@@ -194,9 +165,10 @@ subroutine freezaerl_koop2000(carma, cstate, iz, rc)
                     else
                       volrat = rhosol(isol) / RHO_W * ((100._f - WT) / WT) + 1._f
                     endif
-
-                    rnuclg(ibin,igroup,ignucto) = rnuclg(ibin,igroup,ignucto) + rjj * volrat * vol(ibin,igroup)                ! [s-1]
-                  endif   ! ssi > sifreeze .and. target droplets not evaporating
+  
+                    ! NOTE: Limit the rate for stability.
+                    rnuclg(ibin,igroup,ignucto) = rnuclg(ibin,igroup,ignucto) + min(1e20_f, rjj * volrat * vol(ibin,igroup))                 ! [s-1]
+                 endif   ! ssi > sifreeze .and. target droplets not evaporating
                 enddo    ! ibin = 1,NBIN
               endif     ! inucproc(iepart,ienucto) .eq. I_DROPACT
             endif
