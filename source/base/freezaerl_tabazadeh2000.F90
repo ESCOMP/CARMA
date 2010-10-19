@@ -283,8 +283,6 @@ subroutine freezaerl_tabazadeh2000(carma, cstate, iz, rc)
                            sqrt(sigsulice*t(iz)) * &
                            vrat*vol(ibin,igroup) * exp( expon )
                            
-if ((rnuclg(ibin,igroup,ignucto) < 0._f) .or. (rnuclg(ibin,igroup,ignucto) > 1e10_f)) write(*,*), iz, t(iz), ibin, rnuclg(ibin,igroup,ignucto)
-
                     ! This parameterizations has problems that sometimes yield negative nucleation
                     ! rates. It would be best to fix the parameterization, but at least keep negative
                     ! values from being return.
