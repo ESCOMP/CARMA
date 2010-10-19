@@ -58,7 +58,7 @@ subroutine vertadv(carma, cstate, vtrans, cvert, itbnd, ibbnd, cvert_tbnd, cvert
   if (do_explised) then  
     where (vtrans < 0._f)
       vertadvd = -vtrans
-    else where
+    elsewhere
       vertadvu = vtrans
     end where
   else
