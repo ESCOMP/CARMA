@@ -486,6 +486,14 @@ contains
         cstate%told(:)      = 0._f
         cstate%d_t(:)       = 0._f
         cstate%zsubsteps(:) = 0._f
+
+        ! When substepping is enabled, we want to initialize these statistics once for
+        ! the life of the object.
+        cstate%max_nsubstep = 0
+        cstate%max_nretry   = 0._f
+        cstate%nstep        = 0._f
+        cstate%nsubstep     = 0
+        cstate%nretry       = 0._f
       endif
 
       
