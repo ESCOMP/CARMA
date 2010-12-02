@@ -322,7 +322,7 @@ contains
   !!  @version Feb-2009 
   !!  @author  Chuck Bardeen 
   subroutine CARMA_Initialize(carma, rc, do_cnst_rlh, do_coag, do_detrain, do_fixedinit, do_grow, do_incloud, do_explised, do_print_init, do_substep, &
-      do_thermo, do_vdiff, do_vtran, vf_const, minsubsteps, maxsubsteps, maxretries, conmax)
+      do_thermo, do_vdiff, do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax)
     type(carma_type), intent(inout)     :: carma         !! the carma object
     integer, intent(out)                :: rc            !! return code, negative indicates failure
     logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats (instead of varying with temperature)?
@@ -337,6 +337,7 @@ contains
     logical, intent(in), optional       :: do_thermo     !! do thermodynamics
     logical, intent(in), optional       :: do_vdiff      !! do Brownian diffusion
     logical, intent(in), optional       :: do_vtran      !! do sedimentation
+    logical, intent(in), optional       :: do_drydep     !! do dry deposition
     real(kind=f), intent(in), optional  :: vf_const      !! if specified and non-zero, constant fall velocity for all particles [cm/s]
     integer, intent(in), optional       :: minsubsteps   !! minimum number of substeps, default = 1
     integer, intent(in), optional       :: maxsubsteps   !! maximum number of substeps, default = 1
@@ -359,6 +360,7 @@ contains
     carma%do_thermo     = .FALSE.
     carma%do_vdiff      = .FALSE.
     carma%do_vtran      = .FALSE.
+    carma%do_drydep     = .FALSE.
     
     ! Store off any control flag values that have been supplied.
     if (present(do_cnst_rlh))   carma%do_cnst_rlh   = do_cnst_rlh
@@ -373,6 +375,7 @@ contains
     if (present(do_thermo))     carma%do_thermo     = do_thermo
     if (present(do_vdiff))      carma%do_vdiff      = do_vdiff
     if (present(do_vtran))      carma%do_vtran      = do_vtran 
+    if (present(do_drydep))     carma%do_drydep     = do_drydep
     
     ! Setup the bin structure.
     call setupbins(carma, rc)

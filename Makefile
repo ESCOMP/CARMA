@@ -10,7 +10,7 @@ FORTRAN =	ifort
 F90DOC = ../../bin/f90doc-0.4.0/f90doc
 
 PACKAGE =	CARMA
-TGZ =		CARMA.tgz
+TGZ =		CARMA.tar
 
 CPPFLAGS = -g
 
@@ -68,9 +68,13 @@ SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o
 	$(FORTRAN) $(CPPFLAGS) -o SWELLTEST.exe carma_swelltest.o atmosphere_mod.o $(CARMA_OBJ)
 VDIFTEST.exe : $(CARMA_OBJ) carma_vdiftest.o
 	$(FORTRAN) $(CPPFLAGS) -o VDIFTEST.exe carma_vdiftest.o atmosphere_mod.o $(CARMA_OBJ)
+DRYDEPTEST.exe : $(CARMA_OBJ) carma_drydeptest.o
+	$(FORTRAN) $(CPPFLAGS) -o DRYDEPTEST.exe carma_drydeptest.o atmosphere_mod.o $(CARMA_OBJ)	
+SIGMADRYDEPTEST.exe : $(CARMA_OBJ) carma_sigmadrydeptest.o atmosphere_mod.o
+	$(FORTRAN) $(CPPFLAGS) -o SIGMADRYDEPTEST.exe carma_sigmadrydeptest.o atmosphere_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe CARMA.exe
+all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe CARMA.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)
@@ -81,6 +85,6 @@ clean:
 # The Mac creates .DS_Store files that we don't want in the tar file, so
 # exclude them.
 tar:
-	tar --directory ../.. -cvf $(TGZ) --wildcards --exclude .DS_Store \
+	tar --directory ../.. -cvf $(TGZ) --exclude .DS_Store --exclude .svn \
 	  Makefile make-carma.csh run-carma.csh README \
 	  source tests bin doc/ChangeLog doc/ChangeLog_template doc/index.html

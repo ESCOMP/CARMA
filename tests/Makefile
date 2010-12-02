@@ -7,9 +7,9 @@
 # NOTE: In the future (or in parnet models) this could be replaced
 # by automatic dependency generation.
 
-TEST_OBJ = carma_falltest.o carma_coagtest.o carma_test.o atmosphere_mod.o
+TEST_OBJ = carma_drydeptest.o carma_falltest.o carma_coagtest.o carma_test.o atmosphere_mod.o
 
-TEST_DOC = carma_falltest.html carma_coagtest.html carma_test.html atmosphere_mod.html
+TEST_DOC = carma_drydeptest.html carma_falltest.html carma_coagtest.html carma_test.html atmosphere_mod.html
 
 atmosphere_mod.o : atmosphere_mod.F90
 	$(FORTRAN) $(CPPFLAGS) -c $<
@@ -36,6 +36,9 @@ carma_mietest.o : carma_mietest.F90 carma_mod.mod carma_constants_mod.mod carma_
 	$(FORTRAN) $(CPPFLAGS) -c $<
 	
 carma_nuctest.o : carma_nuctest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
+	$(FORTRAN) $(CPPFLAGS) -c $<
+	
+carma_sigmadrydeptest.o : carma_sigmadrydeptest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
 	$(FORTRAN) $(CPPFLAGS) -c $<
 	
 carma_sigmafalltest.o : carma_sigmafalltest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 

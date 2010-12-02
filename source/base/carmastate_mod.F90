@@ -499,8 +499,8 @@ contains
       
       ! Allocate the variables needed for setupvf.
       !
-      ! NOTE: Coagulation also needs bpm, vf and re.
-      if (cstate%carma%do_vtran .or. cstate%carma%do_coag .or. cstate%carma%do_grow) then
+      ! NOTE: Coagulation and dry deposition also need bpm, vf and re.
+      if (cstate%carma%do_vtran .or. cstate%carma%do_coag .or. cstate%carma%do_grow .or. cstate%carma%do_drydep) then
         allocate( &
           cstate%bpm(NZ,NBIN,NGROUP), &
           cstate%vf(NZP1,NBIN,NGROUP), &
@@ -510,6 +510,7 @@ contains
           cstate%fbotpart(NBIN,NELEM), &
           cstate%pc_topbnd(NBIN,NELEM), &
           cstate%pc_botbnd(NBIN,NELEM), &
+          cstate%vd(NBIN, NGROUP), &
           stat=ier)
         if (ier /= 0) then
           if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating vertical transport arrays, status=", ier
@@ -526,6 +527,7 @@ contains
         cstate%fbotpart(:,:) = 0._f
         cstate%pc_topbnd(:,:) = 0._f
         cstate%pc_botbnd(:,:) = 0._f
+        cstate%vd(:, :) = 0._f
       end if
       
       
@@ -786,11 +788,17 @@ contains
   !!
   !! @author Chuck Bardeen
   !! @version Feb-2009
-  subroutine CARMASTATE_Step(cstate, rc, cldfrc, rhcrit)
+  subroutine CARMASTATE_Step(cstate, rc, cldfrc, rhcrit, surfric, ram, landfrac, ocnfrac, icefrac)
     type(carmastate_type), intent(inout)  :: cstate
     integer, intent(out)                  :: rc
     real(kind=f), intent(in), optional    :: cldfrc(cstate%NZ)   !! cloud fraction [fraction]
     real(kind=f), intent(in), optional    :: rhcrit(cstate%NZ)   !! relative humidity for onset of liquid clouds [fraction]
+    real(kind=f), intent(in), optional    :: surfric             !! surface friction velocity [cm/s]
+    real(kind=f), intent(in), optional    :: ram                 !! aerodynamic resistance [s/cm]
+    real(kind=f), intent(in), optional    :: landfrac            !! land fraction
+    real(kind=f), intent(in), optional    :: ocnfrac             !! ocn fraction
+    real(kind=f), intent(in), optional    :: icefrac             !! ice fraction
+
     
     integer                               :: iz     ! vertical index
     integer                               :: igas   ! gas index
@@ -838,7 +846,18 @@ contains
           call setupbdif(cstate%carma, cstate, rc)
         end if
       end if
-  
+          
+      ! intialize the dry deposition  - Tianyi, Nov 4, 2010
+      if (cstate%carma%do_drydep) then
+        if (present(surfric) .and. present(ram) .and. present(landfrac) .and. present(ocnfrac) .and. present(icefrac)) then
+          call setupvdry(cstate%carma, cstate, surfric, ram, landfrac, ocnfrac, icefrac, rc)
+          if (rc < RC_OK) return
+        else
+          write(cstate%carma%LUNOPRT, *) "CARMASTATE_Step: do_drydep requires that the optional inputs surfric, ram, landfrac, ocnfrac and icefrac be provided."
+          rc = RC_ERROR
+        end if
+      end if
+       
       ! Intialize the nucleation, growth and evaporation.      
       if (cstate%carma%do_grow)  then
         call setupgrow(cstate%carma, cstate, rc)

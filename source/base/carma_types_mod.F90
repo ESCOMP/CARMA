@@ -114,7 +114,7 @@ module carma_types_mod
     !   is_cloud    If .true. then cloud particle
     !   do_mie      If .true. then do mie calculations 
     !   do_wetdep   If .true. then do wet deposition 
-    !   do_drydep   If .true. then do dry deposition 
+    !   grp_do_drydep If .true. then do dry deposition 
     !   grp_do_vtran If .true. then do sedimentation 
     !   scavcoef    Scavenging coefficient for wet deopistion (1/mm)
     !   if_sec_mom  If .true. then core second moment (itype = 3) used    {setupgrow}
@@ -155,7 +155,7 @@ module carma_types_mod
     logical                                     :: is_cloud
     logical                                     :: do_mie
     logical                                     :: do_wetdep
-    logical                                     :: do_drydep
+    logical                                     :: grp_do_drydep
     logical                                     :: grp_do_vtran
     integer                                     :: irhswell
     integer                                     :: irhswcomp
@@ -305,6 +305,7 @@ module carma_types_mod
     !   do_vdiff    If .true. then do Brownian diffusion                  {init}
     !   do_coag     If .true. then do coagulation                         {init}
     !   do_detrain  If .true. then do detrainment                         {init}
+    !   do_drydep   If .true. then do dry deposition                      {init}
     !   do_fixedinitIf .true. then do initialize from reference atm       {init}
     !   do_grow     If .true. then do condensational growth and evap.     {init}
     !   do_incloud  If .true. then do incloud growth and coagulation      {init}
@@ -313,6 +314,7 @@ module carma_types_mod
     !   do_step     if .true. then varstepping succeeded                  {init}
     !   do_substep  if .true. then use substepping                        {init}
     !   do_thermo   if .true. then do solve thermodynamic equation        {init}
+    !   do_vdiff    If .true. then do Brownian diffusion                  {init}
     !   do_vtran    If .true. then do vertical transport                  {init}
     !   do_cnst_rlh If .true. then uses constants for rlhe and rlhm       {setupgrow}
     !   igrowgas    Gas that condenses into a particle element            {setupgrow}
@@ -329,6 +331,7 @@ module carma_types_mod
     !   maxretries  Maximum number of substepping retries allowed
     !
     logical                                       :: do_vdiff
+    logical                                       :: do_drydep
     logical                                       :: do_coag
     logical                                       :: do_detrain
     logical                                       :: do_fixedinit
@@ -648,12 +651,14 @@ module carma_types_mod
     !   vf        Fall velocities at layer mid-pt                       {setupvfall}
     !   re        Reynolds' number based on <vfall>                     {setupvfall}
     !   dkz       Vert Brownian diffusion coef at layer boundary [z_units^2/s] {setupbdif}
+    !   vd        Particle dry deposition velocity  [z_units/s]         {setupvdry}
     !
     real(kind=f), allocatable, dimension(:,:,:)     :: bpm        ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: vf         ! (NZP1,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: re         ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: dkz        ! (NZP1,NBIN,NGROUP)
-
+    real(kind=f), allocatable, dimension(:,:)       :: vd         ! (NBIN,NGROUP)
+    
     ! Atmospheric Structure
     !
     !  rhoa      Air density at layer mid-pt [g/x_units/y_units/z_units]  {initatm}

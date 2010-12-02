@@ -142,7 +142,7 @@ contains
     carma%group(igroup)%irhswell    = 0
     carma%group(igroup)%do_mie      = .false.
     carma%group(igroup)%do_wetdep   = .false.
-    carma%group(igroup)%do_drydep   = .false.
+    carma%group(igroup)%grp_do_drydep   = .false.
     carma%group(igroup)%grp_do_vtran  = .true.
     carma%group(igroup)%solfac      = 0.3_f
     carma%group(igroup)%scavcoef    = 0.1_f
@@ -157,7 +157,7 @@ contains
     if (present(refidx))     carma%group(igroup)%refidx(:)    = refidx(:)
     if (present(do_mie))     carma%group(igroup)%do_mie       = do_mie
     if (present(do_wetdep))  carma%group(igroup)%do_wetdep    = do_wetdep
-    if (present(do_drydep))  carma%group(igroup)%do_drydep    = do_drydep
+    if (present(do_drydep))  carma%group(igroup)%grp_do_drydep  = do_drydep
     if (present(do_vtran))   carma%group(igroup)%grp_do_vtran = do_vtran
     if (present(solfac))     carma%group(igroup)%solfac       = solfac
     if (present(scavcoef))   carma%group(igroup)%scavcoef     = scavcoef
@@ -328,7 +328,7 @@ contains
     if (present(vol))          vol(:)       = carma%group(igroup)%vol(:)
     if (present(do_mie))       do_mie       = carma%group(igroup)%do_mie
     if (present(do_wetdep))    do_wetdep    = carma%group(igroup)%do_wetdep
-    if (present(do_drydep))    do_drydep    = carma%group(igroup)%do_drydep
+    if (present(do_drydep))    do_drydep    = carma%group(igroup)%grp_do_drydep
     if (present(do_vtran))     do_vtran     = carma%group(igroup)%grp_do_vtran
     if (present(solfac))       solfac       = carma%group(igroup)%solfac
     if (present(scavcoef))     scavcoef     = carma%group(igroup)%scavcoef

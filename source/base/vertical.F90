@@ -50,9 +50,19 @@ subroutine vertical(carma, cstate, rc)
       ! Are there enough particles in the column to bother?
       if (maxval(pconmax(:,ig)) .gt. FEW_PC) then
 
-        do ibin = 1,NBIN          ! Loop over particle mass bins
+        do ibin = 1,NBIN          ! Loop over particle mass bins          
           vtrans(:) = -vf(:,ibin,ig)
-          
+    
+          ! If dry deposition is enabled for this group, then set
+          ! the deposition velocity at the surface.
+          if (grp_do_drydep(ig)) then
+            if (igridv .eq. I_CART) then
+              vtrans(1) = -vd(ibin, ig)
+            else
+              vtrans(NZP1) = -vd(ibin, ig)
+            end if
+          end if
+
           !  Calculate particle transport rates due to vertical advection
           !  and vertical diffusion, and solve for concentrations at end of time step.
           call vertadv(carma, cstate, vtrans, pc(:,ibin,ielem), itbnd_pc, ibbnd_pc, &

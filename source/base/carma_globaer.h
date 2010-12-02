@@ -77,6 +77,7 @@
 #define is_grp_ice(igroup)      carma%group(igroup)%is_ice
 #define is_grp_cloud(igroup)    carma%group(igroup)%is_cloud
 #define grp_do_vtran(igroup)    carma%group(igroup)%grp_do_vtran
+#define grp_do_drydep(igroup)   carma%group(igroup)%grp_do_drydep
 #define irhswell(igroup)        carma%group(igroup)%irhswell
 #define irhswcomp(igroup)       carma%group(igroup)%irhswcomp
 #define rmrat(igroup)           carma%group(igroup)%rmrat
@@ -114,6 +115,7 @@
 #define do_thermo     carma%do_thermo
 #define do_vdiff      carma%do_vdiff
 #define do_vtran      carma%do_vtran
+#define do_drydep     carma%do_drydep
 #define if_nuc        carma%if_nuc
 #define time          cstate%time
 #define dtime         cstate%dtime
@@ -240,6 +242,7 @@
 #define vf            cstate%vf
 #define re            cstate%re
 #define vf_const      carma%vf_const
+#define vd            cstate%vd
 
 !  Condensational growth parameters
 #define diffus        cstate%diffus

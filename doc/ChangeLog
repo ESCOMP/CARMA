@@ -1,5 +1,21 @@
 ===============================================================
 
+Tag name: 3.0.1
+Originator(s): Tianyi Fan, Charles Bardeen
+Date: December 1, 2010
+
+One-line Summary:
+
+Add wet deposition to sedimentation.
+
+Purpose of changes:
+
+Added support for dry deposition to the sedimentation routine in CARMA.
+Surface friction and land fraction are supplied by the parent model.
+===============================================================
+
+===============================================================
+
 Tag name: 3.0.0
 Originator(s): Charles Bardeen
 Date: August 11, 2010
