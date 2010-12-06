@@ -98,8 +98,8 @@ subroutine test_sedimentation()
   integer               :: omp_get_num_threads, omp_get_max_threads, &
                            omp_get_thread_num
   real(kind=f)          :: surfric, ram, landfrac, ocnfrac, icefrac
-  real(kind=f),parameter:: surfric_in = 10._f
-  real(kind=f),parameter:: ram_in = 0.5_f
+  real(kind=f),parameter:: surfric_in = 2._f  ! [m/s]
+  real(kind=f),parameter:: ram_in = 40._f     ! [s/m]
   real(kind=f)          :: vdry(NBIN, NGROUP)
   
   write(*,*) ""

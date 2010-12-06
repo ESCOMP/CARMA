@@ -100,8 +100,8 @@ subroutine test_sedimentation()
   real(kind=f)          :: a(NZP1), b(NZP1), dz(NZ), zm(NZP1), rhoa(NZ)
   real(kind=f), parameter :: ps = 98139.8  ! GEOS-5, Omaha, NE, 20090101
   real(kind=f)          :: surfric, ram, landfrac, ocnfrac, icefrac
-  real(kind=f),parameter:: surfric_in = 10._f
-  real(kind=f),parameter:: ram_in = 0.5_f
+  real(kind=f),parameter:: surfric_in = 2._f  ! [m/s]
+  real(kind=f),parameter:: ram_in = 40._f     ! [s/m]
   real(kind=f)          :: vdry(NBIN, NGROUP)
   
   data a72 / &
