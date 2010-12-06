@@ -793,8 +793,8 @@ contains
     integer, intent(out)                  :: rc
     real(kind=f), intent(in), optional    :: cldfrc(cstate%NZ)   !! cloud fraction [fraction]
     real(kind=f), intent(in), optional    :: rhcrit(cstate%NZ)   !! relative humidity for onset of liquid clouds [fraction]
-    real(kind=f), intent(in), optional    :: surfric             !! surface friction velocity [cm/s]
-    real(kind=f), intent(in), optional    :: ram                 !! aerodynamic resistance [s/cm]
+    real(kind=f), intent(in), optional    :: surfric             !! surface friction velocity [m/s]
+    real(kind=f), intent(in), optional    :: ram                 !! aerodynamic resistance [s/m]
     real(kind=f), intent(in), optional    :: landfrac            !! land fraction
     real(kind=f), intent(in), optional    :: ocnfrac             !! ocn fraction
     real(kind=f), intent(in), optional    :: icefrac             !! ice fraction
@@ -846,11 +846,13 @@ contains
           call setupbdif(cstate%carma, cstate, rc)
         end if
       end if
-          
-      ! intialize the dry deposition  - Tianyi, Nov 4, 2010
+      
+      ! intialize the dry deposition
       if (cstate%carma%do_drydep) then
         if (present(surfric) .and. present(ram) .and. present(landfrac) .and. present(ocnfrac) .and. present(icefrac)) then
-          call setupvdry(cstate%carma, cstate, surfric, ram, landfrac, ocnfrac, icefrac, rc)
+        
+          ! NOTE: Need to convert surfric and ram from mks to cgs units.
+          call setupvdry(cstate%carma, cstate, surfric * 100._f, ram / 100._f, landfrac, ocnfrac, icefrac, rc)
           if (rc < RC_OK) return
         else
           write(cstate%carma%LUNOPRT, *) "CARMASTATE_Step: do_drydep requires that the optional inputs surfric, ram, landfrac, ocnfrac and icefrac be provided."
