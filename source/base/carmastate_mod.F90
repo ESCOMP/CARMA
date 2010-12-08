@@ -356,7 +356,7 @@ contains
     if (rc < 0) return
 
     ! If configured for fixed initialization, then we will lose some accuracy
-    ! in the calculation of the fall velocisiteis, growth kernels, ... and in return
+    ! in the calculation of the fall velocities, growth kernels, ... and in return
     ! will gain a significant performance by not having to initialize as often.
   
     ! Initialize the vertical transport.
@@ -834,7 +834,7 @@ contains
     ! CARMASTATE_SetBin), because rhop is used to determine the fall velocity.
     !
     ! NOTE: If configured for fixed initialization, then we will lose some accuracy
-    ! in the calculation of the fall velocisiteis, growth kernels, ... and in return
+    ! in the calculation of the fall velocities, growth kernels, ... and in return
     ! will gain a significant performance by not having to initialize as often.
     if (.not. cstate%carma%do_fixedinit) then
 
