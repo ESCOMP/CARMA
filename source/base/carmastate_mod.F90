@@ -932,7 +932,7 @@ contains
   !! @see CARMA_AddGroup
   !! @see CARMA_Step 
   !! @see CARMASTATE_SetBin
-  subroutine CARMASTATE_GetBin(cstate, ielem, ibin, mmr, rc, nmr, numberDensity, nucleationRate, r_wet, rhop_wet, surface)
+  subroutine CARMASTATE_GetBin(cstate, ielem, ibin, mmr, rc, nmr, numberDensity, nucleationRate, r_wet, rhop_wet, surface, vf, vd)
     type(carmastate_type), intent(in)     :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
@@ -944,6 +944,8 @@ contains
     real(kind=f), optional, intent(out)   :: r_wet(cstate%NZ)          !! wet particle radius [cm]
     real(kind=f), optional, intent(out)   :: rhop_wet(cstate%NZ)       !! wet particle density [g/cm3]
     real(kind=f), optional, intent(out)   :: surface        !! particle mass on the surface [kg/m2]
+    real(kind=f), optional, intent(out)   :: vf(cstate%NZ+1) !! fall velocity [cm/s]
+    real(kind=f), optional, intent(out)   :: vd             !! deposition velocity [cm/s]
     
     integer                               :: ienconc        !! index of element that is the particle concentration for the group
     integer                               :: igroup         ! Group containing this bin
@@ -1010,6 +1012,18 @@ contains
       if (present(r_wet))         r_wet(:)           = cstate%r_wet(:, ibin, igroup)
       if (present(rhop_wet))      rhop_wet(:)        = cstate%rhop_wet(:, ibin, igroup)
 
+      if (cstate%carma%do_vtran) then
+        if (present(vf))            vf(:)              = cstate%vf(:, ibin, igroup)
+      else
+        if (present(vf))            vf(:)              = CAM_FILL
+      end if
+      
+      if (cstate%carma%do_drydep) then
+        if (present(vd))          vd                 = cstate%vd(ibin, igroup)
+      else 
+        if (present(vd))          vd                 = CAM_FILL
+      end if
+
       if (cstate%carma%do_grow) then
         if (present(nucleationRate)) nucleationRate(:) = cstate%pc_nucl(:, ibin, ielem) / (cstate%xmet(:)*cstate%ymet(:)*cstate%zmet(:)) / cstate%dtime
       else
@@ -1019,6 +1033,10 @@ contains
       if (present(nmr))            nmr(:)             = CAM_FILL
       if (present(numberDensity))  numberDensity(:)   = CAM_FILL
       if (present(nucleationRate)) nucleationRate(:)  = CAM_FILL
+      if (present(r_wet))          r_wet(:)           = CAM_FILL
+      if (present(rhop_wet))       rhop_wet(:)        = CAM_FILL
+      if (present(vf))             vf(:)              = CAM_FILL
+      if (present(vd))             vd                 = CAM_FILL
     end if
    
     return

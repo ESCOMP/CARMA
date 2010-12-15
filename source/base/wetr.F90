@@ -67,7 +67,7 @@ subroutine wetr(carma, igroup, rh, rdry, rwet, rc)
     !  Warning message for non-spherical particles!
     if( ishape(igroup) .ne. I_SPHERE )then
       if (do_print) write(LUNOPRT,1) igroup, ishape(igroup)
-      rc = -1
+      rc = RC_ERROR
       return
     endif
 		
@@ -126,7 +126,8 @@ subroutine wetr(carma, igroup, rh, rdry, rwet, rc)
         case default
           if (do_print) write(LUNOPRT,*) "wetr:: ERROR - Unknown composition type  (", irhswcomp(igroup), &
             ") for Fitzgerald."
-          rc = -1
+          rc = RC_ERROR
+          return
       end select
 
       alpha = alphaComp * (alpha1 * alpharat)
@@ -172,7 +173,8 @@ subroutine wetr(carma, igroup, rh, rdry, rwet, rc)
         case default
           if (do_print) write(LUNOPRT,*) "wetr:: ERROR - Unknown composition type  (", irhswcomp(igroup), &
             ") for Gerber."
-          rc = -1
+          rc = RC_ERROR
+          return
       end select
       
       rwet  = ((c1 * rdry**c2 / (c3 * rdry**c4 - log10(humidity))) + rdry**3)**(1._f / 3._f)
