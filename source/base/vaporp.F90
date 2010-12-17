@@ -25,7 +25,7 @@ subroutine vaporp(carma, cstate, iz, igas, rc)
   type(carma_type), intent(in)         :: carma   !! the carma object
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
   integer, intent(in)                  :: iz      !! z index
-  integer, intent(in)                  :: igas      !! gas index
+  integer, intent(in)                  :: igas    !! gas index
   integer, intent(inout)               :: rc      !! return code, negative indicates failure
 
   ! Each gas should have a vapor pressure routine specified for it.
@@ -39,6 +39,9 @@ subroutine vaporp(carma, cstate, iz, igas, rc)
     
     case(I_VAPRTN_H2O_MURPHY2005)
       call vaporp_h2o_murphy2005(carma, cstate, iz, rc, pvapl(iz, igas), pvapi(iz, igas))
+    
+    case(I_VAPRTN_H2O_GOFF1946)
+      call vaporp_h2o_goff1946(carma, cstate, iz, rc, pvapl(iz, igas), pvapi(iz, igas))
     
     case default
       if (do_print) write(LUNOPRT,*) "vaporp:: ERROR - Unknown vapor pressure routine  (", ivaprtn(igas), &

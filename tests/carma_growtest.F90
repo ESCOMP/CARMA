@@ -159,6 +159,7 @@ subroutine test_grow_simple()
   ! Define the gases
   write(*,*) "  Add Gase(s) ..."
   call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, I_GCOMP_H2O, rc)
+!  call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_GOFF1946, I_GCOMP_H2O, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
   
