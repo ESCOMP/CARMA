@@ -98,6 +98,8 @@ subroutine vertical(carma, cstate, rc)
           ! better to figure out how to get this directly from versol.
           pc_surf(ibin,ielem) = pc_surf(ibin, ielem) + sum(old_pc(:) * dz(:) / xmet(:) / ymet(:)) - &
             sum(pc(:,ibin,ielem) * dz(:) / xmet(:) / ymet(:))
+          sedimentationflux(ibin,ielem) = ( sum(old_pc(:) * dz(:) / xmet(:) / ymet(:)) - &
+            sum(pc(:,ibin,ielem) * dz(:) / xmet(:) / ymet(:)) ) / dtime
         enddo  ! ibin
       endif
     endif

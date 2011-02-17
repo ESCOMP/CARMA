@@ -556,6 +556,7 @@ module carma_types_mod
     !  pc          Particle concentration [/x_units/y_units/z_units]  {initaer}
     !  pcd         Detrained particle concentration [/x_units/y_units/z_units]  {initaer}
     !  pc_surf     Particles on surface [/cm2]                        {initaer}
+    !  sedimentationflux     Particles sedimented to surface [/cm2/s]                        {initaer}
     !  gc          Gas concentration [g/x_units/y_units/z_units]      {initgas}
     !  cldfrc      Cloud fraction [fraction]
     !  rhcrit      Relative humidity for onset of liquid clouds [fraction]
@@ -563,6 +564,7 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:,:) :: pc         ! (NZ,NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:,:) :: pcd        ! (NZ,NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:)   :: pc_surf    ! (NBIN,NELEM)
+    real(kind=f), allocatable, dimension(:,:)   :: sedimentationflux    ! (NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:)   :: gc         ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:)     :: cldfrc     ! (NZ)
     real(kind=f), allocatable, dimension(:)     :: rhcrit     ! (NZ)
