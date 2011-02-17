@@ -434,6 +434,7 @@ contains
         cstate%pc(NZ,NBIN,NELEM), &
         cstate%pcd(NZ,NBIN,NELEM), &
         cstate%pc_surf(NBIN,NELEM), &
+        cstate%sedimentationflux(NBIN,NELEM), &
         cstate%gc(NZ,NGAS), &
         cstate%cldfrc(NZ), &
         cstate%rhcrit(NZ), &
@@ -462,6 +463,7 @@ contains
       cstate%pc(:,:,:)      = 0._f
       cstate%pcd(:,:,:)     = 0._f
       cstate%pc_surf(:,:)   = 0._f
+      cstate%sedimentationflux(:,:)   = 0._f
       cstate%cldfrc(:)      = 1._f
       cstate%rhcrit(:)      = 1._f
       
@@ -648,6 +650,7 @@ contains
         cstate%pc, &
         cstate%pcd, &
         cstate%pc_surf, &
+        cstate%sedimentationflux, &
         cstate%gc, &
         cstate%cldfrc, &
         cstate%rhcrit, &
@@ -701,6 +704,7 @@ contains
           cstate%fbotpart, &
           cstate%pc_topbnd, &
           cstate%pc_botbnd, &
+          cstate%vd, &
           stat=ier)
         if (ier /= 0) then
           if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating vertical transport arrays, status=", ier
@@ -932,7 +936,9 @@ contains
   !! @see CARMA_AddGroup
   !! @see CARMA_Step 
   !! @see CARMASTATE_SetBin
-  subroutine CARMASTATE_GetBin(cstate, ielem, ibin, mmr, rc, nmr, numberDensity, nucleationRate, r_wet, rhop_wet, surface, vf, vd)
+  subroutine CARMASTATE_GetBin(cstate, ielem, ibin, mmr, rc, &
+                               nmr, numberDensity, nucleationRate, r_wet, rhop_wet, &
+                               surface, sedimentationflux, vf, vd)
     type(carmastate_type), intent(in)     :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
@@ -943,7 +949,8 @@ contains
     real(kind=f), optional, intent(out)   :: nucleationRate(cstate%NZ) !! nucleation rate [1/cm3/s]
     real(kind=f), optional, intent(out)   :: r_wet(cstate%NZ)          !! wet particle radius [cm]
     real(kind=f), optional, intent(out)   :: rhop_wet(cstate%NZ)       !! wet particle density [g/cm3]
-    real(kind=f), optional, intent(out)   :: surface        !! particle mass on the surface [kg/m2]
+    real(kind=f), optional, intent(out)   :: surface                   !! particle mass on the surface [kg/m2]
+    real(kind=f), optional, intent(out)   :: sedimentationflux         !! particle sedimentation mass flux to surface [kg/m2/s]
     real(kind=f), optional, intent(out)   :: vf(cstate%NZ+1) !! fall velocity [cm/s]
     real(kind=f), optional, intent(out)   :: vd             !! deposition velocity [cm/s]
     
@@ -991,7 +998,7 @@ contains
 !    where (cstate%pc(:, ibin, ienconc) <= SMALL_PC) mmr(:) = 0.0_f
 
 
-    ! Do they also want the mass flux of particles that sedimented to the surface?
+    ! Do they also want the mass concentration of particles at the surface?
     if (present(surface)) then
       
       ! Convert from g/cm2 to kg/m2
@@ -1002,6 +1009,20 @@ contains
         surface = surface * cstate%carma%group(igroup)%rmass(ibin)
       else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
         surface = surface / cstate%carma%group(igroup)%rmass(ibin)
+      end if
+    end if
+    
+    ! Do they also want the mass flux of particles that sediment to the surface?
+    if (present(sedimentationflux)) then
+      
+      ! Convert from g/cm2 to kg/m2
+      sedimentationflux = cstate%sedimentationflux(ibin, ielem) * 1e4_f / 1e3_f
+
+      ! Handle the special cases for different types of elements ...
+      if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
+        sedimentationflux = sedimentationflux * cstate%carma%group(igroup)%rmass(ibin)
+      else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
+        sedimentationflux = sedimentationflux / cstate%carma%group(igroup)%rmass(ibin)
       end if
     end if
     
