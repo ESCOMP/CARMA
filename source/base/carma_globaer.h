@@ -174,6 +174,7 @@
 #define pc            cstate%pc
 #define pcd           cstate%pcd
 #define pc_surf       cstate%pc_surf
+#define sedimentationflux       cstate%sedimentationflux
 #define gc            cstate%gc
 #define cldfrc        cstate%cldfrc
 #define rhcrit        cstate%rhcrit
