@@ -1172,7 +1172,7 @@ contains
     mmr(:) = cstate%gc(:, igas) / cstate%rhoa_wet(:)
 
     if (present(satice)) satice(:) = cstate%supsati(:, igas) + 1._f
-    if (present(satice)) satliq(:) = cstate%supsatl(:, igas) + 1._f
+    if (present(satliq)) satliq(:) = cstate%supsatl(:, igas) + 1._f
     
     return
   end subroutine CARMASTATE_GetGas
