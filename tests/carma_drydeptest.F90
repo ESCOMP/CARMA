@@ -1,23 +1,23 @@
-!! This code is to test the impact of particle swelling from
+!! This code is to test the idry deposition from
 !! relative humidity on sedimentation. Upon execution, a text
-!! file (carma_swelltest.txt) is generated.  The text file can 
+!! file (carma_drydeptest.txt) is generated.  The text file can 
 !! be read with the IDL procedure read_swelltest.pro.
 !!
-!! @author  Chuck Bardeen
-!! @version May-2009
+!! @author  Tianyi Fan
+!! @version Apr-2011
 
-program carma_swelltest
+program carma_drydeptest
   implicit none
 
   write(*,*) "Dry Deposition Test"
 
-  call test_sedimentation()  
+  call test_drydep()  
 end program
 
 !! Create 2 particle groups, one for particles with dry deposition 
 !! using arbitary values of ram(aerodynamic resistance) and fv (friction velocity)
 !! the other for particles without dry deposition, to see if they make a differnce
-subroutine test_sedimentation()
+subroutine test_drydep()
   use carma_precision_mod 
   use carma_constants_mod 
   use carma_enums_mod 
@@ -58,10 +58,10 @@ subroutine test_sedimentation()
   
   integer, parameter        :: I_PART  = 1
 
-  type(carma_type), target            :: carma
-  type(carma_type), pointer           :: carma_ptr
-  type(carmastate_type), allocatable  :: cstate(:)
-  integer                             :: rc = 0
+  type(carma_type), target  :: carma
+  type(carma_type), pointer :: carma_ptr
+  type(carmastate_type)     :: cstate
+  integer                   :: rc = 0
   
   real(kind=f), allocatable   :: xc(:,:,:)
   real(kind=f), allocatable   :: dx(:,:,:)
@@ -95,8 +95,6 @@ subroutine test_sedimentation()
   real(kind=f)          :: rmin, rmrat, rho
   real(kind=f)          :: drh
   
-  integer               :: omp_get_num_threads, omp_get_max_threads, &
-                           omp_get_thread_num
   real(kind=f)          :: surfric, ram, landfrac, ocnfrac, icefrac
   real(kind=f),parameter:: surfric_in = 2._f  ! [m/s]
   real(kind=f),parameter:: ram_in = 40._f     ! [s/m]
@@ -152,18 +150,12 @@ subroutine test_sedimentation()
   write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc, do_vtran=.TRUE., do_drydep=.TRUE.)
   if (rc /=0) stop "    *** FAILED ***"
-  !write do_drydep
-  write(*, *) "do_drydep = ", carma%do_drydep
 
   ! Print the Group Information
   write(*,*)  ""
   call dumpGroup(carma, rc)
   if (rc /=0) stop "    *** FAILED ***"
   
-  ! print do_drydep
-  write(*,*) "group 1, do_drydep =", carma%group(1)%grp_do_drydep
-  write(*,*) "group 2, do_drydep =", carma%group(2)%grp_do_drydep
-
   ! Print the Element Information
   write(*,*)  ""
   call dumpElement(carma, rc)
@@ -257,16 +249,12 @@ subroutine test_sedimentation()
   write(lun,*) 0
   do ielem = 1, NELEM
     do i = 1, NZ
-      write(lun,'(2i4,pe10.3,pe10.3)') &
+      write(lun,'(2i4,e10.3,e10.3)') &
       ielem, i, real(mmr(i,NY,NX,ielem,OUTBIN)), real(mmr(i,NY,NX,ielem,OUTBIN)*p(i,NY,NX) / 287._f / t(i,NY,NX))
     end do
   end do
   
   
-  ! Allocate enough carmastate objects for the maximum number of threads.
-  allocate(cstate(omp_get_max_threads()))
-  
-    
   ! Iterate the model over a few time steps.
   write(*,*) ""
   do istep = 1, nstep
@@ -276,24 +264,12 @@ subroutine test_sedimentation()
 
     ! NOTE: This means that there should not be any looping over NX or NY done
     ! in any other CARMA routines. They should only loop over NZ.
-    !
-    ! NOTE: This directive allows each column of the model to be processed in a
-    ! separate thread. This can allow for faster computation on machines that 
-    ! allow multiple threads (e.g. have multiple CPUS). This should probably not
-    ! be used when the the model is embedded in a another model that is already
-    ! controlling the distribution of the model across multiple threads.
-
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ixy,ix,iy,ielem,ibin,ithread)
     do ixy = 1, NX*NY
        ix = ((ixy-1) / NY) + 1
        iy = ixy - (ix-1)*NY
       
-       ! Use the thread number to determine which member 
-       ! of the cstate pool to use.
-       ithread = omp_get_thread_num() + 1
-      
        ! Create a CARMASTATE for this column.
-       call CARMASTATE_Create(cstate(ithread), carma_ptr, time, dtime, NZ, &
+       call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
                               I_CART, I_CART, lat(iy,ix), lon(iy,ix), &
                               xc(:,iy,ix), dx(:,iy,ix), &
                               yc(:,iy,ix), dy(:,iy,ix), &
@@ -303,48 +279,45 @@ subroutine test_sedimentation()
        ! Send the bin mmrs to CARMA
        do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_SetBin(cstate(ithread), ielem, ibin, &
+         call CARMASTATE_SetBin(cstate, ielem, ibin, &
                                 mmr(:,iy,ix,ielem,ibin), rc)
         end do
        end do
       
        ! Execute the step
-       call CARMASTATE_Step(cstate(ithread), rc, surfric=surfric_in, ram = ram_in, landfrac=0._f, &
+       call CARMASTATE_Step(cstate, rc, surfric=surfric_in, ram = ram_in, landfrac=0._f, &
         ocnfrac=1._f, icefrac=0._f)
        
        ! Get the updated bin mmr.
        do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_GetBin(cstate(ithread), ielem, ibin, &
-                                mmr(:,iy,ix,ielem,ibin), rc)
+         call CARMASTATE_GetBin(cstate, ielem, ibin, &
+                                mmr(:,iy,ix,ielem,ibin), rc, vd=vdry(ibin,ielem))
         end do
        end do
 
        ! Get the updated temperature.
-       call CARMASTATE_GetState(cstate(ithread), rc, t=t(:,iy,ix))
+       call CARMASTATE_GetState(cstate, rc, t=t(:,iy,ix))
     enddo
-    !$OMP END PARALLEL DO
 
     ! Write output for the falltest
     write(lun,*) istep*dtime
     do ielem = 1, NELEM
       do i = 1, NZ
-        write(lun,'(2i4,pe10.3,pe10.3)') &
+        write(lun,'(2i4,e10.3,e10.3)') &
         ielem, i, real(mmr(i,NY,NX,ielem,OUTBIN)), real(mmr(i,NY,NX,ielem,OUTBIN)*p(i,NY,NX) / 287._f / t(i,NY,NX))
       end do
     end do
   end do   ! time loop
   
-  vdry (:, :) = cstate(1)%vd(:, :)
   ! Close the output file
   close(unit=lun)
   
   ! write the dry deposition velocity
-  write(*,*)  "ithread =", ithread
   open(unit=lun1,file="carma_vdry.txt",status="unknown")
   write(lun1, *) NGROUP
   do igroup = 1, NGROUP
-   !write(lun1,'(i4,16pe15.5)') &
+   !write(lun1,'(i4,16e15.5)') &
     write(lun1,*) &
     igroup, real(vdry(:, igroup))
      
@@ -352,10 +325,8 @@ subroutine test_sedimentation()
   close(unit=lun1)  
   
   ! Cleanup the carma state objects
-  do i = 1, omp_get_max_threads()
-     call CARMASTATE_Destroy(cstate(i), rc)
-  end do
-  deallocate(cstate)
+  call CARMASTATE_Destroy(cstate, rc)
+  if (rc /=0) stop "    *** FAILED ***"
 
 
   write(*,*)  ""
@@ -384,93 +355,3 @@ subroutine test_sedimentation()
   if (rc /=0) stop "    *** FAILED ***"
 end subroutine
 
-
-subroutine dumpElement(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmaelement_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), intent(in)     :: carma              !! the carma object
-  integer, intent(inout)           :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                          :: i
-  
-  write(*,*)  ""
-  write(*,*)  "Element Information"
-  
-  do i = 1, carma%NELEM    
-    call CARMAELEMENT_Print(carma, i, rc)
-    if (rc /=0) write(carma%LUNOPRT, *) "    *** FAILED ***, rc=", rc
-    
-    write(carma%LUNOPRT,*) ""  
-  end do
- 
-  write(carma%LUNOPRT,*) ""
-  return
-end subroutine
-
-
-subroutine dumpGas(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmagas_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), pointer, intent(inout)           :: carma              !! the carma object
-  integer, intent(inout)                    :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                       :: i
-  character(len=255)            :: gasname
-  real(kind=f)                  :: gwtmol
-  
-  write(*,*)  ""
-  write(*,*)  "Gas Information"
-  
-  do i = 1, carma%NGAS
-   call CARMAGAS_Print(carma, i, rc)
-   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
-   
-   write(*,*) ""  
- end do
- 
- write(*,*) ""  
-end subroutine
-
-
-subroutine dumpGroup(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmagroup_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), intent(in)     :: carma              !! the carma object
-  integer, intent(inout)           :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                          :: i
-  
-  write(*,*)  ""
-  write(*,*)  "Group Information"
-  
-  do i = 1, carma%NGROUP
-    call CARMAGROUP_Print(carma, i, rc)
-    if (rc /=0) write(carma%LUNOPRT, *) "    *** FAILED ***, rc=", rc
-    
-    write(carma%LUNOPRT,*) ""  
-  end do
- 
-  write(carma%LUNOPRT,*) ""
-  return
-end subroutine

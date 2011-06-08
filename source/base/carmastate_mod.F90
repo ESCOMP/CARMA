@@ -122,49 +122,49 @@ contains
     rc = RC_OK
 
     ! Save the defintion of the number of comonents involved in the microphysics.
-    cstate%carma => carma_ptr
+    cstate%f_carma => carma_ptr
 
     ! Save the model timing.
-    cstate%time       = time
-    cstate%dtime_orig = dtime
-    cstate%dtime      = dtime
-    cstate%nretries   = 0
+    cstate%f_time       = time
+    cstate%f_dtime_orig = dtime
+    cstate%f_dtime      = dtime
+    cstate%f_nretries   = 0
     
     ! Save the grid dimensions.
-    cstate%NZ   = NZ
-    cstate%NZP1 = NZ+1
+    cstate%f_NZ   = NZ
+    cstate%f_NZP1 = NZ+1
     
     ! Save the grid definition.
-    cstate%igridv = igridv
-    cstate%igridh = igridh
+    cstate%f_igridv = igridv
+    cstate%f_igridh = igridh
     
     ! Store away the grid location information.
-    cstate%lat  = lat
-    cstate%lon  = lon
+    cstate%f_lat  = lat
+    cstate%f_lon  = lon
     
     ! Allocate all the dynamic variables related to state.
     call CARMASTATE_Allocate(cstate, rc)
     if (rc < 0) return
     
-    cstate%xc(:)  = xc(:)
-    cstate%dx(:)  = dx(:)
-    cstate%yc(:)  = yc(:)
-    cstate%dy(:)  = dy(:)        
-    cstate%zc(:)  = zc(:)
-    cstate%zl(:)  = zl(:)
+    cstate%f_xc(:)  = xc(:)
+    cstate%f_dx(:)  = dx(:)
+    cstate%f_yc(:)  = yc(:)
+    cstate%f_dy(:)  = dy(:)        
+    cstate%f_zc(:)  = zc(:)
+    cstate%f_zl(:)  = zl(:)
 
     ! Store away the grid state, doing any necessary unit conversions from MKS to CGS.
-    cstate%p(:)  = p(:)  * RPA2CGS    
-    cstate%pl(:) = pl(:) * RPA2CGS    
-    cstate%t(:)  = t(:)
+    cstate%f_p(:)  = p(:)  * RPA2CGS    
+    cstate%f_pl(:) = pl(:) * RPA2CGS    
+    cstate%f_t(:)  = t(:)
     
-    cstate%pcd(:,:,:)     = 0._f
+    cstate%f_pcd(:,:,:)     = 0._f
     
-    if (carma_ptr%do_substep) then
+    if (carma_ptr%f_do_substep) then
       if (present(told)) then
-        cstate%told(:) = told
+        cstate%f_told(:) = told
       else
-        if (carma_ptr%do_print) write(carma_ptr%LUNOPRT,*) "CARMASTATE_Create: Error - Need to specify told when substepping."
+        if (carma_ptr%f_do_print) write(carma_ptr%f_LUNOPRT,*) "CARMASTATE_Create: Error - Need to specify told when substepping."
         rc = RC_ERROR
         
         return
@@ -174,26 +174,26 @@ contains
     ! Calculate the metrics, ...
     ! if Cartesian coordinates were specifed, then the units need to be converted
     ! from MKS to CGS.
-    if (cstate%igridh == I_CART) then
-      cstate%xc = cstate%xc * RM2CGS
-      cstate%dx = cstate%dx * RM2CGS
-      cstate%yc = cstate%yc * RM2CGS
-      cstate%dy = cstate%dy * RM2CGS
+    if (cstate%f_igridh == I_CART) then
+      cstate%f_xc = cstate%f_xc * RM2CGS
+      cstate%f_dx = cstate%f_dx * RM2CGS
+      cstate%f_yc = cstate%f_yc * RM2CGS
+      cstate%f_dy = cstate%f_dy * RM2CGS
     end if
     
-    if (cstate%igridv == I_CART) then
-      cstate%zc = cstate%zc * RM2CGS
-      cstate%zl = cstate%zl * RM2CGS
+    if (cstate%f_igridv == I_CART) then
+      cstate%f_zc = cstate%f_zc * RM2CGS
+      cstate%f_zl = cstate%f_zl * RM2CGS
     end if
     
     ! Initialize the state of the atmosphere.
-    call setupatm(carma_ptr, cstate, carma_ptr%do_fixedinit, rc)
+    call setupatm(carma_ptr, cstate, carma_ptr%f_do_fixedinit, rc)
     if (rc < 0) return
     
     ! Set the realtive humidity. If necessary, it will be calculated from
     ! the specific humidity.
     if (present(relhum)) then
-      cstate%relhum(:) = relhum(:)
+      cstate%f_relhum(:) = relhum(:)
     else if (present(qh2o)) then
     
       ! Define gas constant for this gas
@@ -204,19 +204,19 @@ contains
         call vaporp_h2o_murphy2005(carma_ptr, cstate, iz, rc, pvap_liq, pvap_ice)
         if (rc < 0) return
 
-        gc_cgs = qh2o(iz)*cstate%rhoa_wet(iz) / (cstate%zmet(iz)*cstate%xmet(iz)*cstate%ymet(iz))
-        cstate%relhum(iz) = ( gc_cgs * rvap * t(iz)) / pvap_liq
+        gc_cgs = qh2o(iz)*cstate%f_rhoa_wet(iz) / (cstate%f_zmet(iz)*cstate%f_xmet(iz)*cstate%f_ymet(iz))
+        cstate%f_relhum(iz) = ( gc_cgs * rvap * t(iz)) / pvap_liq
       enddo
     end if
     
     ! Need for vertical transport.
     !
     ! NOTE: How should these be set? Optional parameters?
-    if (carma_ptr%do_vtran) then
-      cstate%ftoppart(:,:) = 0._f
-      cstate%fbotpart(:,:) = 0._f
-      cstate%pc_topbnd(:,:) = 0._f
-      cstate%pc_botbnd(:,:) = 0._f
+    if (carma_ptr%f_do_vtran) then
+      cstate%f_ftoppart(:,:) = 0._f
+      cstate%f_fbotpart(:,:) = 0._f
+      cstate%f_pc_topbnd(:,:) = 0._f
+      cstate%f_pc_botbnd(:,:) = 0._f
     end if
         
     return
@@ -280,57 +280,57 @@ contains
     rc = RC_OK
 
     ! Save the defintion of the number of comonents involved in the microphysics.
-    cstate%carma => carma_ptr
+    cstate%f_carma => carma_ptr
 
     ! Save the model timing.
-    cstate%time       = time
-    cstate%dtime_orig = dtime
-    cstate%dtime      = dtime
-    cstate%nretries   = 0
+    cstate%f_time       = time
+    cstate%f_dtime_orig = dtime
+    cstate%f_dtime      = dtime
+    cstate%f_nretries   = 0
     
     ! Save the grid dimensions.
-    cstate%NZ   = NZ
-    cstate%NZP1 = NZ+1
+    cstate%f_NZ   = NZ
+    cstate%f_NZP1 = NZ+1
     
     ! Save the grid definition.
-    cstate%igridv = igridv
-    cstate%igridh = igridh
+    cstate%f_igridv = igridv
+    cstate%f_igridh = igridh
     
     ! Store away the grid location information.
-    cstate%lat  = lat
-    cstate%lon  = lon
+    cstate%f_lat  = lat
+    cstate%f_lon  = lon
     
     ! Allocate all the dynamic variables related to state.
     call CARMASTATE_Allocate(cstate, rc)
     if (rc < 0) return
     
-    cstate%xc(:)  = xc(:)
-    cstate%dx(:)  = dx(:)
-    cstate%yc(:)  = yc(:)
-    cstate%dy(:)  = dy(:)        
-    cstate%zc(:)  = zc(:)
-    cstate%zl(:)  = zl(:)
+    cstate%f_xc(:)  = xc(:)
+    cstate%f_dx(:)  = dx(:)
+    cstate%f_yc(:)  = yc(:)
+    cstate%f_dy(:)  = dy(:)        
+    cstate%f_zc(:)  = zc(:)
+    cstate%f_zl(:)  = zl(:)
 
     ! Store away the grid state, doing any necessary unit conversions from MKS to CGS.
-    cstate%p(:)  = p(:)  * RPA2CGS    
-    cstate%pl(:) = pl(:) * RPA2CGS    
-    cstate%t(:)  = t(:)
+    cstate%f_p(:)  = p(:)  * RPA2CGS    
+    cstate%f_pl(:) = pl(:) * RPA2CGS    
+    cstate%f_t(:)  = t(:)
     
-    cstate%pcd(:,:,:)     = 0._f
+    cstate%f_pcd(:,:,:)     = 0._f
     
     ! Calculate the metrics, ...
     ! if Cartesian coordinates were specifed, then the units need to be converted
     ! from MKS to CGS.
-    if (cstate%igridh == I_CART) then
-      cstate%xc = cstate%xc * RM2CGS
-      cstate%dx = cstate%dx * RM2CGS
-      cstate%yc = cstate%yc * RM2CGS
-      cstate%dy = cstate%dy * RM2CGS
+    if (cstate%f_igridh == I_CART) then
+      cstate%f_xc = cstate%f_xc * RM2CGS
+      cstate%f_dx = cstate%f_dx * RM2CGS
+      cstate%f_yc = cstate%f_yc * RM2CGS
+      cstate%f_dy = cstate%f_dy * RM2CGS
     end if
     
-    if (cstate%igridv == I_CART) then
-      cstate%zc = cstate%zc * RM2CGS
-      cstate%zl = cstate%zl * RM2CGS
+    if (cstate%f_igridv == I_CART) then
+      cstate%f_zc = cstate%f_zc * RM2CGS
+      cstate%f_zl = cstate%f_zl * RM2CGS
     end if
     
     ! Initialize the state of the atmosphere.
@@ -340,11 +340,11 @@ contains
     ! Need for vertical transport.
     !
     ! NOTE: How should these be set? Optional parameters?
-    if (carma_ptr%do_vtran) then
-      cstate%ftoppart(:,:) = 0._f
-      cstate%fbotpart(:,:) = 0._f
-      cstate%pc_topbnd(:,:) = 0._f
-      cstate%pc_botbnd(:,:) = 0._f
+    if (carma_ptr%f_do_vtran) then
+      cstate%f_ftoppart(:,:) = 0._f
+      cstate%f_fbotpart(:,:) = 0._f
+      cstate%f_pc_topbnd(:,:) = 0._f
+      cstate%f_pc_botbnd(:,:) = 0._f
     end if
     
     
@@ -352,7 +352,7 @@ contains
     ! here it is done using the reference atmosphere.
     
     ! Determine the particle densities.
-    call rhopart(cstate%carma, cstate, rc)
+    call rhopart(cstate%f_carma, cstate, rc)
     if (rc < 0) return
 
     ! If configured for fixed initialization, then we will lose some accuracy
@@ -360,29 +360,29 @@ contains
     ! will gain a significant performance by not having to initialize as often.
   
     ! Initialize the vertical transport.
-    if (cstate%carma%do_vtran .or. cstate%carma%do_coag .or. cstate%carma%do_grow) then
-      call setupvf(cstate%carma, cstate, rc)
+    if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow) then
+      call setupvf(cstate%f_carma, cstate, rc)
       
-      if (cstate%carma%do_vdiff) then
-        call setupbdif(cstate%carma, cstate, rc)
+      if (cstate%f_carma%f_do_vdiff) then
+        call setupbdif(cstate%f_carma, cstate, rc)
       end if
     end if
 
     ! Intialize the nucleation, growth and evaporation.      
-    if (cstate%carma%do_grow)  then
-      call setupgrow(cstate%carma, cstate, rc)
+    if (cstate%f_carma%f_do_grow)  then
+      call setupgrow(cstate%f_carma, cstate, rc)
       if (rc < 0) return
 
-      call setupgkern(cstate%carma, cstate, rc)
+      call setupgkern(cstate%f_carma, cstate, rc)
       if (rc < 0) return
       
-       call setupnuc(cstate%carma, cstate, rc)
+       call setupnuc(cstate%f_carma, cstate, rc)
       if (rc < 0) return
     end if
     
     ! Initialize the coagulation.
-    if (cstate%carma%do_coag) then
-      call setupckern(cstate%carma, cstate, rc)
+    if (cstate%f_carma%f_do_coag) then
+      call setupckern(cstate%f_carma, cstate, rc)
       if (rc < 0) return
     end if
     
@@ -410,202 +410,202 @@ contains
     ! existing allocations.
     
     ! Allocate the variables needed for setupatm.
-    if (.not. (allocated(cstate%xmet))) then
+    if (.not. (allocated(cstate%f_xmet))) then
     
-      NZ      = cstate%NZ
-      NZP1    = cstate%NZP1
-      NGROUP  = cstate%carma%NGROUP
-      NELEM   = cstate%carma%NELEM
-      NBIN    = cstate%carma%NBIN
-      NGAS    = cstate%carma%NGAS
+      NZ      = cstate%f_NZ
+      NZP1    = cstate%f_NZP1
+      NGROUP  = cstate%f_carma%f_NGROUP
+      NELEM   = cstate%f_carma%f_NELEM
+      NBIN    = cstate%f_carma%f_NBIN
+      NGAS    = cstate%f_carma%f_NGAS
     
       allocate( &
-        cstate%xmet(NZ), &
-        cstate%ymet(NZ), &
-        cstate%zmet(NZ), &
-        cstate%zmetl(NZP1), &
-        cstate%xc(NZ), &
-        cstate%yc(NZ), &
-        cstate%zc(NZ), &
-        cstate%dx(NZ), &
-        cstate%dy(NZ), &
-        cstate%dz(NZ), &
-        cstate%zl(NZP1), &
-        cstate%pc(NZ,NBIN,NELEM), &
-        cstate%pcd(NZ,NBIN,NELEM), &
-        cstate%pc_surf(NBIN,NELEM), &
-        cstate%sedimentationflux(NBIN,NELEM), &
-        cstate%gc(NZ,NGAS), &
-        cstate%cldfrc(NZ), &
-        cstate%rhcrit(NZ), &
-        cstate%rhop(NZ,NBIN,NGROUP), &
-        cstate%r_wet(NZ,NBIN,NGROUP), &
-        cstate%rhop_wet(NZ,NBIN,NGROUP), &
-        cstate%rhoa(NZ), &
-        cstate%rhoa_wet(NZ), &
-        cstate%t(NZ), &
-        cstate%p(NZ), &
-        cstate%pl(NZP1), &
-        cstate%relhum(NZ), &
-        cstate%rmu(NZ), &
-        cstate%thcond(NZ), &
-        cstate%dpc_sed(NBIN,NELEM), &
-        cstate%pconmax(NZ,NGROUP), &
-        cstate%pcl(NZ,NBIN,NELEM), &
+        cstate%f_xmet(NZ), &
+        cstate%f_ymet(NZ), &
+        cstate%f_zmet(NZ), &
+        cstate%f_zmetl(NZP1), &
+        cstate%f_xc(NZ), &
+        cstate%f_yc(NZ), &
+        cstate%f_zc(NZ), &
+        cstate%f_dx(NZ), &
+        cstate%f_dy(NZ), &
+        cstate%f_dz(NZ), &
+        cstate%f_zl(NZP1), &
+        cstate%f_pc(NZ,NBIN,NELEM), &
+        cstate%f_pcd(NZ,NBIN,NELEM), &
+        cstate%f_pc_surf(NBIN,NELEM), &
+        cstate%f_sedimentationflux(NBIN,NELEM), &
+        cstate%f_gc(NZ,NGAS), &
+        cstate%f_cldfrc(NZ), &
+        cstate%f_rhcrit(NZ), &
+        cstate%f_rhop(NZ,NBIN,NGROUP), &
+        cstate%f_r_wet(NZ,NBIN,NGROUP), &
+        cstate%f_rhop_wet(NZ,NBIN,NGROUP), &
+        cstate%f_rhoa(NZ), &
+        cstate%f_rhoa_wet(NZ), &
+        cstate%f_t(NZ), &
+        cstate%f_p(NZ), &
+        cstate%f_pl(NZP1), &
+        cstate%f_relhum(NZ), &
+        cstate%f_rmu(NZ), &
+        cstate%f_thcond(NZ), &
+        cstate%f_dpc_sed(NBIN,NELEM), &
+        cstate%f_pconmax(NZ,NGROUP), &
+        cstate%f_pcl(NZ,NBIN,NELEM), &
         stat=ier)
       if (ier /= 0) then
-        if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating atmosphere arrays, status=", ier
+        if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating atmosphere arrays, status=", ier
         rc = RC_ERROR
         return
       end if
       
-      cstate%relhum(:)      = 0._f
-      cstate%pc(:,:,:)      = 0._f
-      cstate%pcd(:,:,:)     = 0._f
-      cstate%pc_surf(:,:)   = 0._f
-      cstate%sedimentationflux(:,:)   = 0._f
-      cstate%cldfrc(:)      = 1._f
-      cstate%rhcrit(:)      = 1._f
+      cstate%f_relhum(:)      = 0._f
+      cstate%f_pc(:,:,:)      = 0._f
+      cstate%f_pcd(:,:,:)     = 0._f
+      cstate%f_pc_surf(:,:)   = 0._f
+      cstate%f_sedimentationflux(:,:)   = 0._f
+      cstate%f_cldfrc(:)      = 1._f
+      cstate%f_rhcrit(:)      = 1._f
       
       ! Allocate the last fields if they are needed for substepping.
-      if (cstate%carma%do_substep) then
+      if (cstate%f_carma%f_do_substep) then
         allocate( &
-          cstate%gcl(NZ,NGAS), &
-          cstate%d_gc(NZ,NGAS), &
-          cstate%told(NZ), &
-          cstate%d_t(NZ), &
-          cstate%zsubsteps(NZ), &
+          cstate%f_gcl(NZ,NGAS), &
+          cstate%f_d_gc(NZ,NGAS), &
+          cstate%f_told(NZ), &
+          cstate%f_d_t(NZ), &
+          cstate%f_zsubsteps(NZ), &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating stepping arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating stepping arrays, status=", ier
           rc = RC_ERROR
           return
         endif
       
         ! Initialize
-        cstate%gcl(:,:)     = 0._f
-        cstate%d_gc(:,:)    = 0._f
-        cstate%told(:)      = 0._f
-        cstate%d_t(:)       = 0._f
-        cstate%zsubsteps(:) = 0._f
+        cstate%f_gcl(:,:)     = 0._f
+        cstate%f_d_gc(:,:)    = 0._f
+        cstate%f_told(:)      = 0._f
+        cstate%f_d_t(:)       = 0._f
+        cstate%f_zsubsteps(:) = 0._f
 
         ! When substepping is enabled, we want to initialize these statistics once for
         ! the life of the object.
-        cstate%max_nsubstep = 0
-        cstate%max_nretry   = 0._f
-        cstate%nstep        = 0._f
-        cstate%nsubstep     = 0
-        cstate%nretry       = 0._f
+        cstate%f_max_nsubstep = 0
+        cstate%f_max_nretry   = 0._f
+        cstate%f_nstep        = 0._f
+        cstate%f_nsubstep     = 0
+        cstate%f_nretry       = 0._f
       endif
 
       
       ! Allocate the variables needed for setupvf.
       !
       ! NOTE: Coagulation and dry deposition also need bpm, vf and re.
-      if (cstate%carma%do_vtran .or. cstate%carma%do_coag .or. cstate%carma%do_grow .or. cstate%carma%do_drydep) then
+      if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow .or. cstate%f_carma%f_do_drydep) then
         allocate( &
-          cstate%bpm(NZ,NBIN,NGROUP), &
-          cstate%vf(NZP1,NBIN,NGROUP), &
-          cstate%re(NZ,NBIN,NGROUP), &
-          cstate%dkz(NZP1,NBIN,NGROUP), &
-          cstate%ftoppart(NBIN,NELEM), &
-          cstate%fbotpart(NBIN,NELEM), &
-          cstate%pc_topbnd(NBIN,NELEM), &
-          cstate%pc_botbnd(NBIN,NELEM), &
-          cstate%vd(NBIN, NGROUP), &
+          cstate%f_bpm(NZ,NBIN,NGROUP), &
+          cstate%f_vf(NZP1,NBIN,NGROUP), &
+          cstate%f_re(NZ,NBIN,NGROUP), &
+          cstate%f_dkz(NZP1,NBIN,NGROUP), &
+          cstate%f_ftoppart(NBIN,NELEM), &
+          cstate%f_fbotpart(NBIN,NELEM), &
+          cstate%f_pc_topbnd(NBIN,NELEM), &
+          cstate%f_pc_botbnd(NBIN,NELEM), &
+          cstate%f_vd(NBIN, NGROUP), &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating vertical transport arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating vertical transport arrays, status=", ier
           rc = RC_ERROR
           return
         endif
 
         ! Initialize
-        cstate%bpm(:,:,:) = 0._f
-        cstate%vf(:,:,:) = 0._f
-        cstate%re(:,:,:) = 0._f
-        cstate%dkz(:,:,:) = 0._f
-        cstate%ftoppart(:,:) = 0._f
-        cstate%fbotpart(:,:) = 0._f
-        cstate%pc_topbnd(:,:) = 0._f
-        cstate%pc_botbnd(:,:) = 0._f
-        cstate%vd(:, :) = 0._f
+        cstate%f_bpm(:,:,:) = 0._f
+        cstate%f_vf(:,:,:) = 0._f
+        cstate%f_re(:,:,:) = 0._f
+        cstate%f_dkz(:,:,:) = 0._f
+        cstate%f_ftoppart(:,:) = 0._f
+        cstate%f_fbotpart(:,:) = 0._f
+        cstate%f_pc_topbnd(:,:) = 0._f
+        cstate%f_pc_botbnd(:,:) = 0._f
+        cstate%f_vd(:, :) = 0._f
       end if
       
       
       
-      if (cstate%carma%NGAS > 0) then
+      if (cstate%f_carma%f_NGAS > 0) then
         allocate( &
-          cstate%pvapl(NZ,NGAS), &
-          cstate%pvapi(NZ,NGAS), &
-          cstate%supsatl(NZ,NGAS), &
-          cstate%supsati(NZ,NGAS), &
-          cstate%supsatlold(NZ,NGAS), &
-          cstate%supsatiold(NZ,NGAS), &
+          cstate%f_pvapl(NZ,NGAS), &
+          cstate%f_pvapi(NZ,NGAS), &
+          cstate%f_supsatl(NZ,NGAS), &
+          cstate%f_supsati(NZ,NGAS), &
+          cstate%f_supsatlold(NZ,NGAS), &
+          cstate%f_supsatiold(NZ,NGAS), &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating gas arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating gas arrays, status=", ier
           rc = RC_ERROR
           return
         endif
       end if
  
       
-      if (cstate%carma%do_grow) then
+      if (cstate%f_carma%f_do_grow) then
         allocate( &
-          cstate%diffus(NZ,NGAS), &
-          cstate%rlhe(NZ,NGAS), &
-          cstate%rlhm(NZ,NGAS), &
-          cstate%surfctwa(NZ), &
-          cstate%surfctiw(NZ), &
-          cstate%surfctia(NZ), &
-          cstate%akelvin(NZ,NGAS), &
-          cstate%akelvini(NZ,NGAS), &
-          cstate%ft(NZ,NBIN,NGROUP), &
-          cstate%gro(NZ,NBIN,NGROUP),  &
-          cstate%gro1(NZ,NBIN,NGROUP),  &
-          cstate%gro2(NZ,NGROUP),  &
-          cstate%scrit(NZ,NBIN,NGROUP), &
-          cstate%rnuclg(NBIN,NGROUP,NGROUP),&
-          cstate%rnucpe(NBIN,NELEM), &
-          cstate%pc_nucl(NZ,NBIN,NELEM), &
-          cstate%growpe(NBIN,NELEM), &
-          cstate%evappe(NBIN,NELEM), &
-          cstate%evcore(NELEM), &
-          cstate%growlg(NBIN,NGROUP), &
-          cstate%evaplg(NBIN,NGROUP), &
-          cstate%gasprod(NGAS), &
-          cstate%qrad(NZ,NBIN,NGROUP), &
-          cstate%cmf(NBIN,NGROUP), &
-          cstate%totevap(NBIN,NGROUP), &
+          cstate%f_diffus(NZ,NGAS), &
+          cstate%f_rlhe(NZ,NGAS), &
+          cstate%f_rlhm(NZ,NGAS), &
+          cstate%f_surfctwa(NZ), &
+          cstate%f_surfctiw(NZ), &
+          cstate%f_surfctia(NZ), &
+          cstate%f_akelvin(NZ,NGAS), &
+          cstate%f_akelvini(NZ,NGAS), &
+          cstate%f_ft(NZ,NBIN,NGROUP), &
+          cstate%f_gro(NZ,NBIN,NGROUP),  &
+          cstate%f_gro1(NZ,NBIN,NGROUP),  &
+          cstate%f_gro2(NZ,NGROUP),  &
+          cstate%f_scrit(NZ,NBIN,NGROUP), &
+          cstate%f_rnuclg(NBIN,NGROUP,NGROUP),&
+          cstate%f_rnucpe(NBIN,NELEM), &
+          cstate%f_pc_nucl(NZ,NBIN,NELEM), &
+          cstate%f_growpe(NBIN,NELEM), &
+          cstate%f_evappe(NBIN,NELEM), &
+          cstate%f_evcore(NELEM), &
+          cstate%f_growlg(NBIN,NGROUP), &
+          cstate%f_evaplg(NBIN,NGROUP), &
+          cstate%f_gasprod(NGAS), &
+          cstate%f_qrad(NZ,NBIN,NGROUP), &
+          cstate%f_cmf(NBIN,NGROUP), &
+          cstate%f_totevap(NBIN,NGROUP), &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating growth arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating growth arrays, status=", ier
           rc = RC_ERROR
           return
         endif
         
-        cstate%qrad(:,:,:) = 0._f
+        cstate%f_qrad(:,:,:) = 0._f
       end if
       
-      if (cstate%carma%do_coag) then
+      if (cstate%f_carma%f_do_coag) then
         allocate( &
-          cstate%coaglg(NZ,NBIN,NGROUP), &
-          cstate%coagpe(NZ,NBIN,NELEM), &
-          cstate%ckernel(NZ,NBIN,NBIN,NGROUP,NGROUP), &
-          cstate%pkernel(NZ,NBIN,NBIN,NGROUP,NGROUP,NGROUP,6), &
+          cstate%f_coaglg(NZ,NBIN,NGROUP), &
+          cstate%f_coagpe(NZ,NBIN,NELEM), &
+          cstate%f_ckernel(NZ,NBIN,NBIN,NGROUP,NGROUP), &
+          cstate%f_pkernel(NZ,NBIN,NBIN,NGROUP,NGROUP,NGROUP,6), &
           stat = ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating coag arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating coag arrays, status=", ier
           rc = RC_ERROR
           return
         end if
 
         ! Initialize
-        cstate%coaglg(:,:,:) = 0._f
-        cstate%coagpe(:,:,:) = 0._f
-        cstate%ckernel(:,:,:,:,:) = 0._f
-        cstate%pkernel(:,:,:,:,:,:,:) = 0._f
+        cstate%f_coaglg(:,:,:) = 0._f
+        cstate%f_coagpe(:,:,:) = 0._f
+        cstate%f_ckernel(:,:,:,:,:) = 0._f
+        cstate%f_pkernel(:,:,:,:,:,:,:) = 0._f
       end if
     end if
     
@@ -633,59 +633,59 @@ contains
     ! Check to see if the arrays are already allocated. If so, deallocate them.
 
     ! Allocate the variables needed for setupatm.
-    if (allocated(cstate%xmet)) then
+    if (allocated(cstate%f_xmet)) then
     
       deallocate( &
-        cstate%xmet, &
-        cstate%ymet, &
-        cstate%zmet, &
-        cstate%zmetl, &
-        cstate%xc, &
-        cstate%yc, &
-        cstate%zc, &
-        cstate%dx, &
-        cstate%dy, &
-        cstate%dz, &
-        cstate%zl, &
-        cstate%pc, &
-        cstate%pcd, &
-        cstate%pc_surf, &
-        cstate%sedimentationflux, &
-        cstate%gc, &
-        cstate%cldfrc, &
-        cstate%rhcrit, &
-        cstate%rhop, &
-        cstate%r_wet, &
-        cstate%rhop_wet, &
-        cstate%rhoa, &
-        cstate%rhoa_wet, &
-        cstate%t, &
-        cstate%p, &
-        cstate%pl, &
-        cstate%relhum, &
-        cstate%rmu, &
-        cstate%thcond, &
-        cstate%dpc_sed, &
-        cstate%pconmax, &
-        cstate%pcl, &
+        cstate%f_xmet, &
+        cstate%f_ymet, &
+        cstate%f_zmet, &
+        cstate%f_zmetl, &
+        cstate%f_xc, &
+        cstate%f_yc, &
+        cstate%f_zc, &
+        cstate%f_dx, &
+        cstate%f_dy, &
+        cstate%f_dz, &
+        cstate%f_zl, &
+        cstate%f_pc, &
+        cstate%f_pcd, &
+        cstate%f_pc_surf, &
+        cstate%f_sedimentationflux, &
+        cstate%f_gc, &
+        cstate%f_cldfrc, &
+        cstate%f_rhcrit, &
+        cstate%f_rhop, &
+        cstate%f_r_wet, &
+        cstate%f_rhop_wet, &
+        cstate%f_rhoa, &
+        cstate%f_rhoa_wet, &
+        cstate%f_t, &
+        cstate%f_p, &
+        cstate%f_pl, &
+        cstate%f_relhum, &
+        cstate%f_rmu, &
+        cstate%f_thcond, &
+        cstate%f_dpc_sed, &
+        cstate%f_pconmax, &
+        cstate%f_pcl, &
         stat=ier)
       if (ier /= 0) then
-        if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating atmosphere arrays, status=", ier
+        if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating atmosphere arrays, status=", ier
         rc = RC_ERROR
         return
       end if
       
       ! Allocate the last fields if they are needed for substepping stepping.
-      if (allocated(cstate%gcl)) then
+      if (allocated(cstate%f_gcl)) then
         deallocate( &
-          cstate%gcl, &
-          cstate%d_gc, &
-          cstate%told, &
-          cstate%d_t, &
-          cstate%zsubsteps, &
+          cstate%f_gcl, &
+          cstate%f_d_gc, &
+          cstate%f_told, &
+          cstate%f_d_t, &
+          cstate%f_zsubsteps, &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating stepping arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating stepping arrays, status=", ier
           rc = RC_ERROR
           return
         endif
@@ -694,85 +694,85 @@ contains
       ! Allocate the variables needed for setupvf.
       !
       ! NOTE: Coagulation also needs bpm, vf and re.
-      if (allocated(cstate%bpm)) then
+      if (allocated(cstate%f_bpm)) then
         deallocate( &
-          cstate%bpm, &
-          cstate%vf, &
-          cstate%re, &
-          cstate%dkz, &
-          cstate%ftoppart, &
-          cstate%fbotpart, &
-          cstate%pc_topbnd, &
-          cstate%pc_botbnd, &
-          cstate%vd, &
+          cstate%f_bpm, &
+          cstate%f_vf, &
+          cstate%f_re, &
+          cstate%f_dkz, &
+          cstate%f_ftoppart, &
+          cstate%f_fbotpart, &
+          cstate%f_pc_topbnd, &
+          cstate%f_pc_botbnd, &
+          cstate%f_vd, &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating vertical transport arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating vertical transport arrays, status=", ier
           rc = RC_ERROR
           return
         endif
       end if
       
-      if (allocated(cstate%diffus)) then
+      if (allocated(cstate%f_diffus)) then
         deallocate( &
-          cstate%diffus, &
-          cstate%rlhe, &
-          cstate%rlhm, &
-          cstate%surfctwa, &
-          cstate%surfctiw, &
-          cstate%surfctia, &
-          cstate%akelvin, &
-          cstate%akelvini, &
-          cstate%ft, &
-          cstate%gro, &
-          cstate%gro1, &
-          cstate%gro2, &
-          cstate%scrit, &
-          cstate%rnuclg,&
-          cstate%rnucpe, &
-          cstate%pc_nucl, &
-          cstate%growpe, &
-          cstate%evappe, &
-          cstate%evcore, &
-          cstate%growlg, &
-          cstate%evaplg, &
-          cstate%gasprod, &
-          cstate%qrad, &
-          cstate%cmf, &
-          cstate%totevap, &
+          cstate%f_diffus, &
+          cstate%f_rlhe, &
+          cstate%f_rlhm, &
+          cstate%f_surfctwa, &
+          cstate%f_surfctiw, &
+          cstate%f_surfctia, &
+          cstate%f_akelvin, &
+          cstate%f_akelvini, &
+          cstate%f_ft, &
+          cstate%f_gro, &
+          cstate%f_gro1, &
+          cstate%f_gro2, &
+          cstate%f_scrit, &
+          cstate%f_rnuclg,&
+          cstate%f_rnucpe, &
+          cstate%f_pc_nucl, &
+          cstate%f_growpe, &
+          cstate%f_evappe, &
+          cstate%f_evcore, &
+          cstate%f_growlg, &
+          cstate%f_evaplg, &
+          cstate%f_gasprod, &
+          cstate%f_qrad, &
+          cstate%f_cmf, &
+          cstate%f_totevap, &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating growth arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating growth arrays, status=", ier
           rc = RC_ERROR
           return
         endif
       end if
       
-      if (allocated(cstate%pvapl)) then
+      if (allocated(cstate%f_pvapl)) then
         deallocate( &
-          cstate%pvapl, &
-          cstate%pvapi, &
-          cstate%supsatl, &
-          cstate%supsati, &
-          cstate%supsatlold, &
-          cstate%supsatiold, &
+          cstate%f_pvapl, &
+          cstate%f_pvapi, &
+          cstate%f_supsatl, &
+          cstate%f_supsati, &
+          cstate%f_supsatlold, &
+          cstate%f_supsatiold, &
           stat=ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating gas arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating gas arrays, status=", ier
           rc = RC_ERROR
           return
         endif
       end if
       
-      if (allocated(cstate%coaglg)) then
+      if (allocated(cstate%f_coaglg)) then
         deallocate( &
-          cstate%coaglg, &
-          cstate%coagpe, &
-          cstate%ckernel, &
-          cstate%pkernel, &
+          cstate%f_coaglg, &
+          cstate%f_coagpe, &
+          cstate%f_ckernel, &
+          cstate%f_pkernel, &
           stat = ier)
         if (ier /= 0) then
-          if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating coag arrays, status=", ier
+          if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating coag arrays, status=", ier
           rc = RC_ERROR
           return
         end if
@@ -795,8 +795,8 @@ contains
   subroutine CARMASTATE_Step(cstate, rc, cldfrc, rhcrit, surfric, ram, landfrac, ocnfrac, icefrac)
     type(carmastate_type), intent(inout)  :: cstate
     integer, intent(out)                  :: rc
-    real(kind=f), intent(in), optional    :: cldfrc(cstate%NZ)   !! cloud fraction [fraction]
-    real(kind=f), intent(in), optional    :: rhcrit(cstate%NZ)   !! relative humidity for onset of liquid clouds [fraction]
+    real(kind=f), intent(in), optional    :: cldfrc(cstate%f_NZ)   !! cloud fraction [fraction]
+    real(kind=f), intent(in), optional    :: rhcrit(cstate%f_NZ)   !! relative humidity for onset of liquid clouds [fraction]
     real(kind=f), intent(in), optional    :: surfric             !! surface friction velocity [m/s]
     real(kind=f), intent(in), optional    :: ram                 !! aerodynamic resistance [s/m]
     real(kind=f), intent(in), optional    :: landfrac            !! land fraction
@@ -814,22 +814,22 @@ contains
     rc = RC_OK
     
     ! Store the cloud fraction if specified
-    cstate%cldfrc(:) = 1._f
-    cstate%rhcrit(:) = 1._f
+    cstate%f_cldfrc(:) = 1._f
+    cstate%f_rhcrit(:) = 1._f
     
-    if (present(cldfrc)) cstate%cldfrc(:) = cldfrc(:)
-    if (present(rhcrit)) cstate%rhcrit(:) = rhcrit(:)
+    if (present(cldfrc)) cstate%f_cldfrc(:) = cldfrc(:)
+    if (present(rhcrit)) cstate%f_rhcrit(:) = rhcrit(:)
     
     ! Determine the gas supersaturations.
-    do iz = 1, cstate%NZ
-      do igas = 1, cstate%carma%NGAS
-        call supersat(cstate%carma, cstate, iz, igas, rc)
+    do iz = 1, cstate%f_NZ
+      do igas = 1, cstate%f_carma%f_NGAS
+        call supersat(cstate%f_carma, cstate, iz, igas, rc)
         if (rc < 0) return
       end do
     end do
 
     ! Determine the particle densities.
-    call rhopart(cstate%carma, cstate, rc)
+    call rhopart(cstate%f_carma, cstate, rc)
     if (rc < 0) return
     
 
@@ -840,51 +840,51 @@ contains
     ! NOTE: If configured for fixed initialization, then we will lose some accuracy
     ! in the calculation of the fall velocities, growth kernels, ... and in return
     ! will gain a significant performance by not having to initialize as often.
-    if (.not. cstate%carma%do_fixedinit) then
+    if (.not. cstate%f_carma%f_do_fixedinit) then
 
       ! Initialize the vertical transport.
-      if (cstate%carma%do_vtran .or. cstate%carma%do_coag .or. cstate%carma%do_grow) then
-        call setupvf(cstate%carma, cstate, rc)
+      if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow) then
+        call setupvf(cstate%f_carma, cstate, rc)
 
-        if (cstate%carma%do_vdiff) then
-          call setupbdif(cstate%carma, cstate, rc)
+        if (cstate%f_carma%f_do_vdiff) then
+          call setupbdif(cstate%f_carma, cstate, rc)
         end if
       end if
       
       ! intialize the dry deposition
-      if (cstate%carma%do_drydep) then
+      if (cstate%f_carma%f_do_drydep) then
         if (present(surfric) .and. present(ram) .and. present(landfrac) .and. present(ocnfrac) .and. present(icefrac)) then
         
           ! NOTE: Need to convert surfric and ram from mks to cgs units.
-          call setupvdry(cstate%carma, cstate, surfric * 100._f, ram / 100._f, landfrac, ocnfrac, icefrac, rc)
+          call setupvdry(cstate%f_carma, cstate, surfric * 100._f, ram / 100._f, landfrac, ocnfrac, icefrac, rc)
           if (rc < RC_OK) return
         else
-          write(cstate%carma%LUNOPRT, *) "CARMASTATE_Step: do_drydep requires that the optional inputs surfric, ram, landfrac, ocnfrac and icefrac be provided."
+          write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Step: do_drydep requires that the optional inputs surfric, ram, landfrac, ocnfrac and icefrac be provided."
           rc = RC_ERROR
         end if
       end if
        
       ! Intialize the nucleation, growth and evaporation.      
-      if (cstate%carma%do_grow)  then
-        call setupgrow(cstate%carma, cstate, rc)
+      if (cstate%f_carma%f_do_grow)  then
+        call setupgrow(cstate%f_carma, cstate, rc)
         if (rc < RC_OK) return
   
-        call setupgkern(cstate%carma, cstate, rc)
+        call setupgkern(cstate%f_carma, cstate, rc)
         if (rc < RC_OK) return
         
-         call setupnuc(cstate%carma, cstate, rc)
+         call setupnuc(cstate%f_carma, cstate, rc)
         if (rc < RC_OK) return
       end if
       
       ! Initialize the coagulation.
-      if (cstate%carma%do_coag) then
-        call setupckern(cstate%carma, cstate, rc)
+      if (cstate%f_carma%f_do_coag) then
+        call setupckern(cstate%f_carma, cstate, rc)
         if (rc < RC_OK) return
       end if
     end if
     
     ! Calculate the impact of microphysics upon the state.
-    call step(cstate%carma, cstate, rc)
+    call step(cstate%f_carma, cstate, rc)
 
     return
   end subroutine CARMASTATE_Step
@@ -909,17 +909,17 @@ contains
     real(kind=f), optional, intent(out)   :: nstep             !! total number of steps taken
     integer, optional, intent(out)        :: nsubstep          !! total number of substeps taken
     real(kind=f), optional, intent(out)   :: nretry            !! total number of retries taken
-    real(kind=f), optional, intent(out)   :: zsubsteps(cstate%NZ) !! number of substeps taken per vertical grid point
+    real(kind=f), optional, intent(out)   :: zsubsteps(cstate%f_NZ) !! number of substeps taken per vertical grid point
     
     ! Assume success.
     rc = RC_OK
 
-    if (present(max_nsubstep)) max_nsubstep = cstate%max_nsubstep
-    if (present(max_nretry))   max_nretry   = cstate%max_nretry
-    if (present(nstep))        nstep        = cstate%nstep
-    if (present(nsubstep))     nsubstep     = cstate%nsubstep
-    if (present(nretry))       nretry       = cstate%nretry
-    if (present(zsubsteps))    zsubsteps    = cstate%zsubsteps
+    if (present(max_nsubstep)) max_nsubstep = cstate%f_max_nsubstep
+    if (present(max_nretry))   max_nretry   = cstate%f_max_nretry
+    if (present(nstep))        nstep        = cstate%f_nstep
+    if (present(nsubstep))     nsubstep     = cstate%f_nsubstep
+    if (present(nretry))       nretry       = cstate%f_nretry
+    if (present(zsubsteps))    zsubsteps    = cstate%f_zsubsteps
     
     return
   end subroutine CARMASTATE_Get
@@ -942,16 +942,16 @@ contains
     type(carmastate_type), intent(in)     :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
-    real(kind=f), intent(out)             :: mmr(cstate%NZ) !! the bin mass mixing ratio [kg/kg]
+    real(kind=f), intent(out)             :: mmr(cstate%f_NZ) !! the bin mass mixing ratio [kg/kg]
     integer, intent(out)                  :: rc             !! return code negative indicates failure
-    real(kind=f), optional, intent(out)   :: nmr(cstate%NZ) !! number mixing ratio [#/kg]
-    real(kind=f), optional, intent(out)   :: numberDensity(cstate%NZ)  !! number density [#/cm3]
-    real(kind=f), optional, intent(out)   :: nucleationRate(cstate%NZ) !! nucleation rate [1/cm3/s]
-    real(kind=f), optional, intent(out)   :: r_wet(cstate%NZ)          !! wet particle radius [cm]
-    real(kind=f), optional, intent(out)   :: rhop_wet(cstate%NZ)       !! wet particle density [g/cm3]
+    real(kind=f), optional, intent(out)   :: nmr(cstate%f_NZ) !! number mixing ratio [#/kg]
+    real(kind=f), optional, intent(out)   :: numberDensity(cstate%f_NZ)  !! number density [#/cm3]
+    real(kind=f), optional, intent(out)   :: nucleationRate(cstate%f_NZ) !! nucleation rate [1/cm3/s]
+    real(kind=f), optional, intent(out)   :: r_wet(cstate%f_NZ)          !! wet particle radius [cm]
+    real(kind=f), optional, intent(out)   :: rhop_wet(cstate%f_NZ)       !! wet particle density [g/cm3]
     real(kind=f), optional, intent(out)   :: surface                   !! particle mass on the surface [kg/m2]
     real(kind=f), optional, intent(out)   :: sedimentationflux         !! particle sedimentation mass flux to surface [kg/m2/s]
-    real(kind=f), optional, intent(out)   :: vf(cstate%NZ+1) !! fall velocity [cm/s]
+    real(kind=f), optional, intent(out)   :: vf(cstate%f_NZ+1) !! fall velocity [cm/s]
     real(kind=f), optional, intent(out)   :: vd             !! deposition velocity [cm/s]
     
     integer                               :: ienconc        !! index of element that is the particle concentration for the group
@@ -961,20 +961,20 @@ contains
     rc = RC_OK
     
     ! Determine the particle group for the bin.    
-    igroup = cstate%carma%element(ielem)%igroup
+    igroup = cstate%f_carma%f_element(ielem)%f_igroup
 
     ! Make sure there are enough elements allocated.
-    if (ielem > cstate%carma%NELEM) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_SetBin:: ERROR - The specifed element (", &
-        ielem, ") is larger than the number of elements (", cstate%carma%NELEM, ")."
+    if (ielem > cstate%f_carma%f_NELEM) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_SetBin:: ERROR - The specifed element (", &
+        ielem, ") is larger than the number of elements (", cstate%f_carma%f_NELEM, ")."
       rc = RC_ERROR
       return
     end if
     
     ! Make sure there are enough bins allocated.
-    if (ibin > cstate%carma%NBIN) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMA_SetBin:: ERROR - The specifed bin (", &
-        ibin, ") is larger than the number of bins (", cstate%carma%NBIN, ")."
+    if (ibin > cstate%f_carma%f_NBIN) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMA_SetBin:: ERROR - The specifed bin (", &
+        ibin, ") is larger than the number of bins (", cstate%f_carma%f_NBIN, ")."
       rc = RC_ERROR
       return
     end if
@@ -982,33 +982,33 @@ contains
     
     ! Use the specified mass mixing ratio and the air density to determine the mass
     ! of the particles in g/x/y/z.
-    mmr(:) = cstate%pc(:, ibin, ielem) / cstate%rhoa_wet(:)
+    mmr(:) = cstate%f_pc(:, ibin, ielem) / cstate%f_rhoa_wet(:)
 
 
     ! Handle the special cases for different types of elements ...
-    if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
-      mmr(:) = mmr(:) * cstate%carma%group(igroup)%rmass(ibin)
-    else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
-      mmr(:) = mmr(:) / cstate%carma%group(igroup)%rmass(ibin)
+    if ((cstate%f_carma%f_element(ielem)%f_itype == I_INVOLATILE) .or. (cstate%f_carma%f_element(ielem)%f_itype == I_VOLATILE)) then
+      mmr(:) = mmr(:) * cstate%f_carma%f_group(igroup)%f_rmass(ibin)
+    else if (cstate%f_carma%f_element(ielem)%f_itype == I_CORE2MOM) then
+      mmr(:) = mmr(:) / cstate%f_carma%f_group(igroup)%f_rmass(ibin)
     end if
     
     ! If the number of particles in the group is less than the minimum value represented
     ! by CARMA, then return and mmr of 0.0 for all elements.
-    ienconc = cstate%carma%group(igroup)%ienconc
-!    where (cstate%pc(:, ibin, ienconc) <= SMALL_PC) mmr(:) = 0.0_f
+    ienconc = cstate%f_carma%f_group(igroup)%f_ienconc
+!    where (cstate%f_pc(:, ibin, ienconc) <= SMALL_PC) mmr(:) = 0.0_f
 
 
     ! Do they also want the mass concentration of particles at the surface?
     if (present(surface)) then
       
       ! Convert from g/cm2 to kg/m2
-      surface = cstate%pc_surf(ibin, ielem) * 1e4_f / 1e3_f
+      surface = cstate%f_pc_surf(ibin, ielem) * 1e4_f / 1e3_f
 
       ! Handle the special cases for different types of elements ...
-      if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
-        surface = surface * cstate%carma%group(igroup)%rmass(ibin)
-      else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
-        surface = surface / cstate%carma%group(igroup)%rmass(ibin)
+      if ((cstate%f_carma%f_element(ielem)%f_itype == I_INVOLATILE) .or. (cstate%f_carma%f_element(ielem)%f_itype == I_VOLATILE)) then
+        surface = surface * cstate%f_carma%f_group(igroup)%f_rmass(ibin)
+      else if (cstate%f_carma%f_element(ielem)%f_itype == I_CORE2MOM) then
+        surface = surface / cstate%f_carma%f_group(igroup)%f_rmass(ibin)
       end if
     end if
     
@@ -1016,37 +1016,37 @@ contains
     if (present(sedimentationflux)) then
       
       ! Convert from g/cm2 to kg/m2
-      sedimentationflux = cstate%sedimentationflux(ibin, ielem) * 1e4_f / 1e3_f
+      sedimentationflux = cstate%f_sedimentationflux(ibin, ielem) * 1e4_f / 1e3_f
 
       ! Handle the special cases for different types of elements ...
-      if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
-        sedimentationflux = sedimentationflux * cstate%carma%group(igroup)%rmass(ibin)
-      else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
-        sedimentationflux = sedimentationflux / cstate%carma%group(igroup)%rmass(ibin)
+      if ((cstate%f_carma%f_element(ielem)%f_itype == I_INVOLATILE) .or. (cstate%f_carma%f_element(ielem)%f_itype == I_VOLATILE)) then
+        sedimentationflux = sedimentationflux * cstate%f_carma%f_group(igroup)%f_rmass(ibin)
+      else if (cstate%f_carma%f_element(ielem)%f_itype == I_CORE2MOM) then
+        sedimentationflux = sedimentationflux / cstate%f_carma%f_group(igroup)%f_rmass(ibin)
       end if
     end if
     
     ! If this is the partcile # element, then determine some other statistics.
     if (ienconc == ielem) then
-      if (present(nmr))           nmr(:)             = (cstate%pc(:, ibin, ielem) / cstate%rhoa_wet(:)) * 1000._f
-      if (present(numberDensity)) numberDensity(:)   = cstate%pc(:, ibin, ielem) / (cstate%xmet(:)*cstate%ymet(:)*cstate%zmet(:))
-      if (present(r_wet))         r_wet(:)           = cstate%r_wet(:, ibin, igroup)
-      if (present(rhop_wet))      rhop_wet(:)        = cstate%rhop_wet(:, ibin, igroup)
+      if (present(nmr))           nmr(:)             = (cstate%f_pc(:, ibin, ielem) / cstate%f_rhoa_wet(:)) * 1000._f
+      if (present(numberDensity)) numberDensity(:)   = cstate%f_pc(:, ibin, ielem) / (cstate%f_xmet(:)*cstate%f_ymet(:)*cstate%f_zmet(:))
+      if (present(r_wet))         r_wet(:)           = cstate%f_r_wet(:, ibin, igroup)
+      if (present(rhop_wet))      rhop_wet(:)        = cstate%f_rhop_wet(:, ibin, igroup)
 
-      if (cstate%carma%do_vtran) then
-        if (present(vf))            vf(:)              = cstate%vf(:, ibin, igroup)
+      if (cstate%f_carma%f_do_vtran) then
+        if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup)
       else
         if (present(vf))            vf(:)              = CAM_FILL
       end if
       
-      if (cstate%carma%do_drydep) then
-        if (present(vd))          vd                 = cstate%vd(ibin, igroup)
+      if (cstate%f_carma%f_do_drydep) then
+        if (present(vd))          vd                 = cstate%f_vd(ibin, igroup)
       else 
         if (present(vd))          vd                 = CAM_FILL
       end if
 
-      if (cstate%carma%do_grow) then
-        if (present(nucleationRate)) nucleationRate(:) = cstate%pc_nucl(:, ibin, ielem) / (cstate%xmet(:)*cstate%ymet(:)*cstate%zmet(:)) / cstate%dtime
+      if (cstate%f_carma%f_do_grow) then
+        if (present(nucleationRate)) nucleationRate(:) = cstate%f_pc_nucl(:, ibin, ielem) / (cstate%f_xmet(:)*cstate%f_ymet(:)*cstate%f_zmet(:)) / cstate%f_dtime
       else
         if (present(nucleationRate)) nucleationRate(:) = CAM_FILL
       end if
@@ -1078,12 +1078,12 @@ contains
     type(carmastate_type), intent(in)     :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
-    real(kind=f), intent(out)             :: mmr(cstate%NZ) !! the bin mass mixing ratio [kg/kg]
+    real(kind=f), intent(out)             :: mmr(cstate%f_NZ) !! the bin mass mixing ratio [kg/kg]
     integer, intent(out)                  :: rc             !! return code negative indicates failure
-    real(kind=f), optional, intent(out)   :: nmr(cstate%NZ) !! number mixing ratio [#/kg]
-    real(kind=f), optional, intent(out)   :: numberDensity(cstate%NZ)  !! number density [#/cm3]
-    real(kind=f), optional, intent(out)   :: r_wet(cstate%NZ)          !! wet particle radius [cm]
-    real(kind=f), optional, intent(out)   :: rhop_wet(cstate%NZ)       !! wet particle density [g/cm3]
+    real(kind=f), optional, intent(out)   :: nmr(cstate%f_NZ) !! number mixing ratio [#/kg]
+    real(kind=f), optional, intent(out)   :: numberDensity(cstate%f_NZ)  !! number density [#/cm3]
+    real(kind=f), optional, intent(out)   :: r_wet(cstate%f_NZ)          !! wet particle radius [cm]
+    real(kind=f), optional, intent(out)   :: rhop_wet(cstate%f_NZ)       !! wet particle density [g/cm3]
     
     integer                               :: ienconc        !! index of element that is the particle concentration for the group
     integer                               :: igroup         ! Group containing this bin
@@ -1092,20 +1092,20 @@ contains
     rc = RC_OK
     
     ! Determine the particle group for the bin.    
-    igroup = cstate%carma%element(ielem)%igroup
+    igroup = cstate%f_carma%f_element(ielem)%f_igroup
 
     ! Make sure there are enough elements allocated.
-    if (ielem > cstate%carma%NELEM) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_SetDetrain:: ERROR - The specifed element (", &
-        ielem, ") is larger than the number of elements (", cstate%carma%NELEM, ")."
+    if (ielem > cstate%f_carma%f_NELEM) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_SetDetrain:: ERROR - The specifed element (", &
+        ielem, ") is larger than the number of elements (", cstate%f_carma%f_NELEM, ")."
       rc = RC_ERROR
       return
     end if
     
     ! Make sure there are enough bins allocated.
-    if (ibin > cstate%carma%NBIN) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMA_SetDetrainin:: ERROR - The specifed bin (", &
-        ibin, ") is larger than the number of bins (", cstate%carma%NBIN, ")."
+    if (ibin > cstate%f_carma%f_NBIN) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMA_SetDetrainin:: ERROR - The specifed bin (", &
+        ibin, ") is larger than the number of bins (", cstate%f_carma%f_NBIN, ")."
       rc = RC_ERROR
       return
     end if
@@ -1113,23 +1113,23 @@ contains
     
     ! Use the specified mass mixing ratio and the air density to determine the mass
     ! of the particles in g/x/y/z.
-    mmr(:) = cstate%pcd(:, ibin, ielem) / cstate%rhoa_wet(:)
+    mmr(:) = cstate%f_pcd(:, ibin, ielem) / cstate%f_rhoa_wet(:)
 
 
     ! Handle the special cases for different types of elements ...
-    if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
-      mmr(:) = mmr(:) * cstate%carma%group(igroup)%rmass(ibin)
-    else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
-      mmr(:) = mmr(:) / cstate%carma%group(igroup)%rmass(ibin)
+    if ((cstate%f_carma%f_element(ielem)%f_itype == I_INVOLATILE) .or. (cstate%f_carma%f_element(ielem)%f_itype == I_VOLATILE)) then
+      mmr(:) = mmr(:) * cstate%f_carma%f_group(igroup)%f_rmass(ibin)
+    else if (cstate%f_carma%f_element(ielem)%f_itype == I_CORE2MOM) then
+      mmr(:) = mmr(:) / cstate%f_carma%f_group(igroup)%f_rmass(ibin)
     end if
        
     ! If this is the partcile # element, then determine some other statistics.
-    ienconc = cstate%carma%group(igroup)%ienconc
+    ienconc = cstate%f_carma%f_group(igroup)%f_ienconc
     if (ienconc == ielem) then
-      if (present(nmr))           nmr(:)             = (cstate%pcd(:, ibin, ielem) / cstate%rhoa_wet(:)) * 1000._f
-      if (present(numberDensity)) numberDensity(:)   = cstate%pcd(:, ibin, ielem) / (cstate%xmet(:)*cstate%ymet(:)*cstate%zmet(:))
-      if (present(r_wet))         r_wet(:)           = cstate%r_wet(:, ibin, igroup)
-      if (present(rhop_wet))      rhop_wet(:)        = cstate%rhop_wet(:, ibin, igroup)
+      if (present(nmr))           nmr(:)             = (cstate%f_pcd(:, ibin, ielem) / cstate%f_rhoa_wet(:)) * 1000._f
+      if (present(numberDensity)) numberDensity(:)   = cstate%f_pcd(:, ibin, ielem) / (cstate%f_xmet(:)*cstate%f_ymet(:)*cstate%f_zmet(:))
+      if (present(r_wet))         r_wet(:)           = cstate%f_r_wet(:, ibin, igroup)
+      if (present(rhop_wet))      rhop_wet(:)        = cstate%f_rhop_wet(:, ibin, igroup)
     else
       if (present(nmr))            nmr(:)             = CAM_FILL
       if (present(numberDensity))  numberDensity(:)   = CAM_FILL
@@ -1151,28 +1151,28 @@ contains
   subroutine CARMASTATE_GetGas(cstate, igas, mmr, rc, satice, satliq)
     type(carmastate_type), intent(in)     :: cstate            !! the carma state object
     integer, intent(in)                   :: igas              !! the gas index
-    real(kind=f), intent(out)             :: mmr(cstate%NZ)    !! the gas mass mixing ratio [kg/kg]
+    real(kind=f), intent(out)             :: mmr(cstate%f_NZ)    !! the gas mass mixing ratio [kg/kg]
     integer, intent(out)                  :: rc                !! return code, negative indicates failure
-    real(kind=f), optional, intent(out)   :: satice(cstate%NZ) !! the gas saturation wrt ice
-    real(kind=f), optional, intent(out)   :: satliq(cstate%NZ) !! the gas saturation wrt liquid
+    real(kind=f), optional, intent(out)   :: satice(cstate%f_NZ) !! the gas saturation wrt ice
+    real(kind=f), optional, intent(out)   :: satliq(cstate%f_NZ) !! the gas saturation wrt liquid
 
     ! Assume success.
     rc = RC_OK
 
     ! Make sure there are enough gases allocated.
-    if (igas > cstate%carma%NGAS) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_GetGas:: ERROR - The specifed gas (", &
-        igas, ") is larger than the number of gases (", cstate%carma%NGAS, ")."
+    if (igas > cstate%f_carma%f_NGAS) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_GetGas:: ERROR - The specifed gas (", &
+        igas, ") is larger than the number of gases (", cstate%f_carma%f_NGAS, ")."
       rc = RC_ERROR
       return
     end if
     
     ! Use the specified mass mixing ratio and the air density to determine the mass
     ! of the gas in g/x/y/z.
-    mmr(:) = cstate%gc(:, igas) / cstate%rhoa_wet(:)
+    mmr(:) = cstate%f_gc(:, igas) / cstate%f_rhoa_wet(:)
 
-    if (present(satice)) satice(:) = cstate%supsati(:, igas) + 1._f
-    if (present(satliq)) satliq(:) = cstate%supsatl(:, igas) + 1._f
+    if (present(satice)) satice(:) = cstate%f_supsati(:, igas) + 1._f
+    if (present(satice)) satliq(:) = cstate%f_supsatl(:, igas) + 1._f
     
     return
   end subroutine CARMASTATE_GetGas
@@ -1188,21 +1188,21 @@ contains
   subroutine CARMASTATE_GetState(cstate, rc, t, p, rhoa_wet)
     type(carmastate_type), intent(in)     :: cstate              !! the carma state object
     integer, intent(out)                  :: rc                  !! return code, negative indicates failure
-    real(kind=f), optional, intent(out)   :: t(cstate%NZ)        !! the air temperature [K]
-    real(kind=f), optional, intent(out)   :: p(cstate%NZ)        !! the air pressure [Pa]
-    real(kind=f), optional, intent(out)   :: rhoa_wet(cstate%NZ) !! air density [kg m-3]
+    real(kind=f), optional, intent(out)   :: t(cstate%f_NZ)        !! the air temperature [K]
+    real(kind=f), optional, intent(out)   :: p(cstate%f_NZ)        !! the air pressure [Pa]
+    real(kind=f), optional, intent(out)   :: rhoa_wet(cstate%f_NZ) !! air density [kg m-3]
     
     ! Assume success.
     rc = RC_OK
 
     ! Return the temperature, pressure, and/or density.
-    if (present(t))         t(:) = cstate%t(:)
+    if (present(t))         t(:) = cstate%f_t(:)
     
     ! DYNE -> Pa
-    if (present(p))         p(:) = cstate%p(:) / RPA2CGS
+    if (present(p))         p(:) = cstate%f_p(:) / RPA2CGS
     
     ! Convert rhoa from the scaled units to mks.
-    if (present(rhoa_wet))  rhoa_wet(:) = (cstate%rhoa_wet(:) / (cstate%zmet(:)*cstate%xmet(:)*cstate%ymet(:))) * 1e6_f / 1e3_f
+    if (present(rhoa_wet))  rhoa_wet(:) = (cstate%f_rhoa_wet(:) / (cstate%f_zmet(:)*cstate%f_xmet(:)*cstate%f_ymet(:))) * 1e6_f / 1e3_f
     
     return
   end subroutine CARMASTATE_GetState
@@ -1220,7 +1220,7 @@ contains
     type(carmastate_type), intent(inout)  :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
-    real(kind=f), intent(in)              :: mmr(cstate%NZ) !! the bin mass mixing ratio [kg/kg]
+    real(kind=f), intent(in)              :: mmr(cstate%f_NZ) !! the bin mass mixing ratio [kg/kg]
     integer, intent(out)                  :: rc             !! return code, negative indicates failure
     real(kind=f), optional, intent(in)    :: surface        !! particles mass on the surface [kg/m2]
     
@@ -1230,33 +1230,33 @@ contains
     rc = RC_OK
     
     ! Determine the particle group for the bin.    
-    igroup = cstate%carma%element(ielem)%igroup
+    igroup = cstate%f_carma%f_element(ielem)%f_igroup
 
     ! Make sure there are enough elements allocated.
-    if (ielem > cstate%carma%NELEM) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_SetBin:: ERROR - The specifed element (", &
-        ielem, ") is larger than the number of elements (", cstate%carma%NELEM, ")."
+    if (ielem > cstate%f_carma%f_NELEM) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_SetBin:: ERROR - The specifed element (", &
+        ielem, ") is larger than the number of elements (", cstate%f_carma%f_NELEM, ")."
       rc = RC_ERROR
       return
     end if
     
     ! Make sure there are enough bins allocated.
-    if (ibin > cstate%carma%NBIN) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_SetBin:: ERROR - The specifed bin (", &
-        ibin, ") is larger than the number of bins (", cstate%carma%NBIN, ")."
+    if (ibin > cstate%f_carma%f_NBIN) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_SetBin:: ERROR - The specifed bin (", &
+        ibin, ") is larger than the number of bins (", cstate%f_carma%f_NBIN, ")."
       rc = RC_ERROR
       return
     end if
     
     ! Use the specified mass mixing ratio and the air density to determine the mass
     ! of the particles in g/x/y/z.
-    cstate%pc(:, ibin, ielem) = mmr(:) * cstate%rhoa_wet(:)
+    cstate%f_pc(:, ibin, ielem) = mmr(:) * cstate%f_rhoa_wet(:)
     
     ! Handle the special cases for different types of elements ...
-    if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
-      cstate%pc(:, ibin, ielem) = cstate%pc(:, ibin, ielem) / cstate%carma%group(igroup)%rmass(ibin)
-    else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
-      cstate%pc(:, ibin, ielem) = cstate%pc(:, ibin, ielem) * cstate%carma%group(igroup)%rmass(ibin)
+    if ((cstate%f_carma%f_element(ielem)%f_itype == I_INVOLATILE) .or. (cstate%f_carma%f_element(ielem)%f_itype == I_VOLATILE)) then
+      cstate%f_pc(:, ibin, ielem) = cstate%f_pc(:, ibin, ielem) / cstate%f_carma%f_group(igroup)%f_rmass(ibin)
+    else if (cstate%f_carma%f_element(ielem)%f_itype == I_CORE2MOM) then
+      cstate%f_pc(:, ibin, ielem) = cstate%f_pc(:, ibin, ielem) * cstate%f_carma%f_group(igroup)%f_rmass(ibin)
     end if
     
     ! If they specified an initial mass of particles on the surface, then use that
@@ -1264,16 +1264,16 @@ contains
     if (present(surface)) then
       
       ! Convert from g/cm2 to kg/m2
-      cstate%pc_surf(ibin, ielem) = surface / 1e4_f * 1e3_f
+      cstate%f_pc_surf(ibin, ielem) = surface / 1e4_f * 1e3_f
 
       ! Handle the special cases for different types of elements ...
-      if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
-        cstate%pc_surf(ibin, ielem) = cstate%pc_surf(ibin, ielem) / cstate%carma%group(igroup)%rmass(ibin)
-      else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
-        cstate%pc_surf(ibin, ielem) = cstate%pc_surf(ibin, ielem) * cstate%carma%group(igroup)%rmass(ibin)
+      if ((cstate%f_carma%f_element(ielem)%f_itype == I_INVOLATILE) .or. (cstate%f_carma%f_element(ielem)%f_itype == I_VOLATILE)) then
+        cstate%f_pc_surf(ibin, ielem) = cstate%f_pc_surf(ibin, ielem) / cstate%f_carma%f_group(igroup)%f_rmass(ibin)
+      else if (cstate%f_carma%f_element(ielem)%f_itype == I_CORE2MOM) then
+        cstate%f_pc_surf(ibin, ielem) = cstate%f_pc_surf(ibin, ielem) * cstate%f_carma%f_group(igroup)%f_rmass(ibin)
       end if
     else
-      cstate%pc_surf(ibin, ielem) = 0.0_f
+      cstate%f_pc_surf(ibin, ielem) = 0.0_f
     end if
         
     return
@@ -1293,7 +1293,7 @@ contains
     type(carmastate_type), intent(inout)  :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
-    real(kind=f), intent(in)              :: mmr(cstate%NZ) !! the bin mass mixing ratio [kg/kg]
+    real(kind=f), intent(in)              :: mmr(cstate%f_NZ) !! the bin mass mixing ratio [kg/kg]
     integer, intent(out)                  :: rc             !! return code, negative indicates failure
     
     integer                               :: igroup         ! Group containing this bin
@@ -1302,33 +1302,33 @@ contains
     rc = RC_OK
     
     ! Determine the particle group for the bin.    
-    igroup = cstate%carma%element(ielem)%igroup
+    igroup = cstate%f_carma%f_element(ielem)%f_igroup
 
     ! Make sure there are enough elements allocated.
-    if (ielem > cstate%carma%NELEM) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_SetDetrain:: ERROR - The specifed element (", &
-        ielem, ") is larger than the number of elements (", cstate%carma%NELEM, ")."
+    if (ielem > cstate%f_carma%f_NELEM) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_SetDetrain:: ERROR - The specifed element (", &
+        ielem, ") is larger than the number of elements (", cstate%f_carma%f_NELEM, ")."
       rc = RC_ERROR
       return
     end if
     
     ! Make sure there are enough bins allocated.
-    if (ibin > cstate%carma%NBIN) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_SetDetrain:: ERROR - The specifed bin (", &
-        ibin, ") is larger than the number of bins (", cstate%carma%NBIN, ")."
+    if (ibin > cstate%f_carma%f_NBIN) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_SetDetrain:: ERROR - The specifed bin (", &
+        ibin, ") is larger than the number of bins (", cstate%f_carma%f_NBIN, ")."
       rc = RC_ERROR
       return
     end if
     
     ! Use the specified mass mixing ratio and the air density to determine the mass
     ! of the particles in g/x/y/z.
-    cstate%pcd(:, ibin, ielem) = mmr(:) * cstate%rhoa_wet(:)
+    cstate%f_pcd(:, ibin, ielem) = mmr(:) * cstate%f_rhoa_wet(:)
     
     ! Handle the special cases for different types of elements ...
-    if ((cstate%carma%element(ielem)%itype == I_INVOLATILE) .or. (cstate%carma%element(ielem)%itype == I_VOLATILE)) then
-      cstate%pcd(:, ibin, ielem) = cstate%pcd(:, ibin, ielem) / cstate%carma%group(igroup)%rmass(ibin)
-    else if (cstate%carma%element(ielem)%itype == I_CORE2MOM) then
-      cstate%pcd(:, ibin, ielem) = cstate%pcd(:, ibin, ielem) * cstate%carma%group(igroup)%rmass(ibin)
+    if ((cstate%f_carma%f_element(ielem)%f_itype == I_INVOLATILE) .or. (cstate%f_carma%f_element(ielem)%f_itype == I_VOLATILE)) then
+      cstate%f_pcd(:, ibin, ielem) = cstate%f_pcd(:, ibin, ielem) / cstate%f_carma%f_group(igroup)%f_rmass(ibin)
+    else if (cstate%f_carma%f_element(ielem)%f_itype == I_CORE2MOM) then
+      cstate%f_pcd(:, ibin, ielem) = cstate%f_pcd(:, ibin, ielem) * cstate%f_carma%f_group(igroup)%f_rmass(ibin)
     end if
         
     return
@@ -1348,13 +1348,13 @@ contains
   subroutine CARMASTATE_SetGas(cstate, igas, mmr, rc, mmr_old, satice_old, satliq_old)
     type(carmastate_type), intent(inout)  :: cstate         !! the carma object
     integer, intent(in)                   :: igas           !! the gas index
-    real(kind=f), intent(in)              :: mmr(cstate%NZ) !! the gas mass mixing ratio [kg/kg]
+    real(kind=f), intent(in)              :: mmr(cstate%f_NZ) !! the gas mass mixing ratio [kg/kg]
     integer, intent(out)                  :: rc             !! return code, negative indicates failure
-    real(kind=f), intent(in), optional    :: mmr_old(cstate%NZ) !! the previous gas mass mixing ratio [kg/kg]
-    real(kind=f), intent(inout), optional :: satice_old(cstate%NZ) !! the previous gas saturation wrt ice, calculates if -1
-    real(kind=f), intent(inout), optional :: satliq_old(cstate%NZ) !! the previous gas saturation wrt liquid, calculates if -1
+    real(kind=f), intent(in), optional    :: mmr_old(cstate%f_NZ) !! the previous gas mass mixing ratio [kg/kg]
+    real(kind=f), intent(inout), optional :: satice_old(cstate%f_NZ) !! the previous gas saturation wrt ice, calculates if -1
+    real(kind=f), intent(inout), optional :: satliq_old(cstate%f_NZ) !! the previous gas saturation wrt liquid, calculates if -1
     
-    real(kind=f)                          :: tnew(cstate%NZ)
+    real(kind=f)                          :: tnew(cstate%f_NZ)
     integer                               :: iz
     logical                               :: calculateOld
     
@@ -1362,22 +1362,22 @@ contains
     rc = RC_OK
 
     ! Make sure there are enough gases allocated.
-    if (igas > cstate%carma%NGAS) then
-      if (cstate%carma%do_print) write(cstate%carma%LUNOPRT, *) "CARMASTATE_SetGas:: ERROR - The specifed gas (", &
-        igas, ") is larger than the number of gases (", cstate%carma%NGAS, ")."
+    if (igas > cstate%f_carma%f_NGAS) then
+      if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_SetGas:: ERROR - The specifed gas (", &
+        igas, ") is larger than the number of gases (", cstate%f_carma%f_NGAS, ")."
       rc = RC_ERROR
       return
     end if
     
-    if (cstate%carma%do_substep) then
+    if (cstate%f_carma%f_do_substep) then
       if (.not. present(mmr_old)) then
-        if (cstate%carma%do_print) write(cstate%carma%LUNOPRT,*) "CARMASTATE_SetGas: Error - Need to specify mmr_old, satic_old, satliq_old when substepping."
+        if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT,*) "CARMASTATE_SetGas: Error - Need to specify mmr_old, satic_old, satliq_old when substepping."
         rc = RC_ERROR
         
         return
         
       else
-        cstate%gcl(:, igas) = mmr_old(:) * cstate%rhoa_wet(:) * cstate%t(:) / cstate%told(:)
+        cstate%f_gcl(:, igas) = mmr_old(:) * cstate%f_rhoa_wet(:) * cstate%f_t(:) / cstate%f_told(:)
       
         ! A value of -1 for the saturation ratio means that it needs to be calculated from the old temperature
         ! and the old gc.
@@ -1397,48 +1397,48 @@ contains
           
           ! Temporarily set the temperature and gc of to the old state
           
-          tnew(:)      = cstate%t(:)
-          cstate%t(:)  = cstate%told(:)
+          tnew(:)      = cstate%f_t(:)
+          cstate%f_t(:)  = cstate%f_told(:)
        
-          cstate%gc(:, igas) = mmr_old(:) * cstate%rhoa_wet(:)
+          cstate%f_gc(:, igas) = mmr_old(:) * cstate%f_rhoa_wet(:)
           
-          do iz = 1, cstate%NZ
-            call supersat(cstate%carma, cstate, iz, igas, rc)
+          do iz = 1, cstate%f_NZ
+            call supersat(cstate%f_carma, cstate, iz, igas, rc)
             if (rc /= RC_OK) return
           
             if (present(satice_old)) then
               if (satice_old(iz) == -1._f) then
-                cstate%supsatiold(iz, igas) = cstate%supsati(iz, igas)
+                cstate%f_supsatiold(iz, igas) = cstate%f_supsati(iz, igas)
               else
-                cstate%supsatiold(iz, igas) = satice_old(iz) - 1._f
+                cstate%f_supsatiold(iz, igas) = satice_old(iz) - 1._f
               endif
             else
-              cstate%supsatiold(iz, igas) = cstate%supsati(iz, igas)
+              cstate%f_supsatiold(iz, igas) = cstate%f_supsati(iz, igas)
             end if
             
             if (present(satliq_old)) then
               if (satliq_old(iz) == -1._f) then
-                cstate%supsatlold(iz, igas) = cstate%supsatl(iz, igas)
+                cstate%f_supsatlold(iz, igas) = cstate%f_supsatl(iz, igas)
               else
-                cstate%supsatlold(iz, igas) = satliq_old(iz) - 1._f
+                cstate%f_supsatlold(iz, igas) = satliq_old(iz) - 1._f
               endif
             else
-              cstate%supsatlold(iz, igas) = cstate%supsatl(iz, igas)
+              cstate%f_supsatlold(iz, igas) = cstate%f_supsatl(iz, igas)
             end if
           end do
           
-          cstate%t(:) = tnew(:)
+          cstate%f_t(:) = tnew(:)
         
         else
-          cstate%supsatiold(:, igas) = satice_old(:) - 1._f
-          cstate%supsatlold(:, igas) = satliq_old(:) - 1._f
+          cstate%f_supsatiold(:, igas) = satice_old(:) - 1._f
+          cstate%f_supsatlold(:, igas) = satliq_old(:) - 1._f
         end if
       end if
     end if
 
     ! Use the specified mass mixing ratio and the air density to determine the mass
     ! of the gas in g/x/y/z.
-    cstate%gc(:, igas)  = mmr(:) * cstate%rhoa_wet(:)
+    cstate%f_gc(:, igas)  = mmr(:) * cstate%f_rhoa_wet(:)
     
     return
   end subroutine CARMASTATE_SetGas
@@ -1453,17 +1453,17 @@ contains
   subroutine CARMASTATE_SetState(cstate, rc, t, rhoa_wet)
     type(carmastate_type), intent(inout)  :: cstate              !! the carma state object
     integer, intent(out)                  :: rc                  !! return code, negative indicates failure
-    real(kind=f), optional, intent(in)    :: t(cstate%NZ)        !! the air temperature [K]
-    real(kind=f), optional, intent(in)    :: rhoa_wet(cstate%NZ) !! air density [kg m-3]
+    real(kind=f), optional, intent(in)    :: t(cstate%f_NZ)        !! the air temperature [K]
+    real(kind=f), optional, intent(in)    :: rhoa_wet(cstate%f_NZ) !! air density [kg m-3]
     
     ! Assume success.
     rc = RC_OK
 
     ! Return the temperature or density.
-    if (present(t))         cstate%t(:) = t(:)
+    if (present(t))         cstate%f_t(:) = t(:)
     
     ! Convert rhoa from mks to the scaled units.
-    if (present(rhoa_wet))  cstate%rhoa_wet(:) = (rhoa_wet(:) * (cstate%zmet(:)*cstate%xmet(:)*cstate%ymet(:))) / 1e6_f * 1e3_f
+    if (present(rhoa_wet))  cstate%f_rhoa_wet(:) = (rhoa_wet(:) * (cstate%f_zmet(:)*cstate%f_xmet(:)*cstate%f_ymet(:))) / 1e6_f * 1e3_f
     
     return
   end subroutine CARMASTATE_SetState

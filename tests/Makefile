@@ -12,44 +12,50 @@ TEST_OBJ = carma_drydeptest.o carma_falltest.o carma_coagtest.o carma_test.o atm
 TEST_DOC = carma_drydeptest.html carma_falltest.html carma_coagtest.html carma_test.html atmosphere_mod.html
 
 atmosphere_mod.o : atmosphere_mod.F90
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_testutils.o : carma_testutils.F90
+	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_coagtest.o : carma_coagtest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_bcoctest.o : carma_bcoctest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_bc2gtest.o : carma_bc2gtest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
+	
+carma_drydeptest.o : carma_drydeptest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_falltest.o : carma_falltest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_growtest.o : carma_growtest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_inittest.o : carma_inittest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_mietest.o : carma_mietest.F90 carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_nuctest.o : carma_nuctest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_sigmadrydeptest.o : carma_sigmadrydeptest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_sigmafalltest.o : carma_sigmafalltest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_swelltest.o : carma_swelltest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_test.o : carma_test.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 	
 carma_vdiftest.o : carma_vdiftest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
-	$(FORTRAN) $(CPPFLAGS) -c $<
+	$(FORTRAN) $(FFLAGS) -c $<
 

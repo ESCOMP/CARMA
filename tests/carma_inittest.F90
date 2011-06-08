@@ -20,9 +20,7 @@ subroutine test_initialization()
   use carma_types_mod 
   use carmaelement_mod
   use carmagroup_mod
-  use carmastate_mod
   use carma_mod
-  use atmosphere_mod
 
   implicit none
 
@@ -49,7 +47,6 @@ subroutine test_initialization()
 
   type(carma_type), target  :: carma
   type(carma_type), pointer :: carma_ptr
-  type(carmastate_type), allocatable     :: cstate(:)
   integer                   :: rc = 0
   
   real(kind=f), allocatable   :: xc(:,:,:)
@@ -86,13 +83,6 @@ subroutine test_initialization()
     
 
   write(*,*) ""
-
-  ! Allocate the arrays that we need for the model
-  allocate(xc(NZ,NY,NX), dx(NZ,NY,NX), yc(NZ,NY,NX), dy(NZ,NY,NX), &
-           zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
-           t(NZ,NY,NX), rhoa(NZ,NY,NX))
-  allocate(mmr(NZ,NY,NX,NELEM,NBIN))
-  allocate(lat(NY,NX), lon(NY,NX))  
 
   ! Define the particle-grid extent of the CARMA test
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=6)
@@ -170,95 +160,4 @@ subroutine test_initialization()
   write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc  
-end subroutine
-
-
-subroutine dumpElement(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmaelement_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), intent(in)     :: carma              !! the carma object
-  integer, intent(inout)           :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                          :: i
-	
-  write(*,*)  ""
-  write(*,*)  "Element Information"
-  
-  do i = 1, carma%NELEM
-    call CARMAELEMENT_Print(carma, i, rc)
-    if (rc /=0) write(carma%LUNOPRT, *) "    *** FAILED ***, rc=", rc
-    
-    write(carma%LUNOPRT,*) ""  
-  end do
- 
-  write(carma%LUNOPRT,*) ""
-  return
-end subroutine
-
-
-subroutine dumpGas(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmagas_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), pointer, intent(inout)           :: carma              !! the carma object
-  integer, intent(inout)                    :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                       :: i
-  character(len=255)            :: gasname
-	real(kind=f)                  :: gwtmol
-	
-  write(*,*)  ""
-  write(*,*)  "Gas Information"
-  
-  do i = 1, carma%NGAS
-   call CARMAGAS_Print(carma, i, rc)
-   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
-   
-   write(*,*) ""  
- end do
- 
- write(*,*) ""  
-end subroutine
-
-
-subroutine dumpGroup(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmagroup_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), intent(in)     :: carma              !! the carma object
-  integer, intent(inout)           :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                          :: i
-	
-  write(*,*)  ""
-  write(*,*)  "Group Information"
-  
-  do i = 1, carma%NGROUP
-    call CARMAGROUP_Print(carma, i, rc)
-    if (rc /=0) write(carma%LUNOPRT, *) "    *** FAILED ***, rc=", rc
-    
-    write(carma%LUNOPRT,*) ""  
-  end do
- 
-  write(carma%LUNOPRT,*) ""
-  return
 end subroutine

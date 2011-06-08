@@ -3,6 +3,7 @@
 # April 26, 2007
 
 FORTRAN =	ifort
+#FORTRAN =	pgf90
 #FORTRAN =	pathf90
 #FORTRAN =	gfortran
 #FORTRAN =	g95
@@ -12,24 +13,54 @@ F90DOC = ../../bin/f90doc-0.4.0/f90doc
 PACKAGE =	CARMA
 TGZ =		CARMA.tar
 
-CPPFLAGS = -g
+FFLAGS =
+#FFLAGS += -DSINGLE                    # for single precision
+#FFLAGS += -DDEBUG                     # for debug print statements
 
-#CPPFLAGS += -DSINGLE                    # for single precision
-CPPFLAGS += -openmp                     # for Open/MP Threading of CARMA
 
-#CPPFLAGS += -DDEBUG                     # for debugg print statements
-CPPFLAGS += -O0                      # for running in a debugger
+# Add options for the Intel Fortran compiler.
+ifeq ($(FORTRAN),ifort)
+  FFLAGS += -ftz -fp-model precise
+  
+  # Work around for an incompatibility with some versions of ifort and OSX.
+#  FFLAGS += -use-asm
 
-# Add options for the Intel Fortran compiler on the Mac.
-CPPFLAGS += -ftz -traceback -fp-model precise -use-asm
+  # Debug options.
+#  FFLAGS += -g -O0 -traceback -fp-stack-check -check bounds -check uninit -fpe0 -ftrapuv
+  
+  # Open/MP
+  FFLAGS += -openmp
+endif
 
-# Debug options for the Intel Fortran compiler on the Mac.
-CPPFLAGS += -fp-stack-check -check bounds -check uninit -fpe0 -ftrapuv
+# Add options for the Portland Group compiler.
+ifeq ($(FORTRAN),pgf90)
+  FFLAGS  += 
+
+  # Debug options.
+#  FFLAGS += -g -O0 -Mbounds
+
+  # Open/MP
+  FFLAGS  += -mp
+endif
+
+# Add options for the g95 compiler.
+ifeq ($(FORTRAN),g95)
+  FFLAGS  += -fzero -ffree-line-length-huge
+
+  # Debug options.
+#  FFLAGS += -g -fbounds-check -ftrace=full
+  
+  # Open/MP
+  #
+  # NOTE: g95 does not support Open/MP directives. This will cause one
+  # test (carma_test) to fail to link.
+endif
+
 
 # Overridning the implicit rules, which would try to use m2c to
 # create the .mod.
 %.mod : %.o ;
-%.o : %.F90 ; $(FORTRAN) $(CPPFLAGS) -c $<
+%.o : %.F90 ;
 %.html : %.F90 ; $(F90DOC) -cs $<
 
 # Add the directories where the source files are located.
@@ -44,34 +75,34 @@ include ../../source/base/Makefile
 include ../../tests/Makefile
 
 # Rules for each executable that could be build.
-CARMA.exe : $(CARMA_OBJ) carma_test.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o CARMA.exe carma_test.o atmosphere_mod.o $(CARMA_OBJ)
-FALLTEST.exe : $(CARMA_OBJ) carma_falltest.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o FALLTEST.exe carma_falltest.o atmosphere_mod.o $(CARMA_OBJ)
-SIGMAFALLTEST.exe : $(CARMA_OBJ) carma_sigmafalltest.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o SIGMAFALLTEST.exe carma_sigmafalltest.o atmosphere_mod.o $(CARMA_OBJ)
-COAGTEST.exe : $(CARMA_OBJ) carma_coagtest.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o COAGTEST.exe carma_coagtest.o atmosphere_mod.o $(CARMA_OBJ)
-BCOCTEST.exe : $(CARMA_OBJ) carma_bcoctest.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o BCOCTEST.exe carma_bcoctest.o atmosphere_mod.o $(CARMA_OBJ)
-BC2GTEST.exe : $(CARMA_OBJ) carma_bc2gtest.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o BC2GTEST.exe carma_bc2gtest.o atmosphere_mod.o $(CARMA_OBJ)
-GROWTEST.exe : $(CARMA_OBJ) carma_growtest.o
-	$(FORTRAN) $(CPPFLAGS) -o GROWTEST.exe carma_growtest.o atmosphere_mod.o $(CARMA_OBJ)
-INITTEST.exe : $(CARMA_OBJ) carma_inittest.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o INITTEST.exe carma_inittest.o atmosphere_mod.o $(CARMA_OBJ)
-MIETEST.exe : $(CARMA_OBJ) carma_mietest.o
-	$(FORTRAN) $(CPPFLAGS) -o MIETEST.exe carma_mietest.o $(CARMA_OBJ)
-NUCTEST.exe : $(CARMA_OBJ) carma_nuctest.o
-	$(FORTRAN) $(CPPFLAGS) -o NUCTEST.exe carma_nuctest.o atmosphere_mod.o $(CARMA_OBJ)
-SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o
-	$(FORTRAN) $(CPPFLAGS) -o SWELLTEST.exe carma_swelltest.o atmosphere_mod.o $(CARMA_OBJ)
-VDIFTEST.exe : $(CARMA_OBJ) carma_vdiftest.o
-	$(FORTRAN) $(CPPFLAGS) -o VDIFTEST.exe carma_vdiftest.o atmosphere_mod.o $(CARMA_OBJ)
-DRYDEPTEST.exe : $(CARMA_OBJ) carma_drydeptest.o
-	$(FORTRAN) $(CPPFLAGS) -o DRYDEPTEST.exe carma_drydeptest.o atmosphere_mod.o $(CARMA_OBJ)	
-SIGMADRYDEPTEST.exe : $(CARMA_OBJ) carma_sigmadrydeptest.o atmosphere_mod.o
-	$(FORTRAN) $(CPPFLAGS) -o SIGMADRYDEPTEST.exe carma_sigmadrydeptest.o atmosphere_mod.o $(CARMA_OBJ)
+CARMA.exe : $(CARMA_OBJ) carma_test.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o CARMA.exe carma_test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+FALLTEST.exe : $(CARMA_OBJ) carma_falltest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o FALLTEST.exe carma_falltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+SIGMAFALLTEST.exe : $(CARMA_OBJ) carma_sigmafalltest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o SIGMAFALLTEST.exe carma_sigmafalltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+COAGTEST.exe : $(CARMA_OBJ) carma_coagtest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o COAGTEST.exe carma_coagtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+BCOCTEST.exe : $(CARMA_OBJ) carma_bcoctest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o BCOCTEST.exe carma_bcoctest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+BC2GTEST.exe : $(CARMA_OBJ) carma_bc2gtest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o BC2GTEST.exe carma_bc2gtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+GROWTEST.exe : $(CARMA_OBJ) carma_growtest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o GROWTEST.exe carma_growtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+INITTEST.exe : $(CARMA_OBJ) carma_inittest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o INITTEST.exe carma_inittest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+MIETEST.exe : $(CARMA_OBJ) carma_mietest.o carma_testutils.o 
+	$(FORTRAN) $(FFLAGS) -o MIETEST.exe carma_mietest.o carma_testutils.o  $(CARMA_OBJ)
+NUCTEST.exe : $(CARMA_OBJ) carma_nuctest.o carma_testutils.o 
+	$(FORTRAN) $(FFLAGS) -o NUCTEST.exe carma_nuctest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o carma_testutils.o 
+	$(FORTRAN) $(FFLAGS) -o SWELLTEST.exe carma_swelltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+VDIFTEST.exe : $(CARMA_OBJ) carma_vdiftest.o carma_testutils.o 
+	$(FORTRAN) $(FFLAGS) -o VDIFTEST.exe carma_vdiftest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+DRYDEPTEST.exe : $(CARMA_OBJ) carma_drydeptest.o carma_testutils.o 
+	$(FORTRAN) $(FFLAGS) -o DRYDEPTEST.exe carma_drydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)	
+SIGMADRYDEPTEST.exe : $(CARMA_OBJ) carma_sigmadrydeptest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o SIGMADRYDEPTEST.exe carma_sigmadrydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 
 # Compile everything.
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe CARMA.exe

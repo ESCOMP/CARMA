@@ -8,266 +8,272 @@
 ! processing overhead.
 ! ---------------------------------------------
 
-! NOTE: Using macros causes two limitations:
+! NOTE: Using macros causes some limitations:
 !
 !   1) You can not have another #define as a parameter to a macro. This causes
 !      multiple expansions of the parameter. To prevent this, assign the parameter
 !      to a varaible and use the variable in the macro.
 !
 !   2) You can not have comments on the same line as a macro. Put comments on the
-!       line before the one with the macro.
+!      line before the one with the macro.
+!
+!   3) Not all fortran preprocessors support the CPP's handling of recursion for
+!      macro names. To work out of the box with the broadest number of fortran
+!      compilers this requires making the field name different from the macro
+!      or it will recursively try to replace the macro again (or report an
+!      error message about recursion. Intel and IBM compilers handle it properly,
+!      but Portland Group does not. To work around this problem, fields in the
+!      cstate and carma structure are preceeded by f_ to make their names unique.
 
-
-
-#define NZ            cstate%NZ
-#define NZP1          cstate%NZP1
-#define NGAS          carma%NGAS
-#define NBIN          carma%NBIN
-#define NGROUP        carma%NGROUP
-#define NELEM         carma%NELEM
-#define NSOLUTE       carma%NSOLUTE
+#define NZ            cstate%f_NZ
+#define NZP1          cstate%f_NZP1
+#define NGAS          carma%f_NGAS
+#define NBIN          carma%f_NBIN
+#define NGROUP        carma%f_NGROUP
+#define NELEM         carma%f_NELEM
+#define NSOLUTE       carma%f_NSOLUTE
 
 !  Model logical units for I/O
-#define LUNOPRT       carma%LUNOPRT
+#define LUNOPRT       carma%f_LUNOPRT
 
 !  Model startup control variables
-#define do_print      carma%do_print
+#define do_print      carma%f_do_print
 
 !  Gridding Information
-#define igridv        cstate%igridv
-#define igridh        cstate%igridh
-#define xmet          cstate%xmet
-#define ymet          cstate%ymet
-#define zmet          cstate%zmet
-#define zmetl         cstate%zmetl
-#define xc            cstate%xc
-#define yc            cstate%yc
-#define zc            cstate%zc
-#define dx            cstate%dx
-#define dy            cstate%dy
-#define dz            cstate%dz
-#define zl            cstate%zl
-#define lon           cstate%lon
-#define lat           cstate%lat
+#define igridv        cstate%f_igridv
+#define igridh        cstate%f_igridh
+#define xmet          cstate%f_xmet
+#define ymet          cstate%f_ymet
+#define zmet          cstate%f_zmet
+#define zmetl         cstate%f_zmetl
+#define xc            cstate%f_xc
+#define yc            cstate%f_yc
+#define zc            cstate%f_zc
+#define dx            cstate%f_dx
+#define dy            cstate%f_dy
+#define dz            cstate%f_dz
+#define zl            cstate%f_zl
+#define lon           cstate%f_lon
+#define lat           cstate%f_lat
 
 ! Element object
-#define elemname(ielem)       carma%element(ielem)%name
-#define rhoelem(ibin, ielem)  carma%element(ielem)%rho(ibin)
-#define igelem(ielem)         carma%element(ielem)%igroup
-#define itype(ielem)          carma%element(ielem)%itype
-#define icomp(ielem)          carma%element(ielem)%icomposition
-#define isolelem(ielem)       carma%element(ielem)%isolute
+#define elemname(ielem)       carma%f_element(ielem)%f_name
+#define rhoelem(ibin, ielem)  carma%f_element(ielem)%f_rho(ibin)
+#define igelem(ielem)         carma%f_element(ielem)%f_igroup
+#define itype(ielem)          carma%f_element(ielem)%f_itype
+#define icomp(ielem)          carma%f_element(ielem)%f_icomposition
+#define isolelem(ielem)       carma%f_element(ielem)%f_isolute
 
 ! Gas object
-#define gasname(igas)         carma%gas(igas)%name
-#define gwtmol(igas)          carma%gas(igas)%wtmol
-#define ivaprtn(igas)         carma%gas(igas)%ivaprtn
-#define igcomp(igas)          carma%gas(igas)%icomposition
+#define gasname(igas)         carma%f_gas(igas)%f_name
+#define gwtmol(igas)          carma%f_gas(igas)%f_wtmol
+#define ivaprtn(igas)         carma%f_gas(igas)%f_ivaprtn
+#define igcomp(igas)          carma%f_gas(igas)%f_icomposition
 
 ! Group object
-#define groupname(igroup)       carma%group(igroup)%name
-#define nelemg(igroup)          carma%group(igroup)%nelem
-#define ncore(igroup)           carma%group(igroup)%ncore
-#define ishape(igroup)          carma%group(igroup)%ishape
-#define ienconc(igroup)         carma%group(igroup)%ienconc
-#define imomelem(igroup)        carma%group(igroup)%imomelem
-#define solfac(igroup)          carma%group(igroup)%solface
-#define scavcoef(igroup)        carma%group(igroup)%scavcoef
-#define if_sec_mom(igroup)      carma%group(igroup)%if_sec_mom
-#define is_grp_ice(igroup)      carma%group(igroup)%is_ice
-#define is_grp_cloud(igroup)    carma%group(igroup)%is_cloud
-#define grp_do_vtran(igroup)    carma%group(igroup)%grp_do_vtran
-#define grp_do_drydep(igroup)   carma%group(igroup)%grp_do_drydep
-#define irhswell(igroup)        carma%group(igroup)%irhswell
-#define irhswcomp(igroup)       carma%group(igroup)%irhswcomp
-#define rmrat(igroup)           carma%group(igroup)%rmrat
-#define eshape(igroup)          carma%group(igroup)%eshape
-#define r(ibin,igroup)          carma%group(igroup)%r(ibin)
-#define rmass(ibin,igroup)      carma%group(igroup)%rmass(ibin) 
-#define vol(ibin,igroup)        carma%group(igroup)%vol(ibin)
-#define dr(ibin,igroup)         carma%group(igroup)%dr(ibin)
-#define dm(ibin,igroup)         carma%group(igroup)%dm(ibin)
-#define rmassup(ibin,igroup)    carma%group(igroup)%rmassup(ibin)
-#define rmin(igroup)            carma%group(igroup)%rmin
-#define rmassmin(igroup)        carma%group(igroup)%rmassmin
-#define rup(ibin,igroup)        carma%group(igroup)%rup(ibin)
-#define rlow(ibin,igroup)       carma%group(igroup)%rlow(ibin)
-#define icorelem(icore,igroup)  carma%group(igroup)%icorelem(icore)
-#define ifallrtn(igroup)        carma%group(igroup)%ifallrtn
+#define groupname(igroup)       carma%f_group(igroup)%f_name
+#define nelemg(igroup)          carma%f_group(igroup)%f_nelem
+#define ncore(igroup)           carma%f_group(igroup)%f_ncore
+#define ishape(igroup)          carma%f_group(igroup)%f_ishape
+#define ienconc(igroup)         carma%f_group(igroup)%f_ienconc
+#define imomelem(igroup)        carma%f_group(igroup)%f_imomelem
+#define solfac(igroup)          carma%f_group(igroup)%f_solface
+#define scavcoef(igroup)        carma%f_group(igroup)%f_scavcoef
+#define if_sec_mom(igroup)      carma%f_group(igroup)%f_if_sec_mom
+#define is_grp_ice(igroup)      carma%f_group(igroup)%f_is_ice
+#define is_grp_cloud(igroup)    carma%f_group(igroup)%f_is_cloud
+#define grp_do_vtran(igroup)    carma%f_group(igroup)%f_grp_do_vtran
+#define grp_do_drydep(igroup)   carma%f_group(igroup)%f_grp_do_drydep
+#define irhswell(igroup)        carma%f_group(igroup)%f_irhswell
+#define irhswcomp(igroup)       carma%f_group(igroup)%f_irhswcomp
+#define rmrat(igroup)           carma%f_group(igroup)%f_rmrat
+#define eshape(igroup)          carma%f_group(igroup)%f_eshape
+#define r(ibin,igroup)          carma%f_group(igroup)%f_r(ibin)
+#define rmass(ibin,igroup)      carma%f_group(igroup)%f_rmass(ibin) 
+#define vol(ibin,igroup)        carma%f_group(igroup)%f_vol(ibin)
+#define dr(ibin,igroup)         carma%f_group(igroup)%f_dr(ibin)
+#define dm(ibin,igroup)         carma%f_group(igroup)%f_dm(ibin)
+#define rmassup(ibin,igroup)    carma%f_group(igroup)%f_rmassup(ibin)
+#define rmin(igroup)            carma%f_group(igroup)%f_rmin
+#define rmassmin(igroup)        carma%f_group(igroup)%f_rmassmin
+#define rup(ibin,igroup)        carma%f_group(igroup)%f_rup(ibin)
+#define rlow(ibin,igroup)       carma%f_group(igroup)%f_rlow(ibin)
+#define icorelem(icore,igroup)  carma%f_group(igroup)%f_icorelem(icore)
+#define ifallrtn(igroup)        carma%f_group(igroup)%f_ifallrtn
 
 ! Solute object
-#define solname(isolute)      carma%solute(isolute)%name
-#define sol_ions(isolute)     carma%solute(isolute)%ions
-#define solwtmol(isolute)     carma%solute(isolute)%wtmol
-#define rhosol(isolute)       carma%solute(isolute)%rho
+#define solname(isolute)      carma%f_solute(isolute)%f_name
+#define sol_ions(isolute)     carma%f_solute(isolute)%f_ions
+#define solwtmol(isolute)     carma%f_solute(isolute)%f_wtmol
+#define rhosol(isolute)       carma%f_solute(isolute)%f_rho
 
 !  Model option & control variables
-#define do_cnst_rlh   carma%do_cnst_rlh
-#define do_coag       carma%do_coag
-#define do_detrain    carma%do_detrain
-#define do_fixedinit  carma%do_fixedinit
-#define do_grow       carma%do_grow
-#define do_explised   carma%do_explised
-#define do_incloud    carma%do_incloud
-#define do_print_init carma%do_print_init
-#define do_step       carma%do_step
-#define do_substep    carma%do_substep
-#define do_thermo     carma%do_thermo
-#define do_vdiff      carma%do_vdiff
-#define do_vtran      carma%do_vtran
-#define do_drydep     carma%do_drydep
-#define if_nuc        carma%if_nuc
-#define time          cstate%time
-#define dtime         cstate%dtime
-#define dtime_orig    cstate%dtime_orig
-#define nretries      cstate%nretries
-#define dtmin         carma%dtmin
-#define dtmax         carma%dtmax
-#define conmax        carma%conmax
-#define maxsubsteps   carma%maxsubsteps
-#define minsubsteps   carma%minsubsteps
-#define maxretries    carma%maxretries
-#define ifall         carma%ifall
-#define icoagop       carma%icoagop
-#define icollec       carma%icollec
-#define itbnd_pc      carma%itbnd_pc
-#define ibbnd_pc      carma%ibbnd_pc
-#define inucgas       carma%inucgas
-#define igrowgas      carma%igrowgas
-#define nnuc2elem     carma%nnuc2elem
-#define ievp2elem     carma%ievp2elem
-#define nnucelem      carma%nnucelem
-#define inucproc      carma%inucproc
-#define inuc2elem     carma%inuc2elem
-#define inucelem      carma%inucelem
-#define inuc2bin      carma%inuc2bin
-#define ievp2bin      carma%ievp2bin
-#define nnucbin       carma%nnucbin
-#define inucbin       carma%inucbin
+#define do_cnst_rlh   carma%f_do_cnst_rlh
+#define do_coag       carma%f_do_coag
+#define do_detrain    carma%f_do_detrain
+#define do_fixedinit  carma%f_do_fixedinit
+#define do_grow       carma%f_do_grow
+#define do_explised   carma%f_do_explised
+#define do_incloud    carma%f_do_incloud
+#define do_print_init carma%f_do_print_init
+#define do_step       carma%f_do_step
+#define do_substep    carma%f_do_substep
+#define do_thermo     carma%f_do_thermo
+#define do_vdiff      carma%f_do_vdiff
+#define do_vtran      carma%f_do_vtran
+#define do_drydep     carma%f_do_drydep
+#define if_nuc        carma%f_if_nuc
+#define time          cstate%f_time
+#define dtime         cstate%f_dtime
+#define dtime_orig    cstate%f_dtime_orig
+#define nretries      cstate%f_nretries
+#define dtmin         carma%f_dtmin
+#define dtmax         carma%f_dtmax
+#define conmax        carma%f_conmax
+#define maxsubsteps   carma%f_maxsubsteps
+#define minsubsteps   carma%f_minsubsteps
+#define maxretries    carma%f_maxretries
+#define ifall         carma%f_ifall
+#define icoagop       carma%f_icoagop
+#define icollec       carma%f_icollec
+#define itbnd_pc      carma%f_itbnd_pc
+#define ibbnd_pc      carma%f_ibbnd_pc
+#define inucgas       carma%f_inucgas
+#define igrowgas      carma%f_igrowgas
+#define nnuc2elem     carma%f_nnuc2elem
+#define ievp2elem     carma%f_ievp2elem
+#define nnucelem      carma%f_nnucelem
+#define inucproc      carma%f_inucproc
+#define inuc2elem     carma%f_inuc2elem
+#define inucelem      carma%f_inucelem
+#define inuc2bin      carma%f_inuc2bin
+#define ievp2bin      carma%f_ievp2bin
+#define nnucbin       carma%f_nnucbin
+#define inucbin       carma%f_inucbin
 
-#define max_nsubstep  cstate%max_nsubstep
-#define max_nretry    cstate%max_nretry
-#define nstep         cstate%nstep
-#define nsubstep      cstate%nsubstep
-#define nretry        cstate%nretry
-#define zsubsteps     cstate%zsubsteps
+#define max_nsubstep  cstate%f_max_nsubstep
+#define max_nretry    cstate%f_max_nretry
+#define nstep         cstate%f_nstep
+#define nsubstep      cstate%f_nsubstep
+#define nretry        cstate%f_nretry
+#define zsubsteps     cstate%f_zsubsteps
   
 !  Particle grid structure
-#define diffmass      carma%diffmass
-#define rhop          cstate%rhop
-#define r_wet         cstate%r_wet
-#define rhop_wet      cstate%rhop_wet
+#define diffmass      carma%f_diffmass
+#define rhop          cstate%f_rhop
+#define r_wet         cstate%f_r_wet
+#define rhop_wet      cstate%f_rhop_wet
 
 !  Atmospheric structure
-#define rhoa          cstate%rhoa
-#define rhoa_wet      cstate%rhoa_wet
-#define t             cstate%t
-#define p             cstate%p
-#define pl            cstate%pl
-#define relhum        cstate%relhum
-#define told          cstate%told
-#define rmu           cstate%rmu
-#define thcond        cstate%thcond
-#define dkz           cstate%dkz
+#define rhoa          cstate%f_rhoa
+#define rhoa_wet      cstate%f_rhoa_wet
+#define t             cstate%f_t
+#define p             cstate%f_p
+#define pl            cstate%f_pl
+#define relhum        cstate%f_relhum
+#define told          cstate%f_told
+#define rmu           cstate%f_rmu
+#define thcond        cstate%f_thcond
+#define dkz           cstate%f_dkz
 
 ! Model primary vars
-#define pc            cstate%pc
-#define pcd           cstate%pcd
-#define pc_surf       cstate%pc_surf
-#define sedimentationflux       cstate%sedimentationflux
-#define gc            cstate%gc
-#define cldfrc        cstate%cldfrc
-#define rhcrit        cstate%rhcrit
+#define pc            cstate%f_pc
+#define pcd           cstate%f_pcd
+#define pc_surf       cstate%f_pc_surf
+#define gc            cstate%f_gc
+#define sedimentationflux       cstate%f_sedimentationflux
+#define cldfrc        cstate%f_cldfrc
+#define rhcrit        cstate%f_rhcrit
 
 !  Model secondary variables
-#define pcl           cstate%pcl
-#define gcl           cstate%gcl
-#define d_gc          cstate%d_gc
-#define d_t           cstate%d_t
-#define dpc_sed       cstate%dpc_sed
-#define pconmax       cstate%pconmax
-#define coaglg        cstate%coaglg
-#define coagpe        cstate%coagpe
-#define rnuclg        cstate%rnuclg
-#define rnucpe        cstate%rnucpe
-#define pc_nucl       cstate%pc_nucl
-#define growpe        cstate%growpe
-#define evappe        cstate%evappe
-#define coreavg       cstate%coreavg
-#define coresig       cstate%coresig
-#define evdrop        cstate%evdrop
-#define evcore        cstate%evcore
-#define growlg        cstate%growlg
-#define evaplg        cstate%evaplg
-#define gasprod       cstate%gasprod
-#define rlheat        cstate%rlheat
-#define cmf           cstate%cmf
-#define totevap       cstate%totevap
-#define pc_topbnd     cstate%pc_topbnd
-#define pc_botbnd     cstate%pc_botbnd
-#define ftoppart      cstate%ftoppart
-#define fbotpart      cstate%fbotpart
-#define cmf     		  cstate%cmf
-#define totevap       cstate%totevap
-#define too_small     cstate%too_small
-#define too_big       cstate%too_big
-#define nuc_small     cstate%nuc_small
+#define pcl           cstate%f_pcl
+#define gcl           cstate%f_gcl
+#define d_gc          cstate%f_d_gc
+#define d_t           cstate%f_d_t
+#define dpc_sed       cstate%f_dpc_sed
+#define pconmax       cstate%f_pconmax
+#define coaglg        cstate%f_coaglg
+#define coagpe        cstate%f_coagpe
+#define rnuclg        cstate%f_rnuclg
+#define rnucpe        cstate%f_rnucpe
+#define pc_nucl       cstate%f_pc_nucl
+#define growpe        cstate%f_growpe
+#define evappe        cstate%f_evappe
+#define coreavg       cstate%f_coreavg
+#define coresig       cstate%f_coresig
+#define evdrop        cstate%f_evdrop
+#define evcore        cstate%f_evcore
+#define growlg        cstate%f_growlg
+#define evaplg        cstate%f_evaplg
+#define gasprod       cstate%f_gasprod
+#define rlheat        cstate%f_rlheat
+#define cmf           cstate%f_cmf
+#define totevap       cstate%f_totevap
+#define pc_topbnd     cstate%f_pc_topbnd
+#define pc_botbnd     cstate%f_pc_botbnd
+#define ftoppart      cstate%f_ftoppart
+#define fbotpart      cstate%f_fbotpart
+#define cmf     		  cstate%f_cmf
+#define totevap       cstate%f_totevap
+#define too_small     cstate%f_too_small
+#define too_big       cstate%f_too_big
+#define nuc_small     cstate%f_nuc_small
 
 !  Coagulation kernels and bin pair mapping
-#define ck0           carma%ck0
-#define grav_e_coll0  carma%grav_e_coll0
-#define icoag         carma%icoag
-#define icoagelem     carma%icoagelem
-#define icoagelem_cm  carma%icoagelem_cm
-#define kbin          carma%kbin
+#define ck0           carma%f_ck0
+#define grav_e_coll0  carma%f_grav_e_coll0
+#define icoag         carma%f_icoag
+#define icoagelem     carma%f_icoagelem
+#define icoagelem_cm  carma%f_icoagelem_cm
+#define kbin          carma%f_kbin
 
-#define ckernel       cstate%ckernel
-#define pkernel       cstate%pkernel
+#define ckernel       cstate%f_ckernel
+#define pkernel       cstate%f_pkernel
 
-#define volx          carma%volx
-#define ilow          carma%ilow
-#define jlow          carma%jlow
-#define iup           carma%iup
-#define jup           carma%jup
-#define npairl        carma%npairl
-#define npairu        carma%npairu
+#define volx          carma%f_volx
+#define ilow          carma%f_ilow
+#define jlow          carma%f_jlow
+#define iup           carma%f_iup
+#define jup           carma%f_jup
+#define npairl        carma%f_npairl
+#define npairu        carma%f_npairu
 
 !   Coagulation group pair mapping
-#define iglow         carma%iglow
-#define jglow         carma%jglow
-#define igup          carma%igup
-#define jgup          carma%jgup
+#define iglow         carma%f_iglow
+#define jglow         carma%f_jglow
+#define igup          carma%f_igup
+#define jgup          carma%f_jgup
 
 !  Particle fall velocities, transport rates, and coagulation kernels
-#define bpm           cstate%bpm
-#define vf            cstate%vf
-#define re            cstate%re
-#define vf_const      carma%vf_const
-#define vd            cstate%vd
+#define bpm           cstate%f_bpm
+#define vf            cstate%f_vf
+#define re            cstate%f_re
+#define vf_const      carma%f_vf_const
+#define vd            cstate%f_vd
 
 !  Condensational growth parameters
-#define diffus        cstate%diffus
-#define rlhe          cstate%rlhe
-#define rlhm          cstate%rlhm
-#define pvapl         cstate%pvapl
-#define pvapi         cstate%pvapi
-#define surfctwa      cstate%surfctwa
-#define surfctiw      cstate%surfctiw
-#define surfctia      cstate%surfctia
-#define akelvin       cstate%akelvin
-#define akelvini      cstate%akelvini
-#define ft            cstate%ft
-#define gro           cstate%gro
-#define gro1          cstate%gro1
-#define gro2          cstate%gro2
-#define supsatl       cstate%supsatl
-#define supsati       cstate%supsati
-#define supsatlold    cstate%supsatlold
-#define supsatiold    cstate%supsatiold
-#define scrit         cstate%scrit
-#define rlh_nuc       carma%rlh_nuc
-#define qrad          cstate%qrad
-#define pratt         carma%pratt
-#define prat          carma%prat
-#define pden1         carma%pden1
-#define palr          carma%palr
+#define diffus        cstate%f_diffus
+#define rlhe          cstate%f_rlhe
+#define rlhm          cstate%f_rlhm
+#define pvapl         cstate%f_pvapl
+#define pvapi         cstate%f_pvapi
+#define surfctwa      cstate%f_surfctwa
+#define surfctiw      cstate%f_surfctiw
+#define surfctia      cstate%f_surfctia
+#define akelvin       cstate%f_akelvin
+#define akelvini      cstate%f_akelvini
+#define ft            cstate%f_ft
+#define gro           cstate%f_gro
+#define gro1          cstate%f_gro1
+#define gro2          cstate%f_gro2
+#define supsatl       cstate%f_supsatl
+#define supsati       cstate%f_supsati
+#define supsatlold    cstate%f_supsatlold
+#define supsatiold    cstate%f_supsatiold
+#define scrit         cstate%f_scrit
+#define rlh_nuc       carma%f_rlh_nuc
+#define qrad          cstate%f_qrad
+#define pratt         carma%f_pratt
+#define prat          carma%f_prat
+#define pden1         carma%f_pden1
+#define palr          carma%f_palr

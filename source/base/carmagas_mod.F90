@@ -45,25 +45,25 @@ contains
     rc = RC_OK
     
     ! Make sure there are enough gases allocated.
-    if (igas > carma%NGAS) then
-      if (carma%do_print) write(carma%LUNOPRT, *) "CARMAGAS_GetCreate:: ERROR - The specifed gas (", &
-        igas, ") is larger than the number of gases (", carma%NGAS, ")."
+    if (igas > carma%f_NGAS) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGAS_GetCreate:: ERROR - The specifed gas (", &
+        igas, ") is larger than the number of gases (", carma%f_NGAS, ")."
       rc = RC_ERROR
       return
     end if
 
     ! Save off the settings.
-    carma%gas(igas)%name         = name
-    carma%gas(igas)%wtmol        = wtmol
-    carma%gas(igas)%ivaprtn      = ivaprtn
-    carma%gas(igas)%icomposition = icomposition
+    carma%f_gas(igas)%f_name         = name
+    carma%f_gas(igas)%f_wtmol        = wtmol
+    carma%f_gas(igas)%f_ivaprtn      = ivaprtn
+    carma%f_gas(igas)%f_icomposition = icomposition
     
     
     ! Defaults for optional parameters
-    carma%gas(igas)%shortname    = ""
+    carma%f_gas(igas)%f_shortname    = ""
     
     ! Set optional parameters.
-    if (present(shortname))  carma%gas(igas)%shortname    = shortname
+    if (present(shortname))  carma%f_gas(igas)%f_shortname    = shortname
 
     return
   end subroutine CARMAGAS_Create
@@ -84,9 +84,9 @@ contains
     rc = RC_OK
     
     ! Make sure there are enough gases allocated.
-    if (igas > carma%NGAS) then
-      if (carma%do_print) write(carma%LUNOPRT, *) "CARMAGAS_Destroy:: ERROR - The specifed gas (", &
-        igas, ") is larger than the number of gases (", carma%NGAS, ")."
+    if (igas > carma%f_NGAS) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGAS_Destroy:: ERROR - The specifed gas (", &
+        igas, ") is larger than the number of gases (", carma%f_NGAS, ")."
       rc = RC_ERROR
       return
     end if
@@ -119,19 +119,19 @@ contains
     rc = RC_OK
 
     ! Make sure there are enough gases allocated.
-    if (igas > carma%NGAS) then
-      if (carma%do_print) write(carma%LUNOPRT, *) "CARMAGAS_Get:: ERROR - The specifed gas (", &
-        igas, ") is larger than the number of gases (", carma%NGAS, ")."
+    if (igas > carma%f_NGAS) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGAS_Get:: ERROR - The specifed gas (", &
+        igas, ") is larger than the number of gases (", carma%f_NGAS, ")."
       rc = RC_ERROR
       return
     end if
 
     ! Return any requested properties of the group.
-    if (present(name))         name         = carma%gas(igas)%name
-    if (present(shortname))    shortname    = carma%gas(igas)%shortname
-    if (present(wtmol))        wtmol        = carma%gas(igas)%wtmol
-    if (present(ivaprtn))      ivaprtn      = carma%gas(igas)%ivaprtn
-    if (present(icomposition)) icomposition = carma%gas(igas)%icomposition
+    if (present(name))         name         = carma%f_gas(igas)%f_name
+    if (present(shortname))    shortname    = carma%f_gas(igas)%f_shortname
+    if (present(wtmol))        wtmol        = carma%f_gas(igas)%f_wtmol
+    if (present(ivaprtn))      ivaprtn      = carma%f_gas(igas)%f_ivaprtn
+    if (present(icomposition)) icomposition = carma%f_gas(igas)%f_icomposition
         
     return
   end subroutine CARMAGAS_Get
@@ -159,30 +159,30 @@ contains
     rc = RC_OK
 
     ! Test out the Get method.
-    if (carma%do_print) then
+    if (carma%f_do_print) then
       call CARMAGAS_Get(carma, igas, rc, name=name, shortname=shortname, wtmol=wtmol, &
                         ivaprtn=ivaprtn, icomposition=icomposition)
       if (rc < RC_OK) return
 
     
-      write(carma%LUNOPRT,*) "    name          : ", trim(name)
-      write(carma%LUNOPRT,*) "    shortname     : ", trim(shortname)
-      write(carma%LUNOPRT,*) "    wtmol         : ", wtmol, " (g/mol)"
+      write(carma%f_LUNOPRT,*) "    name          : ", trim(name)
+      write(carma%f_LUNOPRT,*) "    shortname     : ", trim(shortname)
+      write(carma%f_LUNOPRT,*) "    wtmol         : ", wtmol, " (g/mol)"
 
       select case(ivaprtn)
         case (I_VAPRTN_H2O_BUCK1981)
-          write(carma%LUNOPRT,*) "    ivaprtn       :    Buck [1981]"
+          write(carma%f_LUNOPRT,*) "    ivaprtn       :    Buck [1981]"
         case (I_VAPRTN_H2O_MURPHY2005)
-          write(carma%LUNOPRT,*) "    ivaprtn       :    Murphy & Koop [2005]"
+          write(carma%f_LUNOPRT,*) "    ivaprtn       :    Murphy & Koop [2005]"
         case default
-          write(carma%LUNOPRT,*) "    ivaprtn       :    unknown, ", ivaprtn
+          write(carma%f_LUNOPRT,*) "    ivaprtn       :    unknown, ", ivaprtn
       end select
 
       select case(icomposition)
         case (I_GCOMP_H2O)
-          write(carma%LUNOPRT,*) "    icomposition  :    H2O"
+          write(carma%f_LUNOPRT,*) "    icomposition  :    H2O"
         case default
-          write(carma%LUNOPRT,*) "    icomposition  :    unknown, ", icomposition
+          write(carma%f_LUNOPRT,*) "    icomposition  :    unknown, ", icomposition
       end select
     end if
     

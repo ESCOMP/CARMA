@@ -69,7 +69,7 @@ subroutine test_grow_simple()
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
-  type(carmastate_type), allocatable  :: cstate(:)
+  type(carmastate_type)               :: cstate
   integer                             :: rc = 0
   
   real(kind=f), allocatable   :: xc(:,:,:)
@@ -110,9 +110,6 @@ subroutine test_grow_simple()
   real(kind=f)          :: time
   real(kind=f)          :: rmin, rmrat
   real(kind=f)          :: drh
-  
-  integer               :: omp_get_num_threads, omp_get_max_threads, &
-                           omp_get_thread_num
   
 
   write(*,*) ""
@@ -286,9 +283,6 @@ subroutine test_grow_simple()
     write(lun,'(i4,3e10.3)') igas, real(mmr_gas(1,NY,NX,igas)), 0., 0.
   end do
 
-  ! Allocate enough carmastate objects for the maximum number of threads.
-  allocate(cstate(omp_get_max_threads()))
-  
 		
   ! Iterate the model over a few time steps.
   write(*,*) ""
@@ -299,24 +293,12 @@ subroutine test_grow_simple()
 
     ! NOTE: This means that there should not be any looping over NX or NY done
     ! in any other CARMA routines. They should only loop over NZ.
-    !
-    ! NOTE: This directive allows each column of the model to be processed in a
-    ! separate thread. This can allow for faster computation on machines that 
-    ! allow multiple threads (e.g. have multiple CPUS). This should probably not
-    ! be used when the the model is embedded in a another model that is already
-    ! controlling the distribution of the model across multiple threads.
-
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ixy,ix,iy,ielem,ibin,ithread)
     do ixy = 1, NX*NY
       ix = ((ixy-1) / NY) + 1
       iy = ixy - (ix-1)*NY
       
-      ! Use the thread number to determine which member 
-      ! of the cstate pool to use.
-      ithread = omp_get_thread_num() + 1
-      
       ! Create a CARMASTATE for this column.
-      call CARMASTATE_Create(cstate(ithread), carma_ptr, time, dtime, NZ, &
+      call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
                           I_CART, I_CART, lat(iy,ix), lon(iy,ix), &
                           xc(:,iy,ix), dx(:,iy,ix), &
                           yc(:,iy,ix), dy(:,iy,ix), &
@@ -326,40 +308,39 @@ subroutine test_grow_simple()
       ! Send the bin mmrs to CARMA
       do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_SetBin(cstate(ithread), ielem, ibin, &
+         call CARMASTATE_SetBin(cstate, ielem, ibin, &
                                 mmr(:,iy,ix,ielem,ibin), rc)
         end do
       end do
 			
       ! Send the gas mmrs to CARMA
       do igas = 1, NGAS
-         call CARMASTATE_SetGas(cstate(ithread), igas, &
+         call CARMASTATE_SetGas(cstate, igas, &
                                 mmr_gas(:,iy,ix,igas), rc)
       end do
 
       ! Execute the step
-      call CARMASTATE_Step(cstate(ithread), rc)
+      call CARMASTATE_Step(cstate, rc)
        
       ! Get the updated bin mmr.
       do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_GetBin(cstate(ithread), ielem, ibin, &
+         call CARMASTATE_GetBin(cstate, ielem, ibin, &
                                 mmr(:,iy,ix,ielem,ibin), rc)
         end do
       end do
 
       ! Get the updated gas mmr.
       do igas = 1, NGAS
-         call CARMASTATE_GetGas(cstate(ithread), igas, &
+         call CARMASTATE_GetGas(cstate, igas, &
                                 mmr_gas(:,iy,ix,igas), rc, &
                                 satliq=satliq(:,iy,ix,igas), &
                                 satice=satice(:,iy,ix,igas))
       end do
 
       ! Get the updated temperature.
-      call CARMASTATE_GetState(cstate(ithread), rc, t=t(:,iy,ix))
+      call CARMASTATE_GetState(cstate, rc, t=t(:,iy,ix))
     enddo
-    !$OMP END PARALLEL DO
 
     ! Write output for the falltest
     write(lun,*) istep*dtime
@@ -375,10 +356,8 @@ subroutine test_grow_simple()
   end do   ! time loop
 	
   ! Cleanup the carma state objects
-  do i = 1, omp_get_max_threads()
-     call CARMASTATE_Destroy(cstate(i), rc)
-  end do
-  deallocate(cstate)
+  call CARMASTATE_Destroy(cstate, rc)
+  if (rc /=0) stop "    *** FAILED ***"
 
   ! Close the output file
   close(unit=lun)	
@@ -391,95 +370,4 @@ subroutine test_grow_simple()
   write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** FAILED ***"
-end subroutine
-
-
-subroutine dumpElement(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmaelement_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), intent(in)     :: carma              !! the carma object
-  integer, intent(inout)           :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                          :: i
-	
-  write(*,*)  ""
-  write(*,*)  "Element Information"
-  
-  do i = 1, carma%NELEM
-    call CARMAELEMENT_Print(carma, i, rc)
-    if (rc /=0) write(carma%LUNOPRT, *) "    *** FAILED ***, rc=", rc
-    
-    write(carma%LUNOPRT,*) ""  
-  end do
- 
-  write(carma%LUNOPRT,*) ""
-  return
-end subroutine
-
-
-subroutine dumpGas(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmagas_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), intent(inout)           :: carma              !! the carma object
-  integer, intent(inout)                    :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                       :: i
-  character(len=255)            :: gasname
-	real(kind=f)                  :: gwtmol
-	
-  write(*,*)  ""
-  write(*,*)  "Gas Information"
-  
-  do i = 1, carma%NGAS
-   call CARMAGAS_Print(carma, i, rc)
-   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
-   
-   write(*,*) ""  
- end do
- 
- write(*,*) ""  
-end subroutine
-
-
-subroutine dumpGroup(carma, rc)
-  use carma_precision_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
-  use carmagroup_mod
-  use carma_mod
-
-  implicit none
-
-  type(carma_type), intent(in)     :: carma              !! the carma object
-  integer, intent(inout)           :: rc                 !! return code, negative indicates failure
-  
-  ! Local Variables
-  integer                          :: i
-	
-  write(*,*)  ""
-  write(*,*)  "Group Information"
-  
-  do i = 1, carma%NGROUP
-    call CARMAGROUP_Print(carma, i, rc)
-    if (rc /=0) write(carma%LUNOPRT, *) "    *** FAILED ***, rc=", rc
-    
-    write(carma%LUNOPRT,*) ""  
-  end do
- 
-  write(carma%LUNOPRT,*) ""
-  return
 end subroutine

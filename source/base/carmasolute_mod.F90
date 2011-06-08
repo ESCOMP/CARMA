@@ -45,25 +45,25 @@ contains
     rc = RC_OK
     
     ! Make sure there are enough solutes allocated.
-    if (isolute > carma%NSOLUTE) then
-      if (carma%do_print) write(carma%LUNOPRT, *) "CARMASOLUTE_Create:: ERROR - The specifed solute (", &
-        isolute, ") is larger than the number of solutes (", carma%NSOLUTE, ")."
+    if (isolute > carma%f_NSOLUTE) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMASOLUTE_Create:: ERROR - The specifed solute (", &
+        isolute, ") is larger than the number of solutes (", carma%f_NSOLUTE, ")."
       rc = RC_ERROR
       return
     end if
 
     ! Save off the settings.
-    carma%solute(isolute)%name        = name
-    carma%solute(isolute)%ions        = ions
-    carma%solute(isolute)%wtmol       = wtmol
-    carma%solute(isolute)%rho         = rho
+    carma%f_solute(isolute)%f_name        = name
+    carma%f_solute(isolute)%f_ions        = ions
+    carma%f_solute(isolute)%f_wtmol       = wtmol
+    carma%f_solute(isolute)%f_rho         = rho
     
     
     ! Defaults for optional parameters
-    carma%solute(isolute)%shortname   = ""
+    carma%f_solute(isolute)%f_shortname   = ""
     
     ! Set optional parameters.
-    if (present(shortname))  carma%solute(isolute)%shortname    = shortname
+    if (present(shortname))  carma%f_solute(isolute)%f_shortname    = shortname
 
     return
   end subroutine CARMASOLUTE_Create
@@ -84,9 +84,9 @@ contains
     rc = RC_OK
     
     ! Make sure there are enough solutes allocated.
-    if (isolute > carma%NSOLUTE) then
-      if (carma%do_print) write(carma%LUNOPRT, *) "CARMASOLUTE_Destroy:: ERROR - The specifed solute (", &
-        isolute, ") is larger than the number of solutes (", carma%NSOLUTE, ")."
+    if (isolute > carma%f_NSOLUTE) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMASOLUTE_Destroy:: ERROR - The specifed solute (", &
+        isolute, ") is larger than the number of solutes (", carma%f_NSOLUTE, ")."
       rc = RC_ERROR
       return
     end if
@@ -119,19 +119,19 @@ contains
     rc = RC_OK
 
     ! Make sure there are enough solutes allocated.
-    if (isolute > carma%NSOLUTE) then
-      if (carma%do_print) write(carma%LUNOPRT, *) "CARMASOLUTE_Get:: ERROR - The specifed solute (", &
-        isolute, ") is larger than the number of solutes (", carma%NSOLUTE, ")."
+    if (isolute > carma%f_NSOLUTE) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMASOLUTE_Get:: ERROR - The specifed solute (", &
+        isolute, ") is larger than the number of solutes (", carma%f_NSOLUTE, ")."
       rc = RC_ERROR
       return
     end if
 
     ! Return any requested properties of the group.
-    if (present(name))         name         = carma%solute(isolute)%name
-    if (present(shortname))    shortname    = carma%solute(isolute)%shortname
-    if (present(ions))         ions         = carma%solute(isolute)%ions
-    if (present(wtmol))        wtmol        = carma%solute(isolute)%wtmol
-    if (present(rho))          rho          = carma%solute(isolute)%rho
+    if (present(name))         name         = carma%f_solute(isolute)%f_name
+    if (present(shortname))    shortname    = carma%f_solute(isolute)%f_shortname
+    if (present(ions))         ions         = carma%f_solute(isolute)%f_ions
+    if (present(wtmol))        wtmol        = carma%f_solute(isolute)%f_wtmol
+    if (present(rho))          rho          = carma%f_solute(isolute)%f_rho
         
     return
   end subroutine CARMASOLUTE_Get
@@ -159,16 +159,16 @@ contains
     rc = RC_OK
 
     ! Test out the Get method.
-    if (carma%do_print) then
+    if (carma%f_do_print) then
       call CARMASOLUTE_Get(carma, isolute, rc, name=name, shortname=shortname, ions=ions, wtmol=wtmol, rho=rho) 
       if (rc < 0) return
 
     
-      write(carma%LUNOPRT,*) "    name          : ", trim(name)
-      write(carma%LUNOPRT,*) "    shortname     : ", trim(shortname)
-      write(carma%LUNOPRT,*) "    ions          : ", ions
-      write(carma%LUNOPRT,*) "    wtmol         : ", wtmol, " (g/mol)"
-      write(carma%LUNOPRT,*) "    rho           : ", rho, " (g/cm3)"
+      write(carma%f_LUNOPRT,*) "    name          : ", trim(name)
+      write(carma%f_LUNOPRT,*) "    shortname     : ", trim(shortname)
+      write(carma%f_LUNOPRT,*) "    ions          : ", ions
+      write(carma%f_LUNOPRT,*) "    wtmol         : ", wtmol, " (g/mol)"
+      write(carma%f_LUNOPRT,*) "    rho           : ", rho, " (g/cm3)"
     end if
     
     return
