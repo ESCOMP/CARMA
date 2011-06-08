@@ -1,3 +1,18 @@
+Tag name: 
+Originator(s): Tianyi Fan, Charles Bardeen
+Date: June 8, 2011
+
+One-line Summary:
+
+SUpport for PGI and g95 compilers
+
+Purpose of changes:
+
+Some Fortran compilers have preprocessors that failed to correctly handle
+the macros because they recursively tried to replace the name multiple
+times. To prevent this, the field names have been changes to have f_XXX
+so they don't conflict with the macro name XXX.
+
 ===============================================================
 
 Tag name: 3.0.1
@@ -12,7 +27,6 @@ Purpose of changes:
 
 Added support for dry deposition to the sedimentation routine in CARMA.
 Surface friction and land fraction are supplied by the parent model.
-===============================================================
 
 ===============================================================
 
