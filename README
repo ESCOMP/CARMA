@@ -7,7 +7,7 @@ cloud and aerosol physics package embedded into GCMs. The project consists of
   - bin    : the F90doc documentation generation tool
   - doc    : the change log and HTML based documentation
   - source : the CARMA microphysics layer
-  - tests  : the test routines
+  - tests  : the test routines & benchmark results
   
 Two script files have been provided to build and run the model or its
 components. To build carma and the test cases, issue the following command
@@ -40,7 +40,7 @@ to be the path to your copy of IDL, then IDL should be launched automatical, and
 the messages will indicate the program that you should run. On the Mac, you would
 set a path like:
 
-  setenv CARMA_IDL=/Applications/itt/idl/idl80/bin/idl
+  setenv CARMA_IDL /Applications/itt/idl/idl80/bin/idl
 
 After exectuing
 
@@ -73,6 +73,7 @@ the program f90doc, which is located in the bin directory. The generated
 documentation is stored as html files in the directory doc/f90doc. To start
 browsing the documentation, open the file doc/index.html.
 
+
 The model supports OPEN/MP, which will allow the model to use multiple
 processors if the model is called with multiple columns. You need to add
 a compiler directive to enable OPEN/MP (-openmp for ifort) and you need
@@ -87,6 +88,20 @@ before using the run script.
 Several test cases have been developed to show how the CARMA model
 can be used and to test that the model physics is performing correctly. The
 source code for these tests are located in the tests subdirectory.
+
+To run all of the tests interactively, use the command
+
+  run-all.csh
+  
+To run all of the tests in the background and compare the results to
+benchmark results, use the command
+
+  run-regress.csh
+  
+The benchmarks are stored in tests/bench and were created on a Mac
+using the Intel Fortran compiler. You may get slightly different
+results on other platforms or with other compilers.
+
 
 The entire project can be put into a tar file, using the command
 

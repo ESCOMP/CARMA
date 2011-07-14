@@ -1,4 +1,5 @@
 !! This code is to demonstrate the CARMA mie routines.
+!!
 !! Upon execution, a text file (carma_mietest.txt) is generated.
 !! The text file can be read with the IDL procedure read_mietest.pro.
 !!
@@ -8,9 +9,11 @@
 program carma_mietest
   implicit none
 
-  write(*,*) "Simple CARMA Mie Code Demonstration"
+  write(*,*) "Mie Test"
 
   call test_mie()  
+  
+  write(*,*) "Done"
 end program
 
 
@@ -90,8 +93,8 @@ subroutine test_mie()
      0.373_f,    0.5_f /
   
 
-  write(*,*) ""
-  write(*,*) "Mie Calculations"
+!  write(*,*) ""
+!  write(*,*) "Mie Calculations"
 
   ! Open the output text file
   open(unit=lun,file="carma_mietest.txt",status="unknown")
@@ -104,8 +107,8 @@ subroutine test_mie()
   
   
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
-                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
+!  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
+!                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=6, wave=wave)
   if (rc < 0) stop "    *** FAILED ***"
 	carma_ptr => carma
@@ -115,35 +118,35 @@ subroutine test_mie()
   rho = 2.65_f
   rmrat = 4.32_f
   rmin = 1e-6_f
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   call CARMAGROUP_Create(carma, 1, "dust", rmin, rmrat, &
                          I_SPHERE, 1._f, .FALSE., rc, refidx=refidx, do_mie=.true.)
   if (rc < 0) stop "    *** FAILED ***"
 
   
   ! Define the element
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "dust", rho, I_INVOLATILE, I_DUST, rc)
   if (rc < 0) stop "    *** FAILED ***"
   
   
   ! Setup the CARMA processes to exercise
-  write(*,*) "  Initialize ..."
+!  write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc)
   if (rc < 0) stop "    *** FAILED ***"
 
   
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc < 0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc < 0) stop "    *** FAILED ***"
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc < 0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc < 0) stop "    *** FAILED ***"
 
-  write(*,*) ""
+!  write(*,*) ""
   
   ! Write output for the falltest
   write(lun,*) NGROUP, NWAVE, NBIN
@@ -174,8 +177,8 @@ subroutine test_mie()
   ! Close the output file
   close(unit=lun)	
 	
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** FAILED ***"
 end subroutine

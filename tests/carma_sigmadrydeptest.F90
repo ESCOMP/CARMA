@@ -1,21 +1,29 @@
-!! This code is to demonstrate the CARMA dry deposition routines
-!! for an example of falling particles.  Upon execution, a text
-!! file (carma_falltest.txt) is generated.  The text file can 
-!! be read with the IDL procedure read_falltest.pro.
+!! This code is to test the dry deposition routine by comparing
+!! sedimentation with and without dry deposition. The model is
+!! using sigma coordinates.
 !!
-!! @author Tianyi Fan (based on Chuck Bardeen's code)
+!! Upon execution, a text file (carma_drydeptest.txt) is generated.
+!! The text file can be read with the IDL procedure read_drydeptest.pro.
+!!
+!! @author  Tianyi Fan
 !! @version Apr-2011
 
-program carma_drydeptest
+
+program carma_sigmadrydeptest
   implicit none
 
-  write(*,*) "Simple CARMA Sedimentation Code Demonstration"
+  write(*,*) "Sedimentation Test (Sigma Coordinates)"
 
-  call test_drydep()  
+  call test_sigmadrydep()  
+  
+  write(*,*) "Done"
 end program
 
 
-subroutine test_drydep()
+!! Create 2 particle groups, one for particles with dry deposition 
+!! using arbitary values of ram(aerodynamic resistance) and fv (friction velocity)
+!! the other for particles without dry deposition, to see if they make a difference.
+subroutine test_sigmadrydep()
   use carma_precision_mod 
   use carma_constants_mod 
   use carma_enums_mod 
@@ -271,9 +279,9 @@ subroutine test_drydep()
 !  a = hyai125 * 10000_f
 !  b = hybi125
 
-  do i = 1, NZP1
-    write(*,*) a(i), b(i)*p0, a(i) + b(i)*p0
-  end do
+!  do i = 1, NZP1
+!    write(*,*) a(i), b(i)*p0, a(i) + b(i)*p0
+!  end do
 
   data t72 / &
       212.161,   210.233,   217.671,   225.546,   232.222,   237.921,   241.836,   243.246, &
@@ -295,8 +303,8 @@ subroutine test_drydep()
       1082.17,   956.177,   832.052,   709.535,   588.531,   469.023,   350.157 /
 
 
-  write(*,*) ""
-  write(*,*) "Dry deposition of Particles in sigma (Hybrid coordinate)"
+!  write(*,*) ""
+!  write(*,*) "Dry deposition of Particles in sigma (Hybrid coordinate)"
 
   ! Open the output text file
   open(unit=lun,file="carma_sigmadrydeptest.txt",status="unknown")
@@ -309,14 +317,14 @@ subroutine test_drydep()
   allocate(lat(NY,NX), lon(NY,NX))  
 
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
-                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
+!  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
+!                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=6)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 	carma_ptr => carma
 
   ! Define the group
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   rho = 2.65_f
 !  rmrat = (100._f**3)**(1._f/(NBIN*1._f))
 !  rmin = 1.e-5_f * ((1._f+rmrat)/2._f)**(1._f/3._f)
@@ -331,7 +339,7 @@ subroutine test_drydep()
   if (rc /=0) stop "    *** FAILED ***"
   
   ! Define the element
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "DryDep", rho, I_INVOLATILE, I_PART, rc)
   if (rc /=0) stop "    *** FAILED ***"
   
@@ -343,21 +351,21 @@ subroutine test_drydep()
 !  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
 ! Setup the CARMA processes to exercise
-  write(*,*) "  CARMA_Initialize ..."
+!  write(*,*) "  CARMA_Initialize ..."
   call CARMA_Initialize(carma, rc, do_vtran=.TRUE., do_drydep=.TRUE.)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
 ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*) ""
+!  write(*,*) ""
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
   !
@@ -408,19 +416,19 @@ subroutine test_drydep()
     zm(i) = zm(i+1) + (p(i+1,NY,NX) - p(i,NY,NX)) /  (rhoa(i)*9.816_f)
   end do
 
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
 
 
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
 
   			
   ! Put a blob in the model for all elements and bins at 8 km.
@@ -441,11 +449,11 @@ subroutine test_drydep()
   !do i = 1, NZ
 !	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
 !  end do
-    write(*,*)  ""
-  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
    
   ! Write output for the falltest
   write(lun,*) NZ, NELEM
@@ -462,7 +470,6 @@ subroutine test_drydep()
     end do
   end do
   ! Iterate the model over a few time steps.
-  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
@@ -523,7 +530,7 @@ subroutine test_drydep()
   close(unit=lun)	
   
  ! write the dry deposition velocity
-  open(unit=lun1,file="carma_vdry.txt",status="unknown")
+  open(unit=lun1,file="carma_sigmavdry.txt",status="unknown")
   write(lun1, *) NGROUP
   do igroup = 1, NGROUP
    !write(lun1,'(i4,16e15.5)') &
@@ -532,30 +539,29 @@ subroutine test_drydep()
   end do  
   close(unit=lun1)
   	
-  write(*,*)  ""
-  write(*,*)  ""
-  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*,*)  ""
+!  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
 		
-  write(*,*)  ""
-  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
-  do i = 1, NZ
-   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
+!  do i = 1, NZ
+!   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
+!  end do
  
-  do igroup = 1, NGROUP
-    write(*,*) &
-    igroup, vdry(:, igroup) 
-  end do  
+!  do igroup = 1, NGROUP
+!    write(*,*) &
+!    igroup, vdry(:, igroup) 
+!  end do  
   
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc  
-  
 end subroutine
 

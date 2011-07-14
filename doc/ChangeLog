@@ -1,5 +1,22 @@
 Tag name: 
 Originator(s): Charles Bardeen
+Date: July 14, 2011
+
+One-line Summary:
+
+Setup tests to be run as regression tests.
+
+Purpose of changes:
+
+Added two new scripts run-all.csh and run-regress.csh. run-regress.csh
+runs the tests and then compares the answer to previously generated
+results in tests/bench. An error is generated if the results differ.
+To make this usable, all of the tests have be modified to have minimal
+output to the screen for normal operation.
+
+===============================================================
+Tag name: 
+Originator(s): Charles Bardeen
 Date: July 13, 2011
 
 One-line Summary:

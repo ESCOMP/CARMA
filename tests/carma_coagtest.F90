@@ -11,9 +11,11 @@
 program carma_coagtest
   implicit none
 
-  write(*,*) "Simple CARMA Coagulation Code Demonstration"
+  write(*,*) "Coagulation Test"
 
   call test_coagulation()  
+  
+  write(*,*) "Done"
 end program
 
 
@@ -90,8 +92,8 @@ subroutine test_coagulation()
   real(kind=f)          :: rmass(NBIN)
   
 
-  write(*,*) ""
-  write(*,*) "Coagulation of Particles"
+!  write(*,*) ""
+!  write(*,*) "Coagulation of Particles"
 
   ! Open the output text file
   open(unit=lun,file="carma_coagtest.txt",status="unknown")
@@ -109,7 +111,7 @@ subroutine test_coagulation()
 	carma_ptr => carma
 
   ! Define the group
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   rho = 2._f
   rmrat = 2._f
   rmin = 3.e-7_f
@@ -119,7 +121,7 @@ subroutine test_coagulation()
 
   
   ! Define the element
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "dust", rho, I_INVOLATILE, I_DUST, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
@@ -132,24 +134,24 @@ subroutine test_coagulation()
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
   ! Setup the CARMA processes to exercise
-  write(*,*) "  CARMA_Initialize(carma, rc, do_vtran=.FALSE., "// &
-               "do_coag=.TRUE.) ..."
+!  write(*,*) "  CARMA_Initialize(carma, rc, do_vtran=.FALSE., "// &
+!               "do_coag=.TRUE.) ..."
   call CARMA_Initialize(carma, rc, do_coag=.TRUE.)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
-  write(*,*) ""
+!  write(*,*) ""
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
   
-  write(*,*) ""
+!  write(*,*) ""
   
 
   ! For simplicity of setup, do a case with Cartesian coordinates,
@@ -177,11 +179,11 @@ subroutine test_coagulation()
   end do
   call GetStandardAtmosphere(zc, p=p, t=t)
 
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
 
 
   ! Vertical edge
@@ -190,12 +192,12 @@ subroutine test_coagulation()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
 
   			
   ! Put a monodisperse aerosol in first bin
@@ -209,11 +211,11 @@ subroutine test_coagulation()
   mmr(1,:,:,1,1) = rmass(1)/1000._f* 1.e12_f &
                  / (p(1,:,:)/287._f/t(1,:,:))
 
-  write(*,*)  ""
-  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
   
   ! Write output for the coagtest (output is scaled to CGS)
   write(lun,*) NBIN, NELEM, NGROUP
@@ -245,7 +247,7 @@ subroutine test_coagulation()
   end do
 				
   ! Iterate the model over a few time steps.
-  write(*,*) ""
+!  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
@@ -308,23 +310,23 @@ subroutine test_coagulation()
   ! Close the output file
   close(unit=lun)	
 	
-  write(*,*)  ""
-  write(*,*)  ""
-  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*,*)  ""
+!  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
 		
-  write(*,*)  ""
-  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
-  do i = 1, NZ
-   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
+!  do i = 1, NZ
+!   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
+!  end do
 
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
+!  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc  
 end subroutine

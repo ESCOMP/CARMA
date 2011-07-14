@@ -1,7 +1,8 @@
-!! This code is to test the idry deposition from
-!! relative humidity on sedimentation. Upon execution, a text
-!! file (carma_drydeptest.txt) is generated.  The text file can 
-!! be read with the IDL procedure read_swelltest.pro.
+!! This code is to test the dry deposition routine by comparing
+!! sedimentation with and without dry deposition.
+!!
+!! Upon execution, a text file (carma_drydeptest.txt) is generated.
+!! The text file can be read with the IDL procedure read_drydeptest.pro.
 !!
 !! @author  Tianyi Fan
 !! @version Apr-2011
@@ -12,11 +13,13 @@ program carma_drydeptest
   write(*,*) "Dry Deposition Test"
 
   call test_drydep()  
+  
+  write(*,*) "Done"
 end program
 
 !! Create 2 particle groups, one for particles with dry deposition 
 !! using arbitary values of ram(aerodynamic resistance) and fv (friction velocity)
-!! the other for particles without dry deposition, to see if they make a differnce
+!! the other for particles without dry deposition, to see if they make a difference.
 subroutine test_drydep()
   use carma_precision_mod 
   use carma_constants_mod 
@@ -100,8 +103,8 @@ subroutine test_drydep()
   real(kind=f),parameter:: ram_in = 40._f     ! [s/m]
   real(kind=f)          :: vdry(NBIN, NGROUP)
   
-  write(*,*) ""
-  write(*,*) "Dry deposition of Particles with density of 2.0 g/cm3"
+!  write(*,*) ""
+!  write(*,*) "Dry deposition of Particles with density of 2.0 g/cm3"
 
   ! Open the output text file
   open(unit=lun,file="carma_drydeptest.txt",status="unknown") 
@@ -115,14 +118,14 @@ subroutine test_drydep()
   allocate(relhum(NZ,NY,NX))
 
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create ..."
+!  write(*,*) "  CARMA_Create ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT)
   if (rc /=0) stop "    *** FAILED ***"
   carma_ptr => carma
 
 
   ! Define the groups
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   rho = 2.65_f
   rmrat = 4.32_f
   rmin  = 1e-6_f
@@ -135,7 +138,7 @@ subroutine test_drydep()
   if (rc /=0) stop "    *** FAILED ***"
   
   ! Define the elements
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "DryDep", rho, I_INVOLATILE, I_PART, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
@@ -147,21 +150,21 @@ subroutine test_drydep()
 !  if (rc /=0) stop "    *** FAILED ***"
   
   ! Setup the CARMA processes to exercise
-  write(*,*) "  Initialize ..."
+!  write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc, do_vtran=.TRUE., do_drydep=.TRUE.)
   if (rc /=0) stop "    *** FAILED ***"
 
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*) ""
+!  write(*,*) ""
   
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
@@ -189,11 +192,11 @@ subroutine test_drydep()
   end do
   call GetStandardAtmosphere(zc, p=p, t=t)
 
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
 
   ! Vertical edge
   do i = 1, NZP1
@@ -201,12 +204,12 @@ subroutine test_drydep()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
   
   
   ! Set up some arbitrary relative humidities, with the maximum at the bottom and
@@ -232,11 +235,11 @@ subroutine test_drydep()
     end do
   end do
 
-  write(*,*)  ""
-  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-    write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!    write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
   
   
   ! Write output for the falltest
@@ -256,7 +259,7 @@ subroutine test_drydep()
   
   
   ! Iterate the model over a few time steps.
-  write(*,*) ""
+!  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
@@ -329,28 +332,28 @@ subroutine test_drydep()
   if (rc /=0) stop "    *** FAILED ***"
 
 
-  write(*,*)  ""
-  write(*,*)  ""
-  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*,*)  ""
+!  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
     
-  write(*,*)  ""
-  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"    
-  do i = 1, NZ
-   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"    
+!  do i = 1, NZ
+!   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
+!  end do
  
-  do igroup = 1, NGROUP
-    write(*,*) &
-    igroup, vdry(:, igroup) 
-  end do  
+!  do igroup = 1, NGROUP
+!    write(*,*) &
+!    igroup, vdry(:, igroup) 
+!  end do  
   
   if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** FAILED ***"
 end subroutine

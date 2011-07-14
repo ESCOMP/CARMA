@@ -1,7 +1,8 @@
-!! This code is to demonstrate the CARMA Brownian Diffusion routines
-!! for an example of diffusing particles.  Upon execution, a text
-!! file (carma_vdiftest.txt) is generated.  The text file can 
-!! be read with the IDL procedure read_vdiftest.pro.
+!! This code is to demonstrate the CARMA Brownian diffusion routines
+!! for an example of diffusing particles.
+!!
+!! Upon execution, a text file (carma_vdiftest.txt) is generated.
+!! The text file can be read with the IDL procedure read_vdiftest.pro.
 !!
 !! @author Chuck Bardeen
 !! @version AUg-2010
@@ -9,9 +10,11 @@
 program carma_vdiftest
   implicit none
 
-  write(*,*) "Simple CARMA Diffusion Code Demonstration"
+  write(*,*) "Brownian Diffusion Test"
 
   call test_diffusion()  
+  
+  write(*,*) "Done"
 end program
 
 
@@ -90,8 +93,8 @@ subroutine test_diffusion()
                            omp_get_thread_num
   
 
-  write(*,*) ""
-  write(*,*) "Diffusion of Dust Particles"
+!  write(*,*) ""
+!  write(*,*) "Diffusion of Dust Particles"
 
   ! Open the output text file
   open(unit=lun,file="carma_vdiftest.txt",status="unknown")
@@ -104,8 +107,8 @@ subroutine test_diffusion()
   allocate(lat(NY,NX), lon(NY,NX))  
 
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
-                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
+!  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
+!                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=6)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 	carma_ptr => carma
@@ -116,13 +119,13 @@ subroutine test_diffusion()
   rmrat = 2.0
 !  rmin = 7.5e-4_f
   rmin = 2e-8_f
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   call CARMAGROUP_Create(carma, 1, "dust", rmin, rmrat, I_SPHERE, 1._f, .FALSE., rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
   
   ! Define the element
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "dust", rho, I_INVOLATILE, I_DUST, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
@@ -133,23 +136,23 @@ subroutine test_diffusion()
   
 ! Setup the CARMA processes to exercise
 !  do_explised = .true.
-  write(*,*) "  CARMA_Initialize(carma, rc, do_vdiff=.TRUE., do_explised=",do_explised,") ..."
+!  write(*,*) "  CARMA_Initialize(carma, rc, do_vdiff=.TRUE., do_explised=",do_explised,") ..."
 !  call CARMA_Initialize(carma, rc, do_vtran=.TRUE., do_vdiff=.FALSE., do_explised=do_explised)
   call CARMA_Initialize(carma, rc, do_vtran=.TRUE., vf_const=1e-10_f, do_vdiff=.TRUE., do_explised=do_explised)
 !  call CARMA_Initialize(carma, rc, do_vtran=.TRUE., do_vdiff=.TRUE., do_explised=do_explised)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
-  write(*,*) ""
+!  write(*,*) ""
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
@@ -176,11 +179,11 @@ subroutine test_diffusion()
   end do
   call GetStandardAtmosphere(zc, p=p, t=t)
 
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
 
 
   ! Vertical edge
@@ -189,12 +192,12 @@ subroutine test_diffusion()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
 
   			
   ! Put a blob in the model first bin at 8 km
@@ -204,11 +207,11 @@ subroutine test_diffusion()
                      ( p(i,:,:) / 287._f / t(i,:,:))
   end do
 
-  write(*,*)  ""
-  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)"
-  do i = 1, NZ
-	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)"
+!  do i = 1, NZ
+!	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1)
+!  end do
   
   ! Write output for the falltest
   write(lun,*) NZ
@@ -225,7 +228,7 @@ subroutine test_diffusion()
 
 		
   ! Iterate the model over a few time steps.
-  write(*,*) ""
+!  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
@@ -283,23 +286,23 @@ subroutine test_diffusion()
   ! Close the output file
   close(unit=lun)	
 	
-  write(*,*)  ""
-  write(*,*)  ""
-  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)"
-  do i = 1, NZ
-   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1)
-  end do
+!  write(*,*)  ""
+!  write(*,*)  ""
+!  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)"
+!  do i = 1, NZ
+!   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1)
+!  end do
 		
-  write(*,*)  ""
-  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
-  do i = 1, NZ
-   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
+!  do i = 1, NZ
+!   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
+!  end do
 
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc  
 end subroutine

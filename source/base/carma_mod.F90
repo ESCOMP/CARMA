@@ -858,7 +858,7 @@ contains
           rfi = imag(carma%f_group(igroup)%f_refidx(iwave))
         
           do ibin = 1, carma%f_NBIN
-write(*,*) "mie: ", iwave, igroup, ibin, carma%f_group(igroup)%f_r(ibin)          
+
             ! Assume the particle is homogeneous (no core).
             call miess(carma, &
                        carma%f_group(igroup)%f_r(ibin), &

@@ -10,6 +10,8 @@ program carma_inittest
   write(*,*) "CARMA Initializtion Test"
 
   call test_initialization()  
+  
+  write(*,*) "Done"
 end program
 
 
@@ -82,7 +84,7 @@ subroutine test_initialization()
   real(kind=f)          :: rmass(NBIN)
     
 
-  write(*,*) ""
+!  write(*,*) ""
 
   ! Define the particle-grid extent of the CARMA test
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=6)
@@ -91,7 +93,7 @@ subroutine test_initialization()
 
   ! Define the groups
   ! -----------------
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   rmrat = 2._f
   rmin = 3.e-7_f
   call CARMAGROUP_Create(carma, 1, 'mixed carbon', rmin, rmrat, I_SPHERE, 1._f, .FALSE., rc)
@@ -103,7 +105,7 @@ subroutine test_initialization()
   
   ! Define the elements
   ! -------------------
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
 
   ! Organic Carbon
   call CARMAELEMENT_Create(carma, 1, 1, "bc in mixed", 1._f, I_INVOLATILE, I_BLACKCARBON, rc)
@@ -157,7 +159,7 @@ subroutine test_initialization()
   
 
   write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc  
 end subroutine

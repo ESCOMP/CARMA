@@ -49,7 +49,7 @@ for an example of how to use multiple threads.
 <h3>4) Algorithms</h3>
 The algortihms look very much like the Fortran 77 code from CARMA 2.3. This was
 done to make it easier to transition code to the Fortran 90 framework and so that the
-Fortran 90 code would look familiar to CARMA 2.x developers. The common block variables have
+Fortran 90 code would look familiar to CARMA 3.x developers. The common block variables have
 been replaced by structures; however, the file <a href="../source/base/carma_globaer.h">carma_globaer.h</a>
 uses macros to map the old common bloack names to the new structure elements.
 <ul>
@@ -117,5 +117,25 @@ uses macros to map the old common bloack names to the new structure elements.
 	<li><a href="f90doc/wetr.html">wetr.F90</a></li>
 	<li><a href="f90doc/zeromicro.html">zeromicro.F90</a></li>
 </ul>
+
+<h3>5) Tests</h3>
+The test cases exercise the CARMA code. The tests are located in the tests subdirectory.
+Each test creates a file named carma_xxxtest.txt with the results and has a read_xxxtest.pro
+IDL file that is used to analyze and plot the test results.
+<ul>
+	<li><a href="f90doc/carma_bc2gtest.html">carma_bc2gtest.F90</a></li>
+	<li><a href="f90doc/carma_bcoctest.html">carma_bcoctest.F90</a></li>
+	<li><a href="f90doc/carma_coagtest.html">carma_coagtest.F90</a></li>
+	<li><a href="f90doc/carma_drydeptest.html">carma_drydeptest.F90</a></li>
+	<li><a href="f90doc/carma_falltest.html">carma_falltest.F90</a></li>
+	<li><a href="f90doc/carma_growtest.html">carma_growtest.F90</a></li>
+	<li><a href="f90doc/carma_inittest.html">carma_inittest.F90</a></li>
+	<li><a href="f90doc/carma_mietest.html">carma_mietest.F90</a></li>
+	<li><a href="f90doc/carma_nuctest.html">carma_nuctest.F90</a></li>
+	<li><a href="f90doc/carma_pheattest.html">carma_pheattest.F90</a></li>
+	<li><a href="f90doc/carma_sigmadrydeptest.html">carma_sigmadrydeptest.F90</a></li>
+	<li><a href="f90doc/carma_sigmafalltest.html">carma_sigmafalltest.F90</a></li>
+	<li><a href="f90doc/carma_swelltest.html">carma_swelltest.F90</a></li>
+	<li><a href="f90doc/carma_vdiftest.html">carma_vdiftest.F90</a></li>
 </body>
 </html>

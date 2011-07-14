@@ -1,7 +1,9 @@
 !! This code is to test the impact of particle swelling from
-!! relative humidity on sedimentation. Upon execution, a text
-!! file (carma_swelltest.txt) is generated.  The text file can 
-!! be read with the IDL procedure read_swelltest.pro.
+!! relative humidity on sedimentation using both the Gerber and
+!! the FItzgerald parameterizations.
+!! 
+!! Upon execution, a text file (carma_swelltest.txt) is generated.
+!! The text file can be read with the IDL procedure read_swelltest.pro.
 !!
 !! @author  Chuck Bardeen
 !! @version May-2009
@@ -9,14 +11,16 @@
 program carma_swelltest
   implicit none
 
-  write(*,*) "Paticle Swelling Test"
+  write(*,*) "Particle Swelling Test"
 
-  call test_sedimentation()  
+  call test_swelling()  
+  
+  write(*,*) "Done"
 end program
 
 !! Create 3 particle groups, one for each of the particle swelling
 !! parameterizations, and see if they fall at different rates.
-subroutine test_sedimentation()
+subroutine test_swelling()
   use carma_precision_mod 
   use carma_constants_mod 
   use carma_enums_mod 
@@ -96,8 +100,8 @@ subroutine test_sedimentation()
                            omp_get_thread_num
   
 
-  write(*,*) ""
-  write(*,*) "Sedimentation of Dust Particles"
+!  write(*,*) ""
+!  write(*,*) "Sedimentation of Dust Particles"
 
   ! Open the output text file
   open(unit=lun,file="carma_swelltest.txt",status="unknown")
@@ -111,14 +115,14 @@ subroutine test_sedimentation()
   allocate(relhum(NZ,NY,NX))
 
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create ..."
+!  write(*,*) "  CARMA_Create ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT)
   if (rc /=0) stop "    *** FAILED ***"
 	carma_ptr => carma
 
 
   ! Define the groups
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   rho = 2.65_f
   rmrat = 4.32_f
   rmin  = 1e-6_f
@@ -135,7 +139,7 @@ subroutine test_sedimentation()
   
   
   ! Define the elements
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "None", rho, I_INVOLATILE, I_SEA_SALT, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
@@ -151,22 +155,22 @@ subroutine test_sedimentation()
 !  if (rc /=0) stop "    *** FAILED ***"
   
   ! Setup the CARMA processes to exercise
-  write(*,*) "  Initialize ..."
+!  write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc, do_vtran=.TRUE.)
   if (rc /=0) stop "    *** FAILED ***"
   
 
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*) ""
+!  write(*,*) ""
   
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
@@ -194,11 +198,11 @@ subroutine test_sedimentation()
   end do
   call GetStandardAtmosphere(zc, p=p, t=t)
 
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
 
   ! Vertical edge
   do i = 1, NZP1
@@ -206,12 +210,12 @@ subroutine test_sedimentation()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
   
   
   ! Set up some arbitrary relative humidities, with the maximum at the bottom and
@@ -237,11 +241,11 @@ subroutine test_sedimentation()
     end do
   end do
 
-  write(*,*)  ""
-  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
   
   
   ! Write output for the falltest
@@ -261,7 +265,7 @@ subroutine test_sedimentation()
 
 		
   ! Iterate the model over a few time steps.
-  write(*,*) ""
+!  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
@@ -321,23 +325,23 @@ subroutine test_sedimentation()
   ! Close the output file
   close(unit=lun)	
 	
-  write(*,*)  ""
-  write(*,*)  ""
-  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*,*)  ""
+!  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
 		
-  write(*,*)  ""
-  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
-  do i = 1, NZ
-   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
+!  do i = 1, NZ
+!   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
+!  end do
 
   if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** FAILED ***"
 end subroutine

@@ -1,23 +1,26 @@
 !! This code is to test the impact of particle heating upon
-!! condensational growth. Upon execution, a text
-!! file (carma_pheattest.txt) is generated.  The text file can 
-!! be read with the IDL procedure read_swelltest.pro.
+!! condensational growth.
+!!
+!! Upon execution, a text file (carma_pheattest.txt) is generated.
+!! The text file can be read with the IDL procedure read_pheattest.pro.
 !!
 !! @author  Chuck Bardeen
 !! @version May-2009
 
-program carma_growtest
+program carma_pheattest
   implicit none
 
   write(*,*) "Particle Heating Test"
 
-  call test_grow_simple()  
+  call test_grow_pheat()  
+  
+  write(*,*) "Done"
 end program
 
-!! Just have one grid box. In that grid box, but an initial concentration
+!! Just have one grid box. In that grid box, put an initial concentration
 !! of drops at the smallest size, then allow that to grow using a gas. The
 !! total mas of drops + gas should be conserved.
-subroutine test_grow_simple()
+subroutine test_grow_pheat()
   use carma_precision_mod 
   use carma_constants_mod 
   use carma_enums_mod 
@@ -119,8 +122,8 @@ subroutine test_grow_simple()
   real(kind=f)          :: drh
   
 
-  write(*,*) ""
-  write(*,*) "Particle Growth - Simple"
+!  write(*,*) ""
+!  write(*,*) "Particle Growth - Simple"
 
   ! Open the output text file
   open(unit=lun,file="carma_pheattest.txt",status="unknown")
@@ -147,14 +150,14 @@ subroutine test_grow_simple()
 
 
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create ..."
+!  write(*,*) "  CARMA_Create ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT, wave=wave, dwave=dwave)
   if (rc /=0) stop "    *** FAILED ***"
 	carma_ptr => carma
 
 
   ! Define the groups
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   
   ! PMC
   rmin  = 2e-8_f
@@ -168,12 +171,12 @@ subroutine test_grow_simple()
   
   
   ! Define the elements
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "Ice Crystal", RHO_I, I_VOLATILE, I_H2O, rc)
   if (rc /=0) stop "    *** FAILED ***"
   
   ! Define the gases
-  write(*,*) "  Add Gase(s) ..."
+!  write(*,*) "  Add Gase(s) ..."
   call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, I_GCOMP_H2O, rc)
 !  call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_GOFF1946, I_GCOMP_H2O, rc)
   if (rc /=0) stop "    *** FAILED ***"
@@ -183,7 +186,7 @@ subroutine test_grow_simple()
   call CARMA_AddGrowth(carma, 1, 1, rc)
 
 
-  write(*,*) "  Initialize ..."
+!  write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc, do_grow=.true., do_pheat=.true., do_pheatatm=.true., do_thermo=.true.)
 !  call CARMA_Initialize(carma, rc, do_grow=.true., do_pheat=.true.)
 !  call CARMA_Initialize(carma, rc, do_grow=.true.)
@@ -191,21 +194,21 @@ subroutine test_grow_simple()
   
 
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
 
   ! Print the Gas Information
-  write(*,*)  ""
-  call dumpGas(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpGas(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*) ""
+!  write(*,*) ""
   
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
@@ -295,18 +298,18 @@ subroutine test_grow_simple()
   radint(1, :)  = radint(1, :) / 4. / PI / dwave(:)
   
   
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
   
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
   
    
   write(lun,*) 0
@@ -324,13 +327,13 @@ subroutine test_grow_simple()
   write(lun,'(1e12.3)') real(t(1,NY,NX))
 		
   ! Iterate the model over a few time steps.
-  write(*,*) ""
+!  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
-    write(*,'(i4,3f9.3)') istep, t(1,1,1), tpart(1,1,1,1,1), tpart(1,1,1,1,NBIN-1)
+!    write(*,'(i4,3f9.3)') istep, t(1,1,1), tpart(1,1,1,1,1), tpart(1,1,1,1,NBIN-1)
     
     ! NOTE: This means that there should not be any looping over NX or NY done
     ! in any other CARMA routines. They should only loop over NZ.
@@ -405,12 +408,12 @@ subroutine test_grow_simple()
   ! Close the output file
   close(unit=lun)	
 	
-  write(*,*)  ""
+!  write(*,*)  ""
 
   if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** FAILED ***"
 end subroutine

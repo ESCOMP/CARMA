@@ -1,7 +1,8 @@
 !! This code is to demonstrate the CARMA sedimentation routines
-!! for an example of falling particles.  Upon execution, a text
-!! file (carma_falltest.txt) is generated.  The text file can 
-!! be read with the IDL procedure read_falltest.pro.
+!! using a constant fall velocity.
+!!
+!! Upon execution, a text file (carma_falltest.txt) is generated.
+!! The text file can be read with the IDL procedure read_falltest.pro.
 !!
 !! @author Peter Colarco (based on Chuck Bardeen's code)
 !! @version Feb-2009
@@ -9,9 +10,11 @@
 program carma_falltest
   implicit none
 
-  write(*,*) "Simple CARMA Sedimentation Code Demonstration"
+  write(*,*) "Sedimentation Test"
 
   call test_sedimentation()  
+  
+  write(*,*) "Done"
 end program
 
 
@@ -87,8 +90,8 @@ subroutine test_sedimentation()
 !  real(kind=f)          :: vf_const = 0.0_f
     
 
-  write(*,*) ""
-  write(*,*) "Sedimentation of Dust Particles"
+!  write(*,*) ""
+!  write(*,*) "Sedimentation of Dust Particles"
 
   ! Open the output text file
   open(unit=lun,file="carma_falltest.txt",status="unknown")
@@ -101,8 +104,8 @@ subroutine test_sedimentation()
   allocate(lat(NY,NX), lon(NY,NX))  
 
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
-                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
+!  write(*,*) "  CARMA_Create(carma, ", NBIN,    ", ", NELEM, ", ", NGROUP, &
+!                                 ", ", NSOLUTE, ", ", NGAS, ", rc, 6) ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=6)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 	carma_ptr => carma
@@ -112,13 +115,13 @@ subroutine test_sedimentation()
   rho = 2.65_f
   rmrat = 2.0
   rmin = 7.5e-4_f
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   call CARMAGROUP_Create(carma, 1, "dust", rmin, rmrat, I_SPHERE, 1._f, .FALSE., rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
   
   ! Define the element
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "dust", rho, I_INVOLATILE, I_DUST, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
@@ -130,22 +133,22 @@ subroutine test_sedimentation()
 ! Setup the CARMA processes to exercise
 !  do_explised = .true.
 !  vf_const = 2.0
-  write(*,*) "  CARMA_Initialize(carma, rc, do_vtran=.TRUE., "// &
-               "vf_const=", vf_const,", do_explised=",do_explised,") ..."
+!  write(*,*) "  CARMA_Initialize(carma, rc, do_vtran=.TRUE., "// &
+!               "vf_const=", vf_const,", do_explised=",do_explised,") ..."
   call CARMA_Initialize(carma, rc, do_vtran=.TRUE., vf_const=vf_const, do_explised=do_explised)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
-  write(*,*) ""
+!  write(*,*) ""
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
@@ -172,11 +175,11 @@ subroutine test_sedimentation()
   end do
   call GetStandardAtmosphere(zc, p=p, t=t)
 
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
 
 
   ! Vertical edge
@@ -185,12 +188,12 @@ subroutine test_sedimentation()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
 
   			
   ! Put a blob in the model first bin at 8 km
@@ -200,11 +203,11 @@ subroutine test_sedimentation()
                      ( p(i,:,:) / 287._f / t(i,:,:))
   end do
 
-  write(*,*)  ""
-  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a6, 4a12)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
   
   ! Write output for the falltest
   write(lun,*) NZ
@@ -221,7 +224,7 @@ subroutine test_sedimentation()
 
 
   ! Iterate the model over a few time steps.
-  write(*,*) ""
+ ! write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
@@ -279,23 +282,23 @@ subroutine test_sedimentation()
   ! Close the output file
   close(unit=lun)	
 	
-  write(*,*)  ""
-  write(*,*)  ""
-  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
-  do i = 1, NZ
-   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
-  end do
+!  write(*,*)  ""
+!  write(*,*)  ""
+!  write(*, '(a8, 8a14)') "level", "mmr(i,NY,NX,1)", "mmr(i,NY,NX,2)"
+!  do i = 1, NZ
+!   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
+!  end do
 		
-  write(*,*)  ""
-  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
-  do i = 1, NZ
-   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
-  end do
+!  write(*,*)  ""
+!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
+!  do i = 1, NZ
+!   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
+!  end do
 
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc  
 end subroutine

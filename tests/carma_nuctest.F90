@@ -1,6 +1,7 @@
-!! This code is to test the nucleation routines. Upon execution,
-!! a text file (carma_nuctest.txt) is generated.  The text file can 
-!! be read with the IDL procedure read_nuctest.pro.
+!! This code is to test the aerosol freezing routines for ice.
+!!
+!! Upon execution, a text file (carma_nuctest.txt) is generated.
+!! The text file can be read with the IDL procedure read_nuctest.pro.
 !!
 !! @author  Chuck Bardeen
 !! @version July-2009
@@ -8,14 +9,17 @@
 program carma_nuctest
   implicit none
 
-  write(*,*) "Nucleation Test"
+  write(*,*) "Nucleation & Growth Test"
 
   call test_nuc_ttl()  
+  
+  write(*,*) "Done"
 end program
 
 !! Just have one grid box. In that grid box, but an initial concentration
-!! of drops at the smallest size, then allow that to grow using a gas. The
-!! total mas of drops + gas should be conserved.
+!! of sulfate drops at the smallest size, then allow that to nucleate ice
+!! and then the ice can grow using a gas. The total mass of ice + gas should
+!! be conserved.
 subroutine test_nuc_ttl()
   use carma_precision_mod 
   use carma_constants_mod 
@@ -120,8 +124,8 @@ subroutine test_nuc_ttl()
   real(kind=f)          :: RHO_CN = 1.78_f
   
 
-  write(*,*) ""
-  write(*,*) "Particle Growth - Simple"
+!  write(*,*) ""
+!  write(*,*) "Particle Growth - Simple"
 
   ! Open the output text file
   open(unit=lun,file="carma_nuctest.txt",status="unknown")
@@ -141,14 +145,14 @@ subroutine test_nuc_ttl()
 
 
   ! Define the particle-grid extent of the CARMA test
-  write(*,*) "  CARMA_Create ..."
+!  write(*,*) "  CARMA_Create ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT)
   if (rc /=0) stop "    *** FAILED ***"
 	carma_ptr => carma
 
 
   ! Define the groups
-  write(*,*) "  Add Group(s) ..."
+!  write(*,*) "  Add Group(s) ..."
   call CARMAGROUP_Create(carma, 1, "Sulfate IN", 1.e-7_f, 4._f, I_SPHERE, 1._f, .false., &
                          rc, do_wetdep=.true., do_drydep=.false., solfac=0.3_f, &
                          scavcoef=0.1_f, shortname="CRIN", do_mie=.false.)
@@ -161,7 +165,7 @@ subroutine test_nuc_ttl()
   
   
   ! Define the elements
-  write(*,*) "  Add Element(s) ..."
+!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "Sulfate IN", RHO_CN, I_INVOLATILE, I_H2SO4, rc, shortname="CRIN", isolute=1)
   if (rc /=0) stop "    *** FAILED ***"
 
@@ -178,7 +182,7 @@ subroutine test_nuc_ttl()
 
 
   ! Define the gases
-  write(*,*) "  Add Gase(s) ..."
+!  write(*,*) "  Add Gase(s) ..."
   call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, I_GCOMP_H2O, rc, shortname='Q')
   if (rc /=0) stop "    *** FAILED ***"
 
@@ -192,27 +196,27 @@ subroutine test_nuc_ttl()
   if (rc /=0) stop "    *** FAILED ***"
 
 
-  write(*,*) "  Initialize ..."
+!  write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc, do_grow=.true.)
   if (rc /=0) stop "    *** FAILED ***"
   
 
   ! Print the Group Information
-  write(*,*)  ""
-  call dumpGroup(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpGroup(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
   
   ! Print the Element Information
-  write(*,*)  ""
-  call dumpElement(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpElement(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
 
   ! Print the Gas Information
-  write(*,*)  ""
-  call dumpGas(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+!  write(*,*)  ""
+!  call dumpGas(carma, rc)
+!  if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*) ""
+!  write(*,*) ""
   
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
@@ -292,18 +296,18 @@ subroutine test_nuc_ttl()
   end do
   
   
-  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-  do i = 1, NZ
-    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-  end do
+!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
+!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
+!  do i = 1, NZ
+!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
+!  end do
   
-  write(*,*) ""
-  write(*,'(a6, 2a12)') "level", "zl", "pl"
-  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-  do i = 1, NZP1
-    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-  end do
+!  write(*,*) ""
+!  write(*,'(a6, 2a12)') "level", "zl", "pl"
+!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
+!  do i = 1, NZP1
+!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
+!  end do
   
    
   write(lun,*) 0
@@ -319,7 +323,7 @@ subroutine test_nuc_ttl()
   end do
 
   ! Iterate the model over a few time steps.
-  write(*,*) ""
+!  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
@@ -404,12 +408,12 @@ subroutine test_nuc_ttl()
   ! Close the output file
   close(unit=lun)	
 	
-  write(*,*)  ""
+!  write(*,*)  ""
 
   if (rc /=0) stop "    *** FAILED ***"
 
-  write(*,*)  ""
-  write(*,*) "  CARMA_Destroy() ..."
+!  write(*,*)  ""
+!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** FAILED ***"
 end subroutine
