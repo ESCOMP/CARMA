@@ -99,93 +99,10 @@ subroutine growevapl(carma, cstate, iz, rc)
 
         do ibin = 1,NBIN-1
 
-          ! Consider growth of average particle at radius <rup(ibin,igroup)>.
-          ! 
-          ! Treat solute effect first: <asol> is solute factor.
-          !
-          ! Only need to treat solute effect if <nelemg(igroup)> > 1
-          if( nelemg(igroup) .le. 1 )then
-            argsol = 0._f
-          else
-  
-            ! <condm> is mass concentration of condensed gas <igas> in particle.
-            ! <nother> is number of other elements in group having mass.
-            ! <otherm> are mass concentrations of other elements in particle group.
-            ! <othermtot> is total mass concentrations of other elements in particle.
-            nother = 0
-            othermtot = 0._f
+          ! Determine the growth rate (dmdt). This calculation may take into account
+          ! radiative effects on the particle which can affect the growth rates.
+          call pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt(ibin), rc)
 
-            ! <ieoth_rel> is relative element number of other element in group.
-            do ieoth_rel  = 2,nelemg(igroup)       
-
-              ! <ieoth_abs> is absolute element number of other element.
-              ieoth_abs = iepart + ieoth_rel - 1    
-
-              if( itype(ieoth_abs) .eq. I_COREMASS )then
-                nother = nother + 1
-                ieother(nother) = ieoth_abs
-                otherm(nother) = pc(iz,ibin,ieoth_abs)
-                othermtot = othermtot + otherm(nother)
-               endif
-
-            enddo
-
-            condm = rmass(ibin,igroup)*pc(iz,ibin,iepart) - othermtot
-
-            if( condm .le. 0._f )then
-
-              ! Zero mass for the condensate -- <asol> is a small value << 1
-              argsol = 1e6_f     
-
-            else
-
-              ! Sum over masses of other elements in group for argument of solute factor.
-              argsol = 0._f
-              
-              do jother = 1,nother
-                isol = isolelem(ieother(jother))
-                argsol = argsol + sol_ions(isol)*otherm(jother)/solwtmol(isol)
-              enddo 
-             
-              argsol = argsol*gwtmol(igas)/condm
-            endif 
-          endif    ! nelemg(igroup) > 1
-
-          ! <akas> is combined kelvin (curvature) and solute factors.
-          !
-          ! Ignore solute factor for ice particles.
-          if( is_grp_ice(igroup) )then
-            expon = akelvini(iz,igas) / rup(ibin,igroup)
-          else
-            expon = akelvin(iz,igas)  / rup(ibin,igroup) - argsol 
-          endif
-          
-          expon = max(-POWMAX, expon)
-          akas = exp( expon )
-
-          ! Trick for removing haze droplets from droplet bins:
-          ! allows haze droplets to exist under supersaturated conditions;
-          ! when below supersaturation, haze droplets will evaporate.
-!          if( (.not. is_grp_ice(igroup)) .and. (akas .lt. 1._f) .and. &
-!              (supsatl(iz,igas) .lt. 0._f) ) akas = 1._f
-
-          ! <dmdt> is growth rate in mass space [g/s].
-          g0 =  gro(iz,ibin+1,igroup)
-          g1 = gro1(iz,ibin+1,igroup)
-          g2 = gro2(iz,igroup)
-
-          if( is_grp_ice(igroup) )then
-            ss   = supsati(iz,igas)
-            pvap = pvapi(iz,igas)
-          else
-            ss = supsatl(iz,igas)
-            pvap = pvapl(iz,igas)
-          endif
-          
-          
-          dmdt(ibin) = pvap * ( ss + ONE - akas - &
-                     qrad(iz,ibin+1,igroup) * g1 * g2 ) * &
-                     g0 / ( 1._f + g0 * g1 * pvap )
         enddo     ! ibin = 1,NBIN-1
 
         ! Now calculate condensation/evaporation production and loss rates.

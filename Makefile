@@ -26,7 +26,7 @@ ifeq ($(FORTRAN),ifort)
 #  FFLAGS += -use-asm
 
   # Debug options.
-#  FFLAGS += -g -O0 -traceback -fp-stack-check -check bounds -check uninit -fpe0 -ftrapuv
+  FFLAGS += -g -O0 -traceback -fp-stack-check -check bounds -check uninit -fpe0 -ftrapuv
   
   # Open/MP
   FFLAGS += -openmp
@@ -95,6 +95,8 @@ MIETEST.exe : $(CARMA_OBJ) carma_mietest.o carma_testutils.o
 	$(FORTRAN) $(FFLAGS) -o MIETEST.exe carma_mietest.o carma_testutils.o  $(CARMA_OBJ)
 NUCTEST.exe : $(CARMA_OBJ) carma_nuctest.o carma_testutils.o 
 	$(FORTRAN) $(FFLAGS) -o NUCTEST.exe carma_nuctest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+PHEATTEST.exe : $(CARMA_OBJ) carma_pheattest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o PHEATTEST.exe carma_pheattest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o carma_testutils.o 
 	$(FORTRAN) $(FFLAGS) -o SWELLTEST.exe carma_swelltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 VDIFTEST.exe : $(CARMA_OBJ) carma_vdiftest.o carma_testutils.o 
@@ -105,7 +107,7 @@ SIGMADRYDEPTEST.exe : $(CARMA_OBJ) carma_sigmadrydeptest.o carma_testutils.o atm
 	$(FORTRAN) $(FFLAGS) -o SIGMADRYDEPTEST.exe carma_sigmadrydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe CARMA.exe
+all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe PHEATTEST.exe CARMA.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)

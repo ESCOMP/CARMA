@@ -37,21 +37,8 @@ subroutine setupvf_heymsfield2010(carma, cstate, j, rc)
   real(kind=f), parameter  :: c0      = 0.35_f
   real(kind=f), parameter  :: delta0  = 8.0_f
   
-  real(kind=f)             :: ar                  ! area ratio
   real(kind=f)             :: dmax                ! maximum diameter
   
-  
-  ! The area ratio is the ratio of the area of the shape to the area of the
-  ! circumscribing circle.
-  !
-  ! Default to a sphere.
-  if (ishape(j) .eq. I_HEXAGON) then
-    ar = 0.8270_f
-  else if (ishape(j) .eq. I_CYLINDER) then
-    ar = 1.0_f
-  else
-    ar = 1.0_f
-  end if
   
   ! Loop over all atltitudes.
   do k = 1, NZ
@@ -69,7 +56,8 @@ subroutine setupvf_heymsfield2010(carma, cstate, j, rc)
     do i = 1,NBIN
     
       ! <rkn> is knudsen number
-      rkn = rmfp / r_wet(k,i,j)
+!      rkn = rmfp / r(i,j) 
+      rkn = rmfp / (r_wet(k,i,j) * rrat(i,j)) 
 
       ! <bpm> is the slip correction factor, the correction term for
       ! non-continuum effects.  Also used to calculate coagulation kernels
@@ -78,29 +66,9 @@ subroutine setupvf_heymsfield2010(carma, cstate, j, rc)
       expon = max(-POWMAX, expon)
       bpm(k,i,j) = 1._f + (1.246_f*rkn + 0.42_f*rkn*exp(expon))
 
-      dmax = 2._f * r(i,j)
+      dmax = 2._f * r_wet(k,i,j) * rrat(i,j)
       
-      if (ishape(j) .eq. I_HEXAGON) then
-      
-        ! Get the minimum diameter of the hexagon.
-        dmax = dmax * 0.8456_f * eshape(j)**(-ONE/3._f)
-        
-        ! And now get the maximum diameter.
-        dmax = 2._f / sqrt(3._f) * dmax
-      else if (ishape(j) .eq. I_CYLINDER) then
-        dmax = dmax * 0.8736_f * eshape(j)**(-ONE/3._f)
-      end if
-
-      ! Determine the area ratio based on the formulation given in Schmitt and Heymsfield
-      ! [2009].
-!      if (dmax <= 200.e-4_f) then
-!        ar = exp(-38._f * dmax)
-!      else
-!        ar = 0.16_f * (dmax ** (-0.27_f))
-!      end if
-
-  
-      x = (rhoa_cgs / (rmu(k)**2)) * ((8._f * rmass(i,j) * GRAV) / (PI * (ar**0.5_f)))
+      x = (rhoa_cgs / (rmu(k)**2)) * ((8._f * rmass(i,j) * GRAV) / (PI * (arat(i,j)**0.5_f)))
       
       ! Apply the slip correction factor. This is not included in the formulation
       ! from Heymsfield and Westbrook [2010].

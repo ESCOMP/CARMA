@@ -36,6 +36,7 @@ subroutine setupcoag(carma, rc)
   integer      :: irow, icol
   logical      :: isCoag
   integer      :: igtest
+  real(kind=f) :: pkernl, pkernu
 
 
   ! NOTE: Moved this section from from setupckern.f, since it is not dependent on the
@@ -304,6 +305,45 @@ subroutine setupcoag(carma, rc)
     enddo
   enddo
 
+
+! NOTE: Split ckernel out of pkernel, so that it can be made independent of model state.
+! It also reduces the size of the tables and should improve the intialization time.
+
+!  Calculate variables needed in routine coagp.f
+  do igrp = 1, NGROUP
+    do jg = 1, NGROUP
+      do ig = 1, NGROUP
+
+        if( igrp .eq. icoag(ig,jg) ) then
+        
+          do j = 1, NBIN
+            do i = 1, NBIN
+
+              ibin = kbin(igrp,ig,jg,i,j)
+              rmk = rmass(ibin,igrp)
+              rmsum = rmass(i,ig) + rmass(j,jg)
+
+              pkernl = (rmrat(igrp)*rmk - rmsum) / (rmrat(igrp)*rmk - rmk)
+                        
+              pkernu = (rmsum - rmk) / (rmrat(igrp)*rmk - rmk)
+
+              if( ibin .eq. NBIN )then
+                pkernl = rmsum / rmass(ibin,igrp)
+                pkernu = 0._f
+              endif
+  
+              pkernel(i,j,ig,jg,igrp,1) = pkernu * rmass(i,ig)/rmsum
+              pkernel(i,j,ig,jg,igrp,2) = pkernl * rmass(i,ig)/rmsum
+              pkernel(i,j,ig,jg,igrp,3) = pkernu * rmk*rmrat(igrp)/rmsum
+              pkernel(i,j,ig,jg,igrp,4) = pkernl * rmk/rmsum
+              pkernel(i,j,ig,jg,igrp,5) = pkernu * ( rmk*rmrat(igrp)/rmsum )**2
+              pkernel(i,j,ig,jg,igrp,6) = pkernl * ( rmk/rmsum )**2
+            enddo
+          enddo
+        endif
+      enddo
+    enddo
+  enddo
 
   ! Do some extra debugging reports  (normally commented)
   if (do_print_init) then

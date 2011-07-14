@@ -44,7 +44,7 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
   call totalcondensate(carma, cstate, iz, total_ice, total_liquid, rc)
   
   ! Update each gas concentration using gas production rates
-  rlheat = 0._f
+  rlheat(iz) = 0._f
 
   do igas = 1,NGAS
   
@@ -52,7 +52,7 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
     ! and rlheat, recalculate the total change in condensate to determine the change
     ! in gas and energy.
     gasprod(igas) = ((previous_ice(igas) - total_ice(igas)) + (previous_liquid(igas) - total_liquid(igas))) / dtime
-    rlheat        = rlheat - ((previous_ice(igas) - total_ice(igas)) * (rlhe(iz,igas) + rlhm(iz,igas)) + &
+    rlheat(iz)    = rlheat(iz) - ((previous_ice(igas) - total_ice(igas)) * (rlhe(iz,igas) + rlhm(iz,igas)) + &
                                      (previous_liquid(igas) - total_liquid(igas)) * (rlhe(iz,igas))) / (CP * rhoa(iz) * dtime)     
 
     ! Don't let the gas concentration go negative.

@@ -1,10 +1,29 @@
 Tag name: 
 Originator(s): Charles Bardeen
+Date: July 13, 2011
+
+One-line Summary:
+
+Support for particle heating and some bug fixes
+
+Purpose of changes:
+
+Added support for passing radiative intensity into CARMA and
+having that affect the particle growth rates and partcile
+temperature.This is exercised by carma_pheattest.F90. Changed
+initialization, so pkernel is only calcualted once to speed
+things up a little. Made area ratio and radius ratio group
+properties, so there is more flexibility for setting group
+shape.
+
+===============================================================
+Tag name: 
+Originator(s): Charles Bardeen
 Date: June 8, 2011
 
 One-line Summary:
 
-SUpport for PGI and g95 compilers
+Support for PGI and g95 compilers
 
 Purpose of changes:
 

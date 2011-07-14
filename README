@@ -29,18 +29,49 @@ is used to build a version with extra debug information (DEBUG). The scripts can
 also be used to build individual executables. For example, to build and run the
 NUCTEST test routine and to have the run performed in a directory named nuctest
 (this part is optional) execute:
-
-  setenv CARMA_CASE nuctest
   
   make-carma.csh NUCTESTexe
   run-carma.csh NUCTEST.exe
 
 NOTE: bash and ksh users will need to use export rather than setenv.
 
+Plotting routines have been created for each test in IDL. If you set CARMA_IDL
+to be the path to your copy of IDL, then IDL should be launched automatical, and
+the messages will indicate the program that you should run. On the Mac, you would
+set a path like:
+
+  setenv CARMA_IDL=/Applications/itt/idl/idl80/bin/idl
+
+After exectuing
+
+ run-carma.csh NUCTEST.exe
+ 
+you should see an IDL prompt that looks like this:
+
+
+    ** Finished at Wed Jul 13 20:41:11 MDT 2011 **
+
+  Running the IDL analysis routine read_nuctest.pro
+    To run the test, in IDL you need to type the command: .r read_nuctest.pro
+    To exit IDL, type the command: exit
+
+  IDL Version 8.0, Mac OS X (darwin x86_64 m64). (c) 2010, ITT Visual Information Solutions
+  Installation number: 95183-2518.
+  Licensed for use by: ACD:acd-license:Linux.FL
+
+  IDL> 
+  
+Type:
+
+  .r read_nuctest.pro
+  
+and you should get a plot generated showing the results of the test.
+
+
 Documentation of the code is generated automatically by the make scripts using
-the prgoram f90doc, which is located in the bin directory. The generated
+the program f90doc, which is located in the bin directory. The generated
 documentation is stored as html files in the directory doc/f90doc. To start
-browing the documentation, open the file doc/index.html.
+browsing the documentation, open the file doc/index.html.
 
 The model supports OPEN/MP, which will allow the model to use multiple
 processors if the model is called with multiple columns. You need to add
@@ -61,9 +92,9 @@ The entire project can be put into a tar file, using the command
 
   make-carma.csh tar
   
-This will create a tar file called CARMA.tgz in the current build directory,
+This will create a tar file called CARMA.tar in the current build directory,
 which defaults to build/carma. NOTE: This tar file does not contain the
-contain the contents of the build, doc or run directories since they are
+contents of the build, doc or run directories since they are
 products of the make and run scripts.
 
 CARMA has a ChangeLog in the doc directory. It contains the revision history
@@ -73,4 +104,4 @@ which is also stored in the doc directory.
 
 
 Chuck Bardeen, Pete Colarco and Jamie Smith
-Aug-2010
+Jul-2011

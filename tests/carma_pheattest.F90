@@ -1,5 +1,6 @@
-!! This code is to test condensational growth. Upon execution,
-!! a text file (carma_growtest.txt) is generated.  The text file can 
+!! This code is to test the impact of particle heating upon
+!! condensational growth. Upon execution, a text
+!! file (carma_pheattest.txt) is generated.  The text file can 
 !! be read with the IDL procedure read_swelltest.pro.
 !!
 !! @author  Chuck Bardeen
@@ -8,7 +9,7 @@
 program carma_growtest
   implicit none
 
-  write(*,*) "Growth Test"
+  write(*,*) "Particle Heating Test"
 
   call test_grow_simple()  
 end program
@@ -35,11 +36,12 @@ subroutine test_grow_simple()
   integer, parameter        :: NZ           = 1
   integer, parameter        :: NZP1         = NZ+1
   integer, parameter        :: NELEM        = 1
-  integer, parameter        :: NBIN         = 18
+  integer, parameter        :: NBIN         = 28   ! PMC
+!  integer, parameter        :: NBIN         = 18   ! TTL
   integer, parameter        :: NGROUP       = 1
   integer, parameter        :: NSOLUTE      = 0
   integer, parameter        :: NGAS         = 1
-  integer, parameter        :: NWAVE        = 0
+  integer, parameter        :: NWAVE        = 4
   integer, parameter        :: LUNOPRT      = 6
   integer, parameter        :: nstep        = 50
   
@@ -50,7 +52,7 @@ subroutine test_grow_simple()
 !  real(kind=f), parameter   :: dtime  = 1._f
 !  real(kind=f), parameter   :: dtime  = 5._f
 !  real(kind=f), parameter   :: dtime  = 10._f
-  real(kind=f), parameter   :: dtime  = 100._f
+  real(kind=f), parameter   :: dtime  = 500._f
 !  real(kind=f), parameter   :: dtime  = 1000._f
 !  real(kind=f), parameter   :: dtime  = 1800._f
 !  real(kind=f), parameter   :: dtime  = 5000._f
@@ -84,6 +86,7 @@ subroutine test_grow_simple()
   real(kind=f), allocatable   :: rho(:,:,:)
   
   real(kind=f), allocatable   :: mmr(:,:,:,:,:)
+  real(kind=f), allocatable   :: tpart(:,:,:,:,:)
   real(kind=f), allocatable   :: mmr_gas(:,:,:,:)
   real(kind=f), allocatable   :: satliq(:,:,:,:)
   real(kind=f), allocatable   :: satice(:,:,:,:)
@@ -93,6 +96,11 @@ subroutine test_grow_simple()
 
   real(kind=f), allocatable          :: lat(:,:)
   real(kind=f), allocatable          :: lon(:,:)
+  
+  real(kind=f), allocatable          :: wave(:)       ! wavelength centers (cm)
+  real(kind=f), allocatable          :: dwave(:)      ! wavelength width (cm)
+  real(kind=f), allocatable          :: radint(:,:)   ! radiative intensity (W/m2/sr/cm)
+  complex(kind=f), allocatable       :: refidx(:)     ! refractive index
   
   integer               :: i
   integer               :: ix
@@ -115,35 +123,47 @@ subroutine test_grow_simple()
   write(*,*) "Particle Growth - Simple"
 
   ! Open the output text file
-  open(unit=lun,file="carma_growtest.txt",status="unknown")
+  open(unit=lun,file="carma_pheattest.txt",status="unknown")
   
   ! Allocate the arrays that we need for the model
   allocate(xc(NZ,NY,NX), dx(NZ,NY,NX), yc(NZ,NY,NX), dy(NZ,NY,NX), &
            zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
            t(NZ,NY,NX), rho(NZ,NY,NX)) 
   allocate(mmr(NZ,NY,NX,NELEM,NBIN))
+  allocate(tpart(NZ,NY,NX,NELEM,NBIN))
   allocate(mmr_gas(NZ,NY,NX,NGAS))
   allocate(satliq(NZ,NY,NX,NGAS))
   allocate(satice(NZ,NY,NX,NGAS))
   allocate(r(NBIN))
   allocate(rmass(NBIN))
-  allocate(lat(NY,NX), lon(NY,NX))  
+  allocate(lat(NY,NX), lon(NY,NX))
+  allocate(wave(NWAVE), dwave(NWAVE), refidx(NWAVE), radint(NZ,NWAVE))
+
+
+  ! Define the band centers and widths (in cm) and the refractive indices.
+  wave(:)   = (/ 0.25e-4_f, 0.75e-4_f, 3.0e-4_f, 10e-4_f/)
+  dwave(:)  = (/ 0.5e-4_f, 0.5e-4_f, 4.0e-4_f, 10e-4_f/)
+  refidx(:) = (/ (1.35090_f, 2e-11_f), (1.30590_f, 5.87000e-08_f), (1.03900, 4.38000e-01_f), (1.19260_f, 5.00800e-02_f) /)   
 
 
   ! Define the particle-grid extent of the CARMA test
   write(*,*) "  CARMA_Create ..."
-  call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT)
+  call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT, wave=wave, dwave=dwave)
   if (rc /=0) stop "    *** FAILED ***"
 	carma_ptr => carma
 
 
   ! Define the groups
   write(*,*) "  Add Group(s) ..."
-  rmrat = 2._f
-!  rmin  = 1e-8_f
+  
+  ! PMC
+  rmin  = 2e-8_f
+  rmrat = 2.6
+
+  ! TTL
 !  rmin  = 1e-4_f
-  rmin  = 1e-4_f
-  call CARMAGROUP_Create(carma, 1, "Ice Crystal", rmin, rmrat, I_SPHERE, 1._f, .TRUE., rc)
+!  rmrat = 2._f
+  call CARMAGROUP_Create(carma, 1, "Ice Crystal", rmin, rmrat, I_SPHERE, 1._f, .TRUE., rc, refidx=refidx, do_mie=.true.)
   if (rc /=0) stop "    *** FAILED ***"
   
   
@@ -164,7 +184,9 @@ subroutine test_grow_simple()
 
 
   write(*,*) "  Initialize ..."
-  call CARMA_Initialize(carma, rc, do_grow=.true.)
+  call CARMA_Initialize(carma, rc, do_grow=.true., do_pheat=.true., do_pheatatm=.true., do_thermo=.true.)
+!  call CARMA_Initialize(carma, rc, do_grow=.true., do_pheat=.true.)
+!  call CARMA_Initialize(carma, rc, do_grow=.true.)
   if (rc /=0) stop "    *** FAILED ***"
   
 
@@ -219,15 +241,6 @@ subroutine test_grow_simple()
   call GetStandardAtmosphere(zl, p=pl)
 
   
-  ! Setup up an arbitray mass mixing ratio of water vapor, so there is someting to
-  ! grow the particles.
-  mmr_gas(:,:,:,:) = 1e-2_f
-  			
-  ! Start with some initial water drops in the smallest bin, which can then grow
-  ! to larger sizes in the presence of the water vapor.
-  mmr(:,:,:,:,1) = 1e-6_f
-  
-  
   ! Write output for the test
   write(lun,*) NGROUP, NELEM, NBIN, NGAS
 
@@ -245,16 +258,42 @@ subroutine test_grow_simple()
   !
   ! p, T, z, mmrgas, rmin, particle concentration
   ! 90 hPa, 190 K, 17 km, 3.5e-6 g/g, 5 um, 0.1/cm^3.
-  p(1,:,:)         = 90._f * 100._f
-  zc(1,:,:)        = 17000._f
-  t(1,:,:)         = 190._f
+!  p(1,:,:)         = 90._f * 100._f
+!  zc(1,:,:)        = 17000._f
+!  t(1,:,:)         = 190._f
+!  zl(1,:,:)        = zc(1,:,:) - deltaz
+!  zl(2,:,:)        = zc(1,:,:) + deltaz
+!  rho(1,:,:)       = (p(1,:,:) * 10._f) / (R_AIR * t(1,:,:)) * (1e-3_f * 1e6_f)
+!  pl(1,:,:)        = p(1,:,:) - (zl(1,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
+!  pl(2,:,:)        = p(1,:,:) - (zl(2,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
+!  mmr_gas(:,:,:,:) = 3.5e-6_f
+!  mmr(:,:,:,1,1)   = (0.1_f * rmass(1) * (1e-3_f * 1e6_f)) / rho(:,:,:)
+  
+
+  ! Try Mesopause Conditions ...
+  !
+  ! p, T, z, mmrgas, rmin, particle concentration
+  ! 0.005 hPa, 150 K, 82.5 km, 5e-6 g/g, 0.1 nm, 100/cm^3.
+  p(1,:,:)         = 0.005_f * 100._f
+  zc(1,:,:)        = 82500._f
+  t(1,:,:)         = 140._f
   zl(1,:,:)        = zc(1,:,:) - deltaz
   zl(2,:,:)        = zc(1,:,:) + deltaz
   rho(1,:,:)       = (p(1,:,:) * 10._f) / (R_AIR * t(1,:,:)) * (1e-3_f * 1e6_f)
   pl(1,:,:)        = p(1,:,:) - (zl(1,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
   pl(2,:,:)        = p(1,:,:) - (zl(2,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
-  mmr_gas(:,:,:,:) = 3.5e-6_f
-  mmr(:,:,:,1,1)   = (0.1_f * rmass(1) * (1e-3_f * 1e6_f)) / rho(:,:,:)
+  mmr_gas(:,:,:,:) = 4e-6_f
+  mmr(:,:,:,1,7)   = (100._f * rmass(7) * (1e-3_f * 1e6_f)) / rho(:,:,:)
+  mmr(:,:,:,1,8)   = (100._f * rmass(8) * (1e-3_f * 1e6_f)) / rho(:,:,:)
+  
+  ! A crude estimate of band radiative intensity per band (in W/m2/sr/cm). Note the band fluxes
+  ! need to be scaled by 4 pi to convert to intensity and need to be scaled by
+  ! the band width.
+!  radint(1, :)  = (/ 171._f, 171._f, 100._f, 300._f/)    ! TTL
+  radint(1, :)  = (/ 171._f, 171._f, 60._f, 180._f/)     ! Mesopause
+  
+  radint(1, :)  = radint(1, :) / 4. / PI / dwave(:)
+  
   
   write(*,'(a6, 3a12)') "level", "zc", "p", "t"
   write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
@@ -274,7 +313,7 @@ subroutine test_grow_simple()
 
   do ielem = 1, NELEM
     do ibin = 1, NBIN
-      write(lun,'(2i4,e10.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin))
+      write(lun,'(2i4,2e10.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin)), real(tpart(1,NY,NX,ielem,ibin))
     end do
   end do
 
@@ -282,6 +321,7 @@ subroutine test_grow_simple()
     write(lun,'(i4,3e10.3)') igas, real(mmr_gas(1,NY,NX,igas)), 0., 0.
   end do
 
+  write(lun,'(1e12.3)') real(t(1,NY,NX))
 		
   ! Iterate the model over a few time steps.
   write(*,*) ""
@@ -290,6 +330,8 @@ subroutine test_grow_simple()
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
+    write(*,'(i4,3f9.3)') istep, t(1,1,1), tpart(1,1,1,1,1), tpart(1,1,1,1,NBIN-1)
+    
     ! NOTE: This means that there should not be any looping over NX or NY done
     ! in any other CARMA routines. They should only loop over NZ.
     do ixy = 1, NX*NY
@@ -302,7 +344,7 @@ subroutine test_grow_simple()
                           xc(:,iy,ix), dx(:,iy,ix), &
                           yc(:,iy,ix), dy(:,iy,ix), &
                           zc(:,iy,ix), zl(:,iy,ix), p(:,iy,ix), &
-                          pl(:,iy,ix), t(:,iy,ix), rc)
+                          pl(:,iy,ix), t(:,iy,ix), rc, radint=radint)
 		
       ! Send the bin mmrs to CARMA
       do ielem = 1, NELEM
@@ -325,7 +367,7 @@ subroutine test_grow_simple()
       do ielem = 1, NELEM
         do ibin = 1, NBIN
          call CARMASTATE_GetBin(cstate, ielem, ibin, &
-                                mmr(:,iy,ix,ielem,ibin), rc)
+                                mmr(:,iy,ix,ielem,ibin), rc, tpart=tpart(:,iy,ix,ielem,ibin))
         end do
       end do
 
@@ -345,13 +387,15 @@ subroutine test_grow_simple()
     write(lun,*) istep*dtime
     do ielem = 1, NELEM
       do ibin = 1, NBIN
-        write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin))
+        write(lun,'(2i4,2e12.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin)), real(tpart(1,NY,NX,ielem,ibin))
       end do
     end do
-  
+
     do igas = 1, NGAS
       write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,NY,NX,igas)), satliq(1,NY,NX,igas), satice(1,NY,NX,igas)
     end do
+    
+    write(lun,'(1e12.3)') real(t(1,NY,NX))
   end do   ! time loop
 	
   ! Cleanup the carma state objects

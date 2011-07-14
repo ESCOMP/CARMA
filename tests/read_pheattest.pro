@@ -1,4 +1,4 @@
-  openr, lun, 'carma_growtest.txt', /get_lun
+  openr, lun, 'carma_pheattest.txt', /get_lun
 
   ; Read in the sizes.
   readf, lun, ngroup, nelem, nbin, ngas
@@ -74,7 +74,7 @@
   satice = reform(satice,nt,ngas)
   
   
-  !p.multi = [0,1,3]
+  !p.multi = [0,1,4]
   loadct, 39
 
   ;Calculate the column mass, which should be conserved.
@@ -127,7 +127,6 @@ satice[0,*] = !Values.F_NAN
     xyouts, 4.7, 5.25e-6, 'Water Vapor', color=96
     xyouts, 9.7, 5.25e-6, 'Total Water', color=26
 
-
     for ielem = 0, nelem-1 do begin
       oplot, mmrelem[*,ielem], thick=6, lin=ielem
     endfor
@@ -170,5 +169,5 @@ satice[0,*] = !Values.F_NAN
 
     wait, 15. / nt
   endfor
-  
+
 end

@@ -37,7 +37,8 @@ contains
   !!
   !! @see CARMA_AddGas
   !! @see CARMAELEMENT_Destroy
- subroutine CARMAELEMENT_Create(carma, ielement, igroup, name, rho, itype, icomposition, rc, shortname, isolute, rhobin)
+ subroutine CARMAELEMENT_Create(carma, ielement, igroup, name, rho, itype, icomposition, rc, &
+              shortname, isolute, rhobin, arat)
     type(carma_type), intent(inout)       :: carma               !! the carma object
     integer, intent(in)                   :: ielement            !! the element index
     integer, intent(in)                   :: igroup              !! Group to which the element belongs
@@ -49,6 +50,7 @@ contains
     character(*), optional, intent(in)    :: shortname           !! the element shortname, maximum of 6 characters
     integer, optional, intent(in)         :: isolute             !! Index of solute for the particle element
     real(kind=f), optional, intent(in)    :: rhobin(carma%f_NBIN)  !! mass density per bin of particle element [g/cm^3]
+    real(kind=f), optional, intent(in)    :: arat(carma%f_NBIN)    !! projected area ratio
 
     ! Local variables
     integer                               :: ier
@@ -108,6 +110,10 @@ contains
       carma%f_element(ielement)%f_isolute      = isolute
     end if
     if (present(rhobin)) carma%f_element(ielement)%f_rho(:) = rhobin(:)
+    
+    ! If the area ratio is specfied (usually along with rhobin), then set this
+    ! for the group.
+    if (present(arat)) carma%f_group(igroup)%f_arat(:) = arat(:)
     
     ! Keep track of the fact that another element has been added to the group.
     carma%f_group(igroup)%f_nelem = carma%f_group(igroup)%f_nelem + 1

@@ -15,7 +15,7 @@
 !      to a varaible and use the variable in the macro.
 !
 !   2) You can not have comments on the same line as a macro. Put comments on the
-!      line before the one with the macro.
+!       line before the one with the macro.
 !
 !   3) Not all fortran preprocessors support the CPP's handling of recursion for
 !      macro names. To work out of the box with the broadest number of fortran
@@ -32,6 +32,7 @@
 #define NGROUP        carma%f_NGROUP
 #define NELEM         carma%f_NELEM
 #define NSOLUTE       carma%f_NSOLUTE
+#define NWAVE         carma%f_NWAVE
 
 !  Model logical units for I/O
 #define LUNOPRT       carma%f_LUNOPRT
@@ -100,12 +101,20 @@
 #define rlow(ibin,igroup)       carma%f_group(igroup)%f_rlow(ibin)
 #define icorelem(icore,igroup)  carma%f_group(igroup)%f_icorelem(icore)
 #define ifallrtn(igroup)        carma%f_group(igroup)%f_ifallrtn
+#define arat(ibin,igroup)       carma%f_group(igroup)%f_arat(ibin) 
+#define rrat(ibin,igroup)       carma%f_group(igroup)%f_rrat(ibin) 
+#define qext(iwave,ibin,igroup) carma%f_group(igroup)%f_qext(iwave,ibin)
+#define ssa(iwave,ibin,igroup)  carma%f_group(igroup)%f_ssa(iwave,ibin)
 
 ! Solute object
 #define solname(isolute)      carma%f_solute(isolute)%f_name
 #define sol_ions(isolute)     carma%f_solute(isolute)%f_ions
 #define solwtmol(isolute)     carma%f_solute(isolute)%f_wtmol
 #define rhosol(isolute)       carma%f_solute(isolute)%f_rho
+
+! Optical properties
+#define wave          carma%f_wave
+#define dwave         carma%f_dwave
 
 !  Model option & control variables
 #define do_cnst_rlh   carma%f_do_cnst_rlh
@@ -115,6 +124,8 @@
 #define do_grow       carma%f_do_grow
 #define do_explised   carma%f_do_explised
 #define do_incloud    carma%f_do_incloud
+#define do_pheat      carma%f_do_pheat
+#define do_pheatatm   carma%f_do_pheatatm
 #define do_print_init carma%f_do_print_init
 #define do_step       carma%f_do_step
 #define do_substep    carma%f_do_substep
@@ -174,6 +185,7 @@
 #define told          cstate%f_told
 #define rmu           cstate%f_rmu
 #define thcond        cstate%f_thcond
+#define thcondnc      cstate%f_thcondnc
 #define dkz           cstate%f_dkz
 
 ! Model primary vars
@@ -228,7 +240,7 @@
 #define kbin          carma%f_kbin
 
 #define ckernel       cstate%f_ckernel
-#define pkernel       cstate%f_pkernel
+#define pkernel       carma%f_pkernel
 
 #define volx          carma%f_volx
 #define ilow          carma%f_ilow
@@ -272,7 +284,9 @@
 #define supsatiold    cstate%f_supsatiold
 #define scrit         cstate%f_scrit
 #define rlh_nuc       carma%f_rlh_nuc
-#define qrad          cstate%f_qrad
+#define radint        cstate%f_radint
+#define partheat      cstate%f_partheat
+#define tpart         cstate%f_tpart
 #define pratt         carma%f_pratt
 #define prat          carma%f_prat
 #define pden1         carma%f_pden1

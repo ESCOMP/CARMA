@@ -115,11 +115,6 @@ subroutine setupckern(carma, cstate, rc)
   real(kind=f) :: vfc_2
   real(kind=f) :: cgr 
   
-  real(kind=f) :: rmsum
-  real(kind=f) :: rmk 
-  real(kind=f) :: pkernl, pkernu
-
-  
 
 !  Initialization of input data for gravitational collection.
 !  The data were compiled by Hall (J. Atmos. Sci. 37, 2486-2507, 1980).
@@ -473,7 +468,7 @@ subroutine setupckern(carma, cstate, rc)
                 ! coagulation, cut down ckernel for large radii
   !                 if( ( r1 .gt. 0.18 .and. r2 .gt. 10.e-4 ) .or. &
   !                     ( r2 .gt. 0.18 .and. r1 .gt. 10.e-4 ) ) then
-  !                   ckernel(k,i1,i2,j1,j2) = ckernel(ix,iyk,i1,i2,j1,j2) / 1.e6
+  !                   ckernel(k,i1,i2,j1,j2) = ckernel(k,i1,i2,j1,j2) / 1.e6
   !                 endif
   
               enddo    ! second particle bin
@@ -483,52 +478,6 @@ subroutine setupckern(carma, cstate, rc)
       enddo     ! first particle group
     enddo     ! vertical level
   endif     ! not constant
-
-! NOTE: Moved this section from from setupcoag.f, since it is dependent on ckernel and that
-! means the remainder of setupcoag is independent of the models state.
-
-!  Calculate variables needed in routine coagp.f
-  do igrp = 1, NGROUP
-    do ig = 1, NGROUP
-      do jg = 1, NGROUP
-
-        if( igrp .eq. icoag(ig,jg) ) then
-
-          do i = 1, NBIN
-            do j = 1, NBIN
-
-            ibin = kbin(igrp,ig,jg,i,j)
-            rmk = rmass(ibin,igrp)
-            rmsum = rmass(i,ig) + rmass(j,jg)
-
-              do k = 1, NZ
-
-                pkernl = ckernel(k,i,j,ig,jg)* &
-                         (rmrat(igrp)*rmk - rmsum) / &
-                         (rmrat(igrp)*rmk - rmk)
-
-                pkernu = ckernel(k,i,j,ig,jg)* &
-                        (rmsum - rmk) / &
-                        (rmrat(igrp)*rmk - rmk)
-
-                if( ibin .eq. NBIN )then
-                  pkernl = ckernel(k,i,j,ig,jg)* rmsum / rmass(ibin,igrp)
-                  pkernu = 0._f
-                endif
-  
-                pkernel(k,i,j,ig,jg,igrp,1) = pkernu * rmass(i,ig)/rmsum
-                pkernel(k,i,j,ig,jg,igrp,2) = pkernl * rmass(i,ig)/rmsum
-                pkernel(k,i,j,ig,jg,igrp,3) = pkernu * rmk*rmrat(igrp)/rmsum
-                pkernel(k,i,j,ig,jg,igrp,4) = pkernl * rmk/rmsum
-                pkernel(k,i,j,ig,jg,igrp,5) = pkernu * ( rmk*rmrat(igrp)/rmsum )**2
-                pkernel(k,i,j,ig,jg,igrp,6) = pkernl * ( rmk/rmsum )**2
-              enddo
-            enddo
-          enddo
-        endif
-      enddo
-    enddo
-  enddo
 
   ! return to caller with coagulation kernels evaluated.
   return

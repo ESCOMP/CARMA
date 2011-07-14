@@ -3,13 +3,13 @@
 #include "carma_globaer.h"
 
 !! This routine calculates the effective ice densities for each bin, based upon
-!! the parameterization of Heymsfield and Schmitt [2010].
+!! the parameterization of Heymsfield et al. [2010].
 !!
 !! @author   Chuck Bardeen
 !! @ version March 2010
 !!
 !! @see CARMAELEMENT_Create
-subroutine rhoice_heymsfield2010(carma, rhoice, igroup, regime, rho, rc)
+subroutine rhoice_heymsfield2010(carma, rhoice, igroup, regime, rho, aratelem, rc)
 
   ! types
   use carma_precision_mod
@@ -26,6 +26,7 @@ subroutine rhoice_heymsfield2010(carma, rhoice, igroup, regime, rho, rc)
   integer, intent(in)                  :: igroup      !! group index
   character(len=4), intent(in)         :: regime      !! crystal regime [warm | cold | conv]
   real(kind=f), intent(out)            :: rho(NBIN)   !! crystal density per bin (g/cm3)
+  real(kind=f), intent(out)            :: aratelem(NBIN)  !! projected area ratio ()
   integer, intent(inout)               :: rc          !! return code, negative indicates failure
 
   ! Local declarations
@@ -33,6 +34,7 @@ subroutine rhoice_heymsfield2010(carma, rhoice, igroup, regime, rho, rc)
   real(kind=f)                         :: a           ! scalar coefficient from Heysfield and Schmitt [2010]
   real(kind=f), parameter              :: b = 2.1_f   ! exponential coefficient from Heysfield and Schmitt [2010]
   real(kind=f)                         :: rbin        ! predicated crystal radius (cm)
+  real(kind=f)                         :: dmax        ! maximum diameter
   real(kind=f)                         :: totalmass   ! bin mass
   
 1 format(/,'rhoice_heymsfield2010::ERROR - unknown ice regime (', a, ').')
@@ -41,14 +43,18 @@ subroutine rhoice_heymsfield2010(carma, rhoice, igroup, regime, rho, rc)
   rc = RC_OK
 
 ! Figure out the 'a' coefficient.
-  if (regime == "cold") then
-    a = 5.74e-3_f
-  else if (regime == "warm") then
-    a = 3.79e-3_f
+  if (regime == "deep") then
+    a = 1.10e-2_f
   else if (regime == "conv") then
     a = 6.33e-3_f
+  else if (regime == "cold") then
+    a = 5.74e-3_f
+  else if (regime == "avg") then
+    a = 5.28e-3_f
   else if (regime == "synp") then
     a = 4.22e-3_f
+  else if (regime == "warm") then
+    a = 3.79e-3_f
   else
     if (do_print) write(LUNOPRT,1) regime
     rc = RC_ERROR
@@ -67,7 +73,7 @@ subroutine rhoice_heymsfield2010(carma, rhoice, igroup, regime, rho, rc)
     ! and radii will be determined properly.
     totalmass = rmassmin(igroup) * (rmrat(igroup)**(ibin-1))
     
-    ! Determine the radius of the particle from Heysmfield and Schmitt [2010].
+    ! Determine the radius of the particle from Heymsfield et al. [2010].
     !
     ! m(D) = a * D ^ b (all in cgs units)
     rbin = ((totalmass / a) ** (1._f/b)) / 2._f
@@ -79,6 +85,17 @@ subroutine rhoice_heymsfield2010(carma, rhoice, igroup, regime, rho, rc)
     ! will happen for r < ~ 50 um in the parameterization, but this is
     ! not physical.
     rho(ibin) = min(rho(ibin), rhoice)
+    
+    ! Determine the area ratio based on the formulation given in Schmitt and Heymsfield
+    ! [2009].
+    dmax = 2._f * rbin
+    
+    if (dmax <= 200.e-4_f) then
+      aratelem(ibin) = exp(-38._f * dmax)
+    else
+      aratelem(ibin) = 0.16_f * (dmax ** (-0.27_f))
+    end if
+
   end do
 
 end subroutine rhoice_heymsfield2010

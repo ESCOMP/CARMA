@@ -153,12 +153,6 @@ subroutine freezaerl_koop2000(carma, cstate, iz, rc)
                     fkelv = exp(akelvin(iz,igas) / r(ibin,igroup))                                ! ?
                     aw    = aw / fkelv
 
-                    ! Adjust awi for kelvin effect.
-                    !
-                    ! Koop indicates that Si = aw / awi, so ...
-                    fkelvi = exp(akelvini(iz,igas) / r(ibin,igroup))                                ! ?
-                    awi = awi * fkelvi / fkelv
-                    
                     ! Nucleation rate
                     !
                     ! NOTE: This formulation is only valid for daw in the range of

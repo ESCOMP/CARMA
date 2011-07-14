@@ -23,15 +23,23 @@ subroutine zeromicro(carma, cstate, rc)
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
   integer, intent(inout)               :: rc      !! return code, negative indicates failure
   
+  integer       :: iz
+  
 
   ! Set production terms and loss rates due to nucleation, growth,
   ! and evaporation to zero.  Also set index of smallest bin nuceleated
   ! during time step equal to <NBIN> first time through spatial loop.
-  rlheat = 0._f
   
   if (do_grow) then
 
-    if (NGAS > 0) gasprod(:) = 0._f
+    rlheat(:)   = 0._f
+    partheat(:) = 0._f
+    
+    do iz = 1, NZ
+      tpart(iz,:,:) = t(iz)
+    end do
+   
+   if (NGAS > 0) gasprod(:) = 0._f
   
     rnucpe(:,:) = 0._f
     growpe(:,:) = 0._f

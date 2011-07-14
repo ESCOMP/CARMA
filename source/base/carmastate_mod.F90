@@ -88,7 +88,7 @@ contains
   !! @see CARMA_Initialize
   !! @see CARMASTATE_Destroy
   subroutine CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, igridv, igridh,  &
-      lat, lon, xc, dx, yc, dy, zc, zl, p, pl, t, rc, qh2o, relhum, told)
+      lat, lon, xc, dx, yc, dy, zc, zl, p, pl, t, rc, qh2o, relhum, told, radint)
     type(carmastate_type), intent(inout)    :: cstate      !! the carma state object
     type(carma_type), pointer, intent(in)   :: carma_ptr   !! (in) the carma object
     real(kind=f), intent(in)                :: time        !! the model time [s]
@@ -111,6 +111,7 @@ contains
     real(kind=f), intent(in) , optional     :: qh2o(NZ)    !! specific humidity at center [mmr]
     real(kind=f), intent(in) , optional     :: relhum(NZ)  !! relative humidity at center [fraction]
     real(kind=f), intent(in) , optional     :: told(NZ)    !! previous temperature at center [K]
+    real(kind=f), intent(in) , optional     :: radint(NZ,carma_ptr%f_NWAVE)  !! radiative intensity [W/m2/sr/cm]
 
     integer                                 :: iz
     real(kind=f)                            :: rvap
@@ -219,6 +220,13 @@ contains
       cstate%f_pc_botbnd(:,:) = 0._f
     end if
         
+    ! Radiative intensity for particle heating.
+    !
+    ! W/m2/sr/cm -> erg/s/cm2/sr/cm
+    if (carma_ptr%f_do_grow) then
+      if (present(radint)) cstate%f_radint(:,:) = radint(:,:) * 1e7_f / 1e4_f
+    end if
+    
     return
   end subroutine CARMASTATE_Create
 
@@ -402,6 +410,7 @@ contains
     integer                               :: NELEM
     integer                               :: NBIN
     integer                               :: NGAS
+    integer                               :: NWAVE
     
     ! Assume success.
     rc = RC_OK
@@ -418,6 +427,7 @@ contains
       NELEM   = cstate%f_carma%f_NELEM
       NBIN    = cstate%f_carma%f_NBIN
       NGAS    = cstate%f_carma%f_NGAS
+      NWAVE   = cstate%f_carma%f_NWAVE
     
       allocate( &
         cstate%f_xmet(NZ), &
@@ -449,6 +459,7 @@ contains
         cstate%f_relhum(NZ), &
         cstate%f_rmu(NZ), &
         cstate%f_thcond(NZ), &
+        cstate%f_thcondnc(NZ,NBIN,NGROUP), &
         cstate%f_dpc_sed(NBIN,NELEM), &
         cstate%f_pconmax(NZ,NGROUP), &
         cstate%f_pcl(NZ,NBIN,NELEM), &
@@ -575,7 +586,10 @@ contains
           cstate%f_growlg(NBIN,NGROUP), &
           cstate%f_evaplg(NBIN,NGROUP), &
           cstate%f_gasprod(NGAS), &
-          cstate%f_qrad(NZ,NBIN,NGROUP), &
+          cstate%f_rlheat(NZ), &
+          cstate%f_radint(NZ,NWAVE), &
+          cstate%f_partheat(NZ), &
+          cstate%f_tpart(NZ,NBIN,NGROUP), &
           cstate%f_cmf(NBIN,NGROUP), &
           cstate%f_totevap(NBIN,NGROUP), &
           stat=ier)
@@ -585,7 +599,7 @@ contains
           return
         endif
         
-        cstate%f_qrad(:,:,:) = 0._f
+        cstate%f_radint(:,:) = 0._f
       end if
       
       if (cstate%f_carma%f_do_coag) then
@@ -593,7 +607,6 @@ contains
           cstate%f_coaglg(NZ,NBIN,NGROUP), &
           cstate%f_coagpe(NZ,NBIN,NELEM), &
           cstate%f_ckernel(NZ,NBIN,NBIN,NGROUP,NGROUP), &
-          cstate%f_pkernel(NZ,NBIN,NBIN,NGROUP,NGROUP,NGROUP,6), &
           stat = ier)
         if (ier /= 0) then
           if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating coag arrays, status=", ier
@@ -605,7 +618,6 @@ contains
         cstate%f_coaglg(:,:,:) = 0._f
         cstate%f_coagpe(:,:,:) = 0._f
         cstate%f_ckernel(:,:,:,:,:) = 0._f
-        cstate%f_pkernel(:,:,:,:,:,:,:) = 0._f
       end if
     end if
     
@@ -665,6 +677,7 @@ contains
         cstate%f_relhum, &
         cstate%f_rmu, &
         cstate%f_thcond, &
+        cstate%f_thcondnc, &
         cstate%f_dpc_sed, &
         cstate%f_pconmax, &
         cstate%f_pcl, &
@@ -737,7 +750,10 @@ contains
           cstate%f_growlg, &
           cstate%f_evaplg, &
           cstate%f_gasprod, &
-          cstate%f_qrad, &
+          cstate%f_rlheat, &
+          cstate%f_radint, &
+          cstate%f_partheat, &
+          cstate%f_tpart, &
           cstate%f_cmf, &
           cstate%f_totevap, &
           stat=ier)
@@ -769,7 +785,6 @@ contains
           cstate%f_coaglg, &
           cstate%f_coagpe, &
           cstate%f_ckernel, &
-          cstate%f_pkernel, &
           stat = ier)
         if (ier /= 0) then
           if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating coag arrays, status=", ier
@@ -901,7 +916,7 @@ contains
   !! @see CARMA_GetGas
   !! @see CARMA_Step 
   !! @see CARMASTATE_SetGas
-  subroutine CARMASTATE_Get(cstate, rc, max_nsubstep, max_nretry, nstep, nsubstep, nretry, zsubsteps)
+  subroutine CARMASTATE_Get(cstate, rc, max_nsubstep, max_nretry, nstep, nsubstep, nretry, zsubsteps, lat, lon)
     type(carmastate_type), intent(in)     :: cstate            !! the carma state object
     integer, intent(out)                  :: rc                !! return code, negative indicates failure
     integer, optional, intent(out)        :: max_nsubstep      !! maximum number of substeps in a step
@@ -910,6 +925,8 @@ contains
     integer, optional, intent(out)        :: nsubstep          !! total number of substeps taken
     real(kind=f), optional, intent(out)   :: nretry            !! total number of retries taken
     real(kind=f), optional, intent(out)   :: zsubsteps(cstate%f_NZ) !! number of substeps taken per vertical grid point
+    real(kind=f), optional, intent(out)   :: lat               !! grid center latitude [deg]
+    real(kind=f), optional, intent(out)   :: lon               !! grid center longitude [deg]
     
     ! Assume success.
     rc = RC_OK
@@ -920,6 +937,8 @@ contains
     if (present(nsubstep))     nsubstep     = cstate%f_nsubstep
     if (present(nretry))       nretry       = cstate%f_nretry
     if (present(zsubsteps))    zsubsteps    = cstate%f_zsubsteps
+    if (present(lat))          lat          = cstate%f_lat
+    if (present(lon))          lon          = cstate%f_lon
     
     return
   end subroutine CARMASTATE_Get
@@ -938,7 +957,7 @@ contains
   !! @see CARMASTATE_SetBin
   subroutine CARMASTATE_GetBin(cstate, ielem, ibin, mmr, rc, &
                                nmr, numberDensity, nucleationRate, r_wet, rhop_wet, &
-                               surface, sedimentationflux, vf, vd)
+                               surface, sedimentationflux, vf, vd, tpart)
     type(carmastate_type), intent(in)     :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
@@ -949,10 +968,11 @@ contains
     real(kind=f), optional, intent(out)   :: nucleationRate(cstate%f_NZ) !! nucleation rate [1/cm3/s]
     real(kind=f), optional, intent(out)   :: r_wet(cstate%f_NZ)          !! wet particle radius [cm]
     real(kind=f), optional, intent(out)   :: rhop_wet(cstate%f_NZ)       !! wet particle density [g/cm3]
-    real(kind=f), optional, intent(out)   :: surface                   !! particle mass on the surface [kg/m2]
+    real(kind=f), optional, intent(out)   :: surface        !! particle mass on the surface [kg/m2]
     real(kind=f), optional, intent(out)   :: sedimentationflux         !! particle sedimentation mass flux to surface [kg/m2/s]
     real(kind=f), optional, intent(out)   :: vf(cstate%f_NZ+1) !! fall velocity [cm/s]
     real(kind=f), optional, intent(out)   :: vd             !! deposition velocity [cm/s]
+    real(kind=f), optional, intent(out)   :: tpart(cstate%f_NZ) !! particle temperature [K]
     
     integer                               :: ienconc        !! index of element that is the particle concentration for the group
     integer                               :: igroup         ! Group containing this bin
@@ -1032,6 +1052,7 @@ contains
       if (present(numberDensity)) numberDensity(:)   = cstate%f_pc(:, ibin, ielem) / (cstate%f_xmet(:)*cstate%f_ymet(:)*cstate%f_zmet(:))
       if (present(r_wet))         r_wet(:)           = cstate%f_r_wet(:, ibin, igroup)
       if (present(rhop_wet))      rhop_wet(:)        = cstate%f_rhop_wet(:, ibin, igroup)
+      if (present(tpart))         tpart              = cstate%f_tpart(:, ibin, igroup)
 
       if (cstate%f_carma%f_do_vtran) then
         if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup)
@@ -1056,6 +1077,7 @@ contains
       if (present(nucleationRate)) nucleationRate(:)  = CAM_FILL
       if (present(r_wet))          r_wet(:)           = CAM_FILL
       if (present(rhop_wet))       rhop_wet(:)        = CAM_FILL
+      if (present(tpart))          tpart              = CAM_FILL
       if (present(vf))             vf(:)              = CAM_FILL
       if (present(vd))             vd                 = CAM_FILL
     end if

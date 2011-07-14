@@ -86,6 +86,8 @@ contains
       carma%f_group(igroup)%f_rup(carma%f_NBIN), &
       carma%f_group(igroup)%f_rlow(carma%f_NBIN), &
       carma%f_group(igroup)%f_icorelem(carma%f_NELEM), &
+      carma%f_group(igroup)%f_arat(carma%f_NBIN), &
+      carma%f_group(igroup)%f_rrat(carma%f_NBIN), &
       stat=ier) 
     if(ier /= 0) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Add: ERROR allocating, status=", ier
@@ -176,6 +178,25 @@ contains
     carma%f_group(igroup)%f_ienconc       = 0
     carma%f_group(igroup)%f_imomelem      = 0
     
+    
+    ! The area ratio is the ratio of the area of the shape to the area of the
+    ! circumscribing circle. The radius ratio is the ratio between the radius
+    ! of the longest dimension and the radius of the enclosing sphere.
+    if (ishape .eq. I_HEXAGON) then
+      carma%f_group(igroup)%f_arat(:) = 3._f * sqrt(3._f) / 2._f / PI 
+      carma%f_group(igroup)%f_rrat(:) = ((4._f * PI / 9._f / sqrt(3._f)) ** (1._f / 3._f)) * eshape**(-1._f / 3._f)
+    else if (ishape .eq. I_CYLINDER) then
+      carma%f_group(igroup)%f_arat(:) = 1.0_f
+      carma%f_group(igroup)%f_rrat(:) = ((2._f / 3._f) ** (1._f / 3._f)) * eshape**(-1._f / 3._f)
+    else
+
+      ! Default to a sphere.
+      !
+      ! NOTE: Should add code here to handle oblate and prolate spheroids.
+      carma%f_group(igroup)%f_arat(:) = 1.0_f
+      carma%f_group(igroup)%f_rrat(:) = 1.0_f
+    end if
+    
     return
   end subroutine CARMAGROUP_Create
     
@@ -231,6 +252,8 @@ contains
         carma%f_group(igroup)%f_rup, &
         carma%f_group(igroup)%f_rlow, &
         carma%f_group(igroup)%f_icorelem, &
+        carma%f_group(igroup)%f_arat, &
+        carma%f_group(igroup)%f_rrat, &
         stat=ier) 
       if(ier /= 0) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Destroy: ERROR deallocating, status=", ier
@@ -257,7 +280,8 @@ contains
   !! @see CARMA_Initialize 
   subroutine CARMAGROUP_Get(carma, igroup, rc, name, shortname, rmin, rmrat, ishape, eshape, is_ice, &
       irhswell, irhswcomp, cnsttype, r, rlow, rup, dr, rmass, dm, vol, qext, ssa, asym, do_mie, &
-      do_wetdep, do_drydep, do_vtran, solfac, scavcoef, ienconc, refidx, ncore, icorelem, maxbin, ifallrtn, is_cloud, rmassmin)
+      do_wetdep, do_drydep, do_vtran, solfac, scavcoef, ienconc, refidx, ncore, icorelem, maxbin, &
+      ifallrtn, is_cloud, rmassmin, arat, rrat)
       
     type(carma_type), intent(in)              :: carma                        !! the carma object
     integer, intent(in)                       :: igroup                       !! the group index
@@ -279,6 +303,8 @@ contains
     real(kind=f), intent(out), optional       :: rmass(carma%f_NBIN)            !! the bin mass [g]
     real(kind=f), intent(out), optional       :: dm(carma%f_NBIN)               !! the bin width in mass space [g]
     real(kind=f), intent(out), optional       :: vol(carma%f_NBIN)              !! the bin volume [cm<sup>3</sup>]
+    real(kind=f), intent(out), optional       :: rrat(carma%f_NBIN)             !! the radius ratio (maximum dimension / radius of enclosing sphere)
+    real(kind=f), intent(out), optional       :: arat(carma%f_NBIN)             !! the projected area ratio (area / area enclosing sphere)
     complex(kind=f), intent(out), optional    :: refidx(carma%f_NWAVE)          !! the refractive index at each wavelength
     real(kind=f), intent(out), optional       :: qext(carma%f_NWAVE,carma%f_NBIN) !! extinction efficiency
     real(kind=f), intent(out), optional       :: ssa(carma%f_NWAVE,carma%f_NBIN)  !! single scattering albedo
@@ -324,6 +350,8 @@ contains
     if (present(rup))          rup(:)       = carma%f_group(igroup)%f_rup(:)
     if (present(dr))           dr(:)        = carma%f_group(igroup)%f_dr(:)
     if (present(rmass))        rmass(:)     = carma%f_group(igroup)%f_rmass(:)
+    if (present(rrat))         rrat(:)      = carma%f_group(igroup)%f_rrat(:)
+    if (present(arat))         arat(:)      = carma%f_group(igroup)%f_arat(:)
     if (present(dm))           dm(:)        = carma%f_group(igroup)%f_dm(:)
     if (present(vol))          vol(:)       = carma%f_group(igroup)%f_vol(:)
     if (present(do_mie))       do_mie       = carma%f_group(igroup)%f_do_mie
@@ -393,7 +421,6 @@ contains
     logical                                   :: do_wetdep          ! do wet deposition for this particle?
     logical                                   :: do_drydep          ! do dry deposition for this particle?
     logical                                   :: do_vtran           ! do sedimentation for this particle?
-    
 
     ! Assume success.
     rc = RC_OK
@@ -426,7 +453,7 @@ contains
       write(carma%f_LUNOPRT,*) "    eshape        : ", eshape
       write(carma%f_LUNOPRT,*) "    is_ice        : ", is_ice
       write(carma%f_LUNOPRT,*) "    is_cloud      : ", is_cloud
-
+      
       write(carma%f_LUNOPRT,*) "    do_drydep     : ", do_drydep
       write(carma%f_LUNOPRT,*) "    do_mie        : ", do_mie
       write(carma%f_LUNOPRT,*) "    do_vtran      : ", do_vtran

@@ -44,6 +44,9 @@ carma_mietest.o : carma_mietest.F90 carma_mod.mod carma_constants_mod.mod carma_
 carma_nuctest.o : carma_nuctest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
 	$(FORTRAN) $(FFLAGS) -c $<
 	
+carma_pheattest.o : carma_pheattest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
+	$(FORTRAN) $(FFLAGS) -c $<
+	
 carma_sigmadrydeptest.o : carma_sigmadrydeptest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
 	$(FORTRAN) $(FFLAGS) -c $<
 	

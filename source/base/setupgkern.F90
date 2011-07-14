@@ -228,6 +228,9 @@ subroutine setupgkern(carma, cstate, rc)
           diffus1 = diffus(k,igas)*cor / ( 1._f + rlam*rknudn*cor/phish )
           thcond1 = thcond(k)*cor / ( 1._f + rlamt*rknudnt*cor/phish )
 
+          ! Save the modified thermal conductivity off so it can be used in pheat.
+          thcondnc(k,i,igroup) = thcond1
+          
           ! Reynolds' number based on particle shape <reyn_shape>
           if( ishape(igroup) .eq. I_SPHERE )then
             reyn_shape = re(k,i,igroup)

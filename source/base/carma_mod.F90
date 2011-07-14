@@ -121,7 +121,7 @@ contains
   !!
   !!  @version Feb-2009 
   !!  @author  Chuck Bardeen 
-  subroutine CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT, wave)
+  subroutine CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT, wave, dwave)
     type(carma_type), intent(out)      :: carma     !! the carma object
     integer, intent(in)                :: NBIN      !! number of radius bins per group
     integer, intent(in)                :: NELEM     !! total number of elements
@@ -131,7 +131,8 @@ contains
     integer, intent(in)                :: NWAVE     !! number of wavelengths
     integer, intent(out)               :: rc        !! return code, negative indicates failure
     integer, intent(in), optional      :: LUNOPRT   !! logical unit number for output
-    real(kind=f), intent(in), optional :: wave(NWAVE)  !! wavelength (cm)
+    real(kind=f), intent(in), optional :: wave(NWAVE)  !! wavelength centers (cm)
+    real(kind=f), intent(in), optional :: dwave(NWAVE) !! wavelength width (cm)
     
     ! Local Varaibles      
     integer                            :: ier
@@ -209,7 +210,7 @@ contains
     carma%f_icoagelem_cm(:,:) = 0
     
     
-    ! Allocate talbes for the bins.
+    ! Allocate tables for the bins.
     allocate( &
       carma%f_inuc2bin(NBIN,NGROUP,NGROUP), &
       carma%f_ievp2bin(NBIN,NGROUP,NGROUP), &
@@ -228,6 +229,7 @@ contains
       carma%f_igup(NGROUP,NBIN,NBIN*NBIN), &
       carma%f_jgup(NGROUP,NBIN,NBIN*NBIN), &
       carma%f_kbin(NGROUP,NGROUP,NGROUP,NBIN,NBIN), &
+      carma%f_pkernel(NBIN,NBIN,NGROUP,NGROUP,NGROUP,6), &
       carma%f_pratt(3,NBIN,NGROUP), &
       carma%f_prat(4,NBIN,NGROUP), &
       carma%f_pden1(NBIN,NGROUP), &
@@ -258,6 +260,7 @@ contains
     carma%f_igup(:,:,:) = 0
     carma%f_jgup(:,:,:) = 0
     carma%f_kbin(:,:,:,:,:) = 0._f
+    carma%f_pkernel(:,:,:,:,:,:) = 0._f
     carma%f_pratt(:,:,:) = 0._f
     carma%f_prat(:,:,:) = 0._f
     carma%f_pden1(:,:) = 0._f
@@ -296,6 +299,7 @@ contains
     if (NWAVE > 0) then
       allocate( &
         carma%f_wave(NWAVE), &
+        carma%f_dwave(NWAVE), &
         stat=ier) 
       if(ier /= 0) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_Create: ERROR allocating wavelengths, NWAVE=", &
@@ -305,7 +309,8 @@ contains
       endif
 
       ! Initialize
-      carma%f_wave(:) = wave(:)
+      if (present(wave))  carma%f_wave(:)  = wave(:)
+      if (present(dwave)) carma%f_dwave(:) = dwave(:)
     end if
     
     return
@@ -322,7 +327,7 @@ contains
   !!  @version Feb-2009 
   !!  @author  Chuck Bardeen 
   subroutine CARMA_Initialize(carma, rc, do_cnst_rlh, do_coag, do_detrain, do_fixedinit, do_grow, do_incloud, do_explised, do_print_init, do_substep, &
-      do_thermo, do_vdiff, do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax)
+      do_thermo, do_vdiff, do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax, do_pheat, do_pheatatm)
     type(carma_type), intent(inout)     :: carma         !! the carma object
     integer, intent(out)                :: rc            !! return code, negative indicates failure
     logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats (instead of varying with temperature)?
@@ -343,6 +348,8 @@ contains
     integer, intent(in), optional       :: maxsubsteps   !! maximum number of substeps, default = 1
     integer, intent(in), optional       :: maxretries    !! maximum number of substep retries, default = 5
     real(kind=f), intent(in), optional  :: conmax        !! minimum relative concentration to consider, default = 1e-1
+    logical, intent(in), optional       :: do_pheat      !! do particle heating
+    logical, intent(in), optional       :: do_pheatatm   !! do particle heating of atmosphere
     
     ! Assume success.
     rc = RC_OK
@@ -355,6 +362,8 @@ contains
     carma%f_do_grow       = .FALSE.
     carma%f_do_incloud    = .FALSE.
     carma%f_do_explised   = .FALSE.
+    carma%f_do_pheat      = .FALSE.
+    carma%f_do_pheatatm   = .FALSE.
     carma%f_do_print_init = .FALSE.
     carma%f_do_substep    = .FALSE.
     carma%f_do_thermo     = .FALSE.
@@ -370,6 +379,8 @@ contains
     if (present(do_grow))       carma%f_do_grow       = do_grow
     if (present(do_incloud))     carma%f_do_incloud   = do_incloud
     if (present(do_explised))   carma%f_do_explised   = do_explised
+    if (present(do_pheat))      carma%f_do_pheat      = do_pheat
+    if (present(do_pheatatm))   carma%f_do_pheatatm   = do_pheatatm
     if (present(do_print_init)) carma%f_do_print_init = (do_print_init .and. carma%f_do_print)
     if (present(do_substep))    carma%f_do_substep    = do_substep
     if (present(do_thermo))     carma%f_do_thermo     = do_thermo
@@ -847,7 +858,7 @@ contains
           rfi = imag(carma%f_group(igroup)%f_refidx(iwave))
         
           do ibin = 1, carma%f_NBIN
-          
+write(*,*) "mie: ", iwave, igroup, ibin, carma%f_group(igroup)%f_r(ibin)          
             ! Assume the particle is homogeneous (no core).
             call miess(carma, &
                        carma%f_group(igroup)%f_r(ibin), &
@@ -1013,6 +1024,7 @@ contains
         carma%f_igup, &
         carma%f_jgup, &
         carma%f_kbin, &
+        carma%f_pkernel, &
         stat=ier) 
       if(ier /= 0) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_Destroy: ERROR deallocating bins, status=", ier
@@ -1058,6 +1070,7 @@ contains
       if (allocated(carma%f_wave)) then
         deallocate( &
           carma%f_wave, &
+          carma%f_dwave, &
           stat=ier) 
         if(ier /= 0) then
           if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_Destroy: ERROR deallocating wavelengths, status=", ier
@@ -1335,7 +1348,9 @@ contains
   !! @version May-2009
   !!
   !! @see CARMA_Create
-  subroutine CARMA_Get(carma, rc, LUNOPRT, NBIN, NELEM, NGAS, NGROUP, NSOLUTE, NWAVE, do_drydep, do_fixedinit, do_print, wave)
+  subroutine CARMA_Get(carma, rc, LUNOPRT, NBIN, NELEM, NGAS, NGROUP, NSOLUTE, NWAVE, do_detrain, &
+    do_drydep, do_fixedinit, do_grow, do_print, do_print_init, do_thermo, wave, dwave)
+    
     type(carma_type), intent(in)        :: carma                !! the carma object
     integer, intent(out)                :: rc                   !! return code, negative indicates failure
     integer, optional, intent(out)      :: NBIN                 !! number of radius bins per group
@@ -1345,10 +1360,15 @@ contains
     integer, optional, intent(out)      :: NGAS                 !! total number of gases
     integer, optional, intent(out)      :: NWAVE                !! number of wavelengths
     integer, optional, intent(out)      :: LUNOPRT              !! logical unit number for output
+    logical, optional, intent(out)      :: do_detrain           !! do detrainement?
     logical, optional, intent(out)      :: do_drydep            !! do dry deposition?
-    logical, optional, intent(out)      :: do_print             !! do print output?
     logical, optional, intent(out)      :: do_fixedinit         !! do initialization from reference atm?
-    real(kind=f), optional, intent(out) :: wave(carma%f_NWAVE)  !! the wavelengths
+    logical, optional, intent(out)      :: do_grow              !! do condensational growth?
+    logical, optional, intent(out)      :: do_print             !! do print output?
+    logical, optional, intent(out)      :: do_print_init        !! do print initialization output?
+    logical, optional, intent(out)      :: do_thermo            !! do thermodynamics?
+    real(kind=f), optional, intent(out) :: wave(carma%f_NWAVE)  !! the wavelengths centers (cm)
+    real(kind=f), optional, intent(out) :: dwave(carma%f_NWAVE) !! the wavelengths widths (cm)
     
     ! Assume success.
     rc = RC_OK
@@ -1361,12 +1381,17 @@ contains
     if (present(NSOLUTE))  NSOLUTE = carma%f_NSOLUTE
     if (present(NWAVE))    NWAVE   = carma%f_NWAVE
     
-    if (present(do_drydep))     do_drydep    = carma%f_do_drydep
-    if (present(do_fixedinit))  do_fixedinit = carma%f_do_fixedinit
-    if (present(do_print))      do_print     = carma%f_do_print
+    if (present(do_detrain))    do_detrain     = carma%f_do_detrain
+    if (present(do_drydep))     do_drydep      = carma%f_do_drydep
+    if (present(do_grow))       do_grow        = carma%f_do_grow
+    if (present(do_fixedinit))  do_fixedinit   = carma%f_do_fixedinit
+    if (present(do_print))      do_print       = carma%f_do_print
+    if (present(do_print_init)) do_print_init  = carma%f_do_print_init
+    if (present(do_thermo))     do_thermo      = carma%f_do_thermo
 
-    if (present(wave))     wave(:) = carma%f_wave(:)
-    
+    if (present(wave))  wave(:)    = carma%f_wave(:)
+    if (present(dwave)) dwave(:)   = carma%f_dwave(:)
+
     return
   end subroutine CARMA_Get
 

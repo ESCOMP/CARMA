@@ -135,6 +135,8 @@ module carma_types_mod
     !   eshape      Ratio of particle length / diameter 
     !   r           Radius bins [cm]
     !   rmass       Mass bins [g]
+    !   rrat        Ratio of maximum diameter to diameter of equivalent sphere
+    !   arat        Ratio of projected area to projected area of containing sphere
     !   vol         Particle volume [cm^3]
     !   dr          Width of bins in radius space [cm]
     !   dm          Width of bins in mass space [g]
@@ -186,6 +188,8 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:)   :: f_ssa        ! (NWAVE,NBIN)
     real(kind=f), allocatable, dimension(:,:)   :: f_asym       ! (NWAVE,NBIN)
     integer, allocatable, dimension(:)          :: f_icorelem   ! (NELEM)
+    real(kind=f), allocatable, dimension(:)     :: f_arat       ! (NBIN)
+    real(kind=f), allocatable, dimension(:)     :: f_rrat       ! (NBIN)
   end type carmagroup_type
   
   
@@ -319,6 +323,8 @@ module carma_types_mod
     !   do_grow     If .true. then do condensational growth and evap.     {init}
     !   do_incloud  If .true. then do incloud growth and coagulation      {init}
     !   do_explised If .true. then do sedimentation with substepping      {init}
+    !   do_pheat    If .true. then do particle heating for growth rates   {init}
+    !   do_pheatatm If .true. then do particle heating on atmosphere      {init}
     !   do_print_init If .true. then do print initializtion info          {init}
     !   do_step     if .true. then varstepping succeeded                  {init}
     !   do_substep  if .true. then use substepping                        {init}
@@ -348,6 +354,8 @@ module carma_types_mod
     logical                                       :: f_do_incloud
     logical                                       :: f_do_vtran
     logical                                       :: f_do_explised
+    logical                                       :: f_do_pheat
+    logical                                       :: f_do_pheatatm
     logical                                       :: f_do_print_init
     logical                                       :: f_do_step
     logical                                       :: f_do_substep
@@ -398,6 +406,7 @@ module carma_types_mod
     !   npairl        Bin pair indices                      {setupcoag}
     !   npairu        Bin pair indices                      {setupcoag}
     !   kbin          lower bin for coagulation             {setupcoag}
+    !   pkernel       Coagulation production variables      {setupcoag}
     !
     real(kind=f)                                        :: f_ck0
     real(kind=f)                                        :: f_grav_e_coll0
@@ -409,6 +418,7 @@ module carma_types_mod
     integer, allocatable, dimension(:,:)                :: f_npairl  ! (NGROUP,NBIN)
     integer, allocatable, dimension(:,:)                :: f_npairu  ! (NGROUP,NBIN)
     integer, allocatable, dimension(:,:,:,:,:)          :: f_kbin    ! (NGROUP,NGROUP,NGROUP,NBIN,NBIN)
+    real(kind=f), allocatable, dimension(:,:,:,:,:,:)   :: f_pkernel ! (NBIN,NBIN,NGROUP,NGROUP,NGROUP,6)
 
     !  Coagulation group pair mapping
     !
@@ -447,9 +457,11 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:)        :: f_palr       ! (4,NGROUP)
     
     ! Optical Properties
-    !   wave      Bin-center wavelengths [micron]
+    !   wave      Bin-center wavelengths [cm]
+    !   dwave     width of radiation bands [cm]
     !
     real(kind=f), allocatable, dimension(:)          :: f_wave       ! (NWAVE)
+    real(kind=f), allocatable, dimension(:)          :: f_dwave      ! (NWAVE)
   end type carma_type  
  
  
@@ -637,7 +649,7 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:)     :: f_growlg     ! (NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:)     :: f_evaplg     ! (NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:)       :: f_gasprod    ! (NGAS)
-    real(kind=f)                                  :: f_rlheat
+    real(kind=f), allocatable, dimension(:)       :: f_rlheat     ! (NZ)
     real(kind=f), allocatable, dimension(:,:)     :: f_ftoppart   ! (NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:)     :: f_fbotpart   ! (NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:)     :: f_pc_topbnd  ! (NBIN,NELEM)
@@ -651,10 +663,8 @@ module carma_types_mod
     !  Coagulation kernels and bin pair mapping
     !
     !   ckernel       Coagulation kernels [cm^3/s]          {setupckern}
-    !   pkernel       Coagulation production variables      {setupcoag}
     !
     real(kind=f), allocatable, dimension(:,:,:,:,:) :: f_ckernel ! (NZ,NBIN,NBIN,NGROUP,NGROUP)
-    real(kind=f), allocatable, dimension(:,:,:,:,:,:,:) :: f_pkernel ! (NZ,NBIN,NBIN,NGROUP,NGROUP,NGROUP,6)
 
     !  Particle fall velocities and diffusivities
     !
@@ -679,6 +689,7 @@ module carma_types_mod
     !  pl        Atmospheric pressure at layer edge [dyne/cm^2]           {initatm}
     !  rmu       Air viscosity at layer mid-pt [g/cm/s]                   {initatm}
     !  thcond    Thermal conductivity of dry air [erg/cm/sec/deg_K]       {initatm}
+    !  thcondnc  Adjusted thermal conductivity of dry air [erg/cm/sec/deg_K] {initatm}
     !  told      Temperature at beginning of time-step
     !  relhum    Hacked in relative humidity from hostmodel
     !
@@ -689,6 +700,7 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:)     :: f_pl         ! (NZP1)
     real(kind=f), allocatable, dimension(:)     :: f_rmu        ! (NZ)
     real(kind=f), allocatable, dimension(:)     :: f_thcond     ! (NZ)
+    real(kind=f), allocatable, dimension(:,:,:) :: f_thcondnc   ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:)     :: f_told       ! (NZ)
     real(kind=f), allocatable, dimension(:)     :: f_relhum     ! (NZ)
 
@@ -718,7 +730,9 @@ module carma_types_mod
     !   supsatlold Supersaturation (liquid) before time-step    {prestep}
     !   supsatiold Supersaturation (ice) before time-step    {prestep}
     !   scrit     Critical supersaturation for nucleation [dimless]   {setupnuc}
-    !   qrad      Particle heating rate [deg_K/s]
+    !   radint    Incoming radiative intensity [erg/cm2/sr/s/um]
+    !   partheat  Diffusional heating from particles [K/s]
+    !   tpart     Particle temperature [K]
     real(kind=f), allocatable, dimension(:,:)    :: f_diffus     ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:)    :: f_rlhe       ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:)    :: f_rlhm       ! (NZ,NGAS)
@@ -738,6 +752,8 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:)    :: f_supsatlold ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:)    :: f_supsatiold ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:,:)  :: f_scrit      ! (NZ,NBIN,NGROUP)
-    real(kind=f), allocatable, dimension(:,:,:)  :: f_qrad       ! (NZ,NBIN,NGROUP)
+    real(kind=f), allocatable, dimension(:,:)    :: f_radint     ! (NZ,NWAVE)
+    real(kind=f), allocatable, dimension(:)      :: f_partheat   ! (NZ)
+    real(kind=f), allocatable, dimension(:,:,:)  :: f_tpart      ! (NZ,NBIN,NGROUP)
   end type carmastate_type   
 end module
