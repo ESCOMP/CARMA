@@ -58,7 +58,7 @@ foreach runtgt (`ls -1 *TEST.exe`)
   echo ""
   echo ""
   echo "  ** Starting $runtgt at `date` **"
-#  ./$runtgt || echo '  *** Run Failed ***' && exit -1
+  ./$runtgt || echo '  *** Run Failed ***' && exit -1
   echo "  ** Finished at `date` **"
   echo ""
   

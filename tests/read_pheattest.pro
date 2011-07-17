@@ -19,12 +19,15 @@
 
   ; Read in the particles for each time step.
   mmr_     = fltarr(nelem, nbin)
+  tpart_   = fltarr(nelem, nbin)
   mmrgas_  = fltarr(ngas)
   satliq_  = fltarr(ngas)
   satice_  = fltarr(ngas)
+  t_       = fltarr(1)
 
-  data = fltarr(3)
+  data = fltarr(4)
   datag = fltarr(4)
+  datat = fltarr(1)
 
   nt = 0
   while(not(eof(lun))) do begin
@@ -34,15 +37,18 @@
         readf, lun, data
       
         mmr_[ielem, ibin]  = data[2]
+        tpart_[ielem, ibin]  = data[3]
       endfor
     endfor
    
     if (nt eq 0) then begin
-      time = t1
-      mmr  = mmr_
+      time  = t1
+      mmr   = mmr_
+      tpart = tpart_
     endif else begin
-      time = [time,t1]
-      mmr  = [mmr,mmr_]
+      time  = [time,t1]
+      mmr   = [mmr,mmr_]
+      tpart = [tpart,tpart_]
     endelse
    
     for igas = 0, ngas-1 do begin
@@ -52,15 +58,20 @@
       satliq_[igas]  = datag[2]
       satice_[igas]  = datag[3]
     endfor
-   
+
+    readf, lun, datat
+    t_ = datat
+
     if (nt eq 0) then begin
       mmrgas  = mmrgas_
       satliq  = satliq_
       satice  = satice_
+      t       = t_
     endif else begin
       mmrgas  = [mmrgas,mmrgas_]
       satliq  = [satliq,satliq_]
       satice  = [satice,satice_]
+      t       = [t, t_]
     endelse
 
     nt = nt+1
@@ -69,11 +80,11 @@
   free_lun, lun
 
   mmr    = reform(mmr,nelem,nt,nbin)
+  tpart  = reform(tpart,nelem,nt,nbin)
   mmrgas = reform(mmrgas,nt,ngas)
   satliq = reform(satliq,nt,ngas)
   satice = reform(satice,nt,ngas)
-  
-  
+
   !p.multi = [0,1,4]
   loadct, 39
 
@@ -101,10 +112,10 @@ satice[0,*] = !Values.F_NAN
          /XLOG, /YLOG, charsize=2.0
  
     ; Add a legend
-    plots, [60,62], 1e-10, thick=3, lin=0, color=66
-    plots, [60,62], 1e-5, thick=3, lin=0, color=96
-    xyouts, 63, 1e-10, 'Ice', color=66
-    xyouts, 63, 1e-5, 'Water Vapor', color=96
+    plots, [2,2.5], 1e-10, thick=3, lin=0, color=66
+    plots, [2,2.5], 1e-15, thick=3, lin=0, color=96
+    xyouts, 2.7, 1e-10, 'Ice', color=66
+    xyouts, 2.7, 1e-15, 'Water Vapor', color=96
 
     for ielem = 0, nelem-1 do begin
       oplot, r[*], mmr[ielem,it,*], lin=ielem, thick=6, color=66
@@ -114,18 +125,34 @@ satice[0,*] = !Values.F_NAN
       oplot, [min(r), max(r)], [mmrgas[it, igas], mmrgas[it, igas]], thick=6, color=96, lin=igas
     endfor
 
+
+    ; Show particle temperature
+    plot, r[*], t[*], yrange=[120, 180], $
+         title = 'Particle Temperature', $
+         xtitle='Radius [um]', ytitle = 'Tparticle [Kg]', thick=6, $
+         /XLOG, charsize=2.0
+ 
+    ; Add a legend
+    plots, [.0002,.0003], 170, thick=3, lin=0, color=66
+    xyouts, .00035, 168, 'Ice', color=66
+
+    for ielem = 0, nelem-1 do begin
+      oplot, r[*], tpart[ielem,it,0:NBIN-2], lin=ielem, thick=6, color=66
+    endfor
+
+
     ; Show the mmr evolution.
     plot, mmrtotal[*], xtitle = 'Time Step', ytitle = 'mmr [kg/kg]', thick=6, $
         title = 'Total mmr evolution', charsize=2.0, $
         yrange=[min([min(mmrtotal), min(mmrgas), min(mmrelem)]), max([max(mmrtotal), 1.5*max(mmrgas), max(mmrelem)])] 
 
     ; Add a legend
-    plots, [2,2.5], 5.5e-6, thick=3, lin=0, color=66
-    plots, [4,4.5], 5.5e-6, thick=3, lin=0, color=96
-    plots, [9,9.5], 5.5e-6, thick=3, lin=0, color=26
-    xyouts, 2.7, 5.25e-6, 'Ice', color=66
-    xyouts, 4.7, 5.25e-6, 'Water Vapor', color=96
-    xyouts, 9.7, 5.25e-6, 'Total Water', color=26
+    plots, [2,2.5], 5.25e-6, thick=3, lin=0, color=66
+    plots, [4,4.5], 5.25e-6, thick=3, lin=0, color=96
+    plots, [9,9.5], 5.25e-6, thick=3, lin=0, color=26
+    xyouts, 2.7, 5.e-6, 'Ice', color=66
+    xyouts, 4.7, 5.e-6, 'Water Vapor', color=96
+    xyouts, 9.7, 5.e-6, 'Total Water', color=26
 
     for ielem = 0, nelem-1 do begin
       oplot, mmrelem[*,ielem], thick=6, lin=ielem
@@ -147,13 +174,13 @@ satice[0,*] = !Values.F_NAN
     ; Show the saturation evolution.
     plot, satice[*], xtitle = 'Time Step', ytitle = 's', thick=6, $
         title = 'Gas Saturation Ratio', $
-        yrange=[0, 5], charsize=2.0 
+        yrange=[0, 10], charsize=2.0 
         
     ; Add a legend
-    plots, [2,2.5], 4.5, thick=3, lin=0, color=66
-    plots, [2,2.5], 3.5, thick=3, lin=0, color=196
-    xyouts, 2.7, 4.25, 'Sat Ice', color=66
-    xyouts, 2.7, 3.25, 'Sat Liq', color=196
+    plots, [2,2.5], 8, thick=3, lin=0, color=66
+    plots, [2,2.5], 6, thick=3, lin=0, color=196
+    xyouts, 2.7, 7.75, 'Sat Ice', color=66
+    xyouts, 2.7, 5.75, 'Sat Liq', color=196
 
     oplot, [0, nt], [1., 1.], thick=3
 
