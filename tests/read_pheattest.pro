@@ -19,7 +19,7 @@
 
   ; Read in the particles for each time step.
   mmr_     = fltarr(nelem, nbin)
-  tpart_   = fltarr(nelem, nbin)
+  dtpart_  = fltarr(nelem, nbin)
   mmrgas_  = fltarr(ngas)
   satliq_  = fltarr(ngas)
   satice_  = fltarr(ngas)
@@ -37,18 +37,18 @@
         readf, lun, data
       
         mmr_[ielem, ibin]  = data[2]
-        tpart_[ielem, ibin]  = data[3]
+        dtpart_[ielem, ibin]  = data[3]
       endfor
     endfor
    
     if (nt eq 0) then begin
       time  = t1
       mmr   = mmr_
-      tpart = tpart_
+      dtpart = dtpart_
     endif else begin
       time  = [time,t1]
       mmr   = [mmr,mmr_]
-      tpart = [tpart,tpart_]
+      dtpart = [dtpart,dtpart_]
     endelse
    
     for igas = 0, ngas-1 do begin
@@ -80,7 +80,7 @@
   free_lun, lun
 
   mmr    = reform(mmr,nelem,nt,nbin)
-  tpart  = reform(tpart,nelem,nt,nbin)
+  dtpart  = reform(dtpart,nelem,nt,nbin)
   mmrgas = reform(mmrgas,nt,ngas)
   satliq = reform(satliq,nt,ngas)
   satice = reform(satice,nt,ngas)
@@ -127,17 +127,18 @@ satice[0,*] = !Values.F_NAN
 
 
     ; Show particle temperature
-    plot, r[*], t[*], yrange=[120, 180], $
+    maxdtp = max(abs(dtpart))
+    plot, r[*], dtpart[0,0,0:NBIN-2], yrange=[-maxdtp, maxdtp], $
          title = 'Particle Temperature', $
-         xtitle='Radius [um]', ytitle = 'Tparticle [Kg]', thick=6, $
+         xtitle='Radius [um]', ytitle = 'dTparticle [K]', thick=6, $
          /XLOG, charsize=2.0
  
     ; Add a legend
-    plots, [.0002,.0003], 170, thick=3, lin=0, color=66
-    xyouts, .00035, 168, 'Ice', color=66
+    plots, [.0002,.0003], .72 * maxdtp, thick=3, lin=0, color=66
+    xyouts, .00035, .7 * maxdtp, 'Ice', color=66
 
     for ielem = 0, nelem-1 do begin
-      oplot, r[*], tpart[ielem,it,0:NBIN-2], lin=ielem, thick=6, color=66
+      oplot, r[*], dtpart[ielem,it,0:NBIN-2], lin=ielem, thick=6, color=66
     endfor
 
 

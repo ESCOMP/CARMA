@@ -148,7 +148,7 @@ module carma_types_mod
     !   ssa         single scattering albedo
     !   asym        asymmetry factor
     !   ifallrtn    routine to use to calculate fall velocity  [I_FALLRTN_...]
-
+    !   imiertn     mie routine for optical properties [I_MIERTN_...]
     !
     character(len=CARMA_NAME_LEN)               :: f_name
     character(len=CARMA_SHORT_NAME_LEN)         :: f_shortname
@@ -171,6 +171,7 @@ module carma_types_mod
     integer                                     :: f_irhswell
     integer                                     :: f_irhswcomp
     integer                                     :: f_ifallrtn
+    integer                                     :: f_imiertn
     real(kind=f)                                :: f_rmin
     real(kind=f)                                :: f_rmassmin
     real(kind=f)                                :: f_rmrat
@@ -459,9 +460,11 @@ module carma_types_mod
     ! Optical Properties
     !   wave      Bin-center wavelengths [cm]
     !   dwave     width of radiation bands [cm]
+    !   do_wave_emit If true, emission should be calculated the band
     !
     real(kind=f), allocatable, dimension(:)          :: f_wave       ! (NWAVE)
     real(kind=f), allocatable, dimension(:)          :: f_dwave      ! (NWAVE)
+    logical, allocatable, dimension(:)               :: f_do_wave_emit  ! (NWAVE)
   end type carma_type  
  
  
@@ -732,7 +735,7 @@ module carma_types_mod
     !   scrit     Critical supersaturation for nucleation [dimless]   {setupnuc}
     !   radint    Incoming radiative intensity [erg/cm2/sr/s/um]
     !   partheat  Diffusional heating from particles [K/s]
-    !   tpart     Particle temperature [K]
+    !   dtpart    Delta particle temperature [K]
     real(kind=f), allocatable, dimension(:,:)    :: f_diffus     ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:)    :: f_rlhe       ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:)    :: f_rlhm       ! (NZ,NGAS)
@@ -754,6 +757,6 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:,:)  :: f_scrit      ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:)    :: f_radint     ! (NZ,NWAVE)
     real(kind=f), allocatable, dimension(:)      :: f_partheat   ! (NZ)
-    real(kind=f), allocatable, dimension(:,:,:)  :: f_tpart      ! (NZ,NBIN,NGROUP)
+    real(kind=f), allocatable, dimension(:,:,:)  :: f_dtpart      ! (NZ,NBIN,NGROUP)
   end type carmastate_type   
 end module

@@ -36,7 +36,7 @@ contains
 
   subroutine CARMAGROUP_Create(carma, igroup, name, rmin, rmrat, ishape, eshape, is_ice, &
       rc, irhswell, irhswcomp, refidx, do_mie, do_wetdep, do_drydep, do_vtran, solfac, scavcoef, shortname, &
-      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin)
+      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin, imiertn)
     type(carma_type), intent(inout)             :: carma               !! the carma object
     integer, intent(in)                         :: igroup              !! the group index
     character(*), intent(in)                    :: name                !! the group name, maximum of 255 characters
@@ -61,6 +61,7 @@ contains
     integer, optional, intent(in)               :: ifallrtn            !! fall velocity routine [I_FALLRTN_STD | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010 | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
     logical, optional, intent(in)               :: is_cloud            !! is this a cloud particle?
     real(kind=f), optional, intent(in)          :: rmassmin            !! the minimum mass, when used overrides rmin[g]
+    integer, optional, intent(in)               :: imiertn             !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983]
 
     ! Local variables
     integer                               :: ier
@@ -106,6 +107,7 @@ contains
     carma%f_group(igroup)%f_rlow(:)     = 0._f
     carma%f_group(igroup)%f_icorelem(:) = 0
     carma%f_group(igroup)%f_ifallrtn    = I_FALLRTN_STD
+    carma%f_group(igroup)%f_imiertn     = I_MIERTN_TOON1981
     carma%f_group(igroup)%f_is_cloud    = .false.
     
 
@@ -169,6 +171,7 @@ contains
     if (present(ifallrtn))   carma%f_group(igroup)%f_ifallrtn     = ifallrtn
     if (present(is_cloud))   carma%f_group(igroup)%f_is_cloud     = is_cloud
     if (present(rmassmin))   carma%f_group(igroup)%f_rmassmin     = rmassmin
+    if (present(imiertn))    carma%f_group(igroup)%f_imiertn      = imiertn
 
     
     ! Initialize other properties.
@@ -281,7 +284,7 @@ contains
   subroutine CARMAGROUP_Get(carma, igroup, rc, name, shortname, rmin, rmrat, ishape, eshape, is_ice, &
       irhswell, irhswcomp, cnsttype, r, rlow, rup, dr, rmass, dm, vol, qext, ssa, asym, do_mie, &
       do_wetdep, do_drydep, do_vtran, solfac, scavcoef, ienconc, refidx, ncore, icorelem, maxbin, &
-      ifallrtn, is_cloud, rmassmin, arat, rrat)
+      ifallrtn, is_cloud, rmassmin, arat, rrat, imiertn)
       
     type(carma_type), intent(in)              :: carma                        !! the carma object
     integer, intent(in)                       :: igroup                       !! the group index
@@ -322,6 +325,7 @@ contains
     integer, optional, intent(out)            :: ifallrtn                     !! fall velocity routine [I_FALLRTN_STD | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010 | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
     logical, optional, intent(out)            :: is_cloud                     !! is this a cloud particle?
     real(kind=f), optional, intent(out)       :: rmassmin                     !! the minimum mass [g]
+    integer, optional, intent(out)            :: imiertn                      !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983]
 
     ! Assume success.
     rc = RC_OK
@@ -367,6 +371,7 @@ contains
     if (present(ifallrtn))     ifallrtn     = carma%f_group(igroup)%f_ifallrtn
     if (present(is_cloud))     is_cloud     = carma%f_group(igroup)%f_is_cloud
     if (present(rmassmin))     rmassmin     = carma%f_group(igroup)%f_rmassmin
+    if (present(imiertn))      imiertn      = carma%f_group(igroup)%f_imiertn
     
     if (carma%f_NWAVE == 0) then
       if (present(refidx) .or. present(qext) .or. present(ssa) .or. present(asym)) then
@@ -421,6 +426,7 @@ contains
     logical                                   :: do_wetdep          ! do wet deposition for this particle?
     logical                                   :: do_drydep          ! do dry deposition for this particle?
     logical                                   :: do_vtran           ! do sedimentation for this particle?
+    integer                                   :: imiertn            ! mie velocity routine
 
     ! Assume success.
     rc = RC_OK
@@ -429,7 +435,8 @@ contains
     if (carma%f_do_print) then
       call CARMAGROUP_Get(carma, igroup, rc, name=name, shortname=shortname, rmin=rmin, rmrat=rmrat, ishape=ishape, eshape=eshape, &
                         is_ice=is_ice, is_cloud=is_cloud, irhswell=irhswell, irhswcomp=irhswcomp, cnsttype=cnsttype, r=r, dr=dr, &
-                        rmass=rmass, dm=dm, vol=vol, ifallrtn=ifallrtn, rmassmin=rmassmin, do_mie=do_mie, do_wetdep=do_wetdep, do_drydep=do_drydep, do_vtran=do_vtran)
+                        rmass=rmass, dm=dm, vol=vol, ifallrtn=ifallrtn, rmassmin=rmassmin, do_mie=do_mie, do_wetdep=do_wetdep, &
+                        do_drydep=do_drydep, do_vtran=do_vtran, imiertn=imiertn)
       if (rc < 0) return
 
     
@@ -519,13 +526,23 @@ contains
 
       select case(ifallrtn)
         case (I_FALLRTN_STD)
-          write(carma%f_LUNOPRT,*) "    cnsttype      :    standard"
+          write(carma%f_LUNOPRT,*) "    ifallrtn      :    standard"
         case (I_FALLRTN_STD_SHAPE)
-          write(carma%f_LUNOPRT,*) "    cnsttype      :    standard (shape)"
+          write(carma%f_LUNOPRT,*) "    ifallrtn      :    standard (shape)"
+        case (I_FALLRTN_HEYMSFIELD2010)
+          write(carma%f_LUNOPRT,*) "    ifallrtn      :    Heymsfield & Westbrook, 2010"
         case default
-          write(carma%f_LUNOPRT,*) "    cnsttype      :    unknown, ", cnsttype
+          write(carma%f_LUNOPRT,*) "    ifallrtn      :    unknown, ", ifallrtn
       end select
 
+      select case(imiertn)
+        case (I_MIERTN_TOON1981)
+          write(carma%f_LUNOPRT,*) "    imiertn       :    Toon & Ackerman, 1981"
+        case (I_MIERTN_BOHREN1983)
+          write(carma%f_LUNOPRT,*) "    imiertn       :    Bohren & Huffman, 1983"
+        case default
+          write(carma%f_LUNOPRT,*) "    imiertn       :    unknown, ", imiertn
+      end select
   
       write(carma%f_LUNOPRT,*)   
       write(carma%f_LUNOPRT,"('    ', a4, 5a12)") "bin",  "r",  "dr",  "rmass",  "dm",  "vol"

@@ -589,7 +589,7 @@ contains
           cstate%f_rlheat(NZ), &
           cstate%f_radint(NZ,NWAVE), &
           cstate%f_partheat(NZ), &
-          cstate%f_tpart(NZ,NBIN,NGROUP), &
+          cstate%f_dtpart(NZ,NBIN,NGROUP), &
           cstate%f_cmf(NBIN,NGROUP), &
           cstate%f_totevap(NBIN,NGROUP), &
           stat=ier)
@@ -753,7 +753,7 @@ contains
           cstate%f_rlheat, &
           cstate%f_radint, &
           cstate%f_partheat, &
-          cstate%f_tpart, &
+          cstate%f_dtpart, &
           cstate%f_cmf, &
           cstate%f_totevap, &
           stat=ier)
@@ -957,7 +957,7 @@ contains
   !! @see CARMASTATE_SetBin
   subroutine CARMASTATE_GetBin(cstate, ielem, ibin, mmr, rc, &
                                nmr, numberDensity, nucleationRate, r_wet, rhop_wet, &
-                               surface, sedimentationflux, vf, vd, tpart)
+                               surface, sedimentationflux, vf, vd, dtpart)
     type(carmastate_type), intent(in)     :: cstate         !! the carma state object
     integer, intent(in)                   :: ielem          !! the element index
     integer, intent(in)                   :: ibin           !! the bin index
@@ -972,7 +972,7 @@ contains
     real(kind=f), optional, intent(out)   :: sedimentationflux         !! particle sedimentation mass flux to surface [kg/m2/s]
     real(kind=f), optional, intent(out)   :: vf(cstate%f_NZ+1) !! fall velocity [cm/s]
     real(kind=f), optional, intent(out)   :: vd             !! deposition velocity [cm/s]
-    real(kind=f), optional, intent(out)   :: tpart(cstate%f_NZ) !! particle temperature [K]
+    real(kind=f), optional, intent(out)   :: dtpart(cstate%f_NZ) !! delta particle temperature [K]
     
     integer                               :: ienconc        !! index of element that is the particle concentration for the group
     integer                               :: igroup         ! Group containing this bin
@@ -1052,7 +1052,7 @@ contains
       if (present(numberDensity)) numberDensity(:)   = cstate%f_pc(:, ibin, ielem) / (cstate%f_xmet(:)*cstate%f_ymet(:)*cstate%f_zmet(:))
       if (present(r_wet))         r_wet(:)           = cstate%f_r_wet(:, ibin, igroup)
       if (present(rhop_wet))      rhop_wet(:)        = cstate%f_rhop_wet(:, ibin, igroup)
-      if (present(tpart))         tpart              = cstate%f_tpart(:, ibin, igroup)
+      if (present(dtpart))        dtpart(:)          = cstate%f_dtpart(:, ibin, igroup)
 
       if (cstate%f_carma%f_do_vtran) then
         if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup)
@@ -1077,7 +1077,7 @@ contains
       if (present(nucleationRate)) nucleationRate(:)  = CAM_FILL
       if (present(r_wet))          r_wet(:)           = CAM_FILL
       if (present(rhop_wet))       rhop_wet(:)        = CAM_FILL
-      if (present(tpart))          tpart              = CAM_FILL
+      if (present(dtpart))         dtpart(:)          = CAM_FILL
       if (present(vf))             vf(:)              = CAM_FILL
       if (present(vd))             vd                 = CAM_FILL
     end if

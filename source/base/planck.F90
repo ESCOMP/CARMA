@@ -34,7 +34,7 @@ contains
     
     ! Calculate the planck intensity.
     planckIntensity = 2._f * H * C**2 / ((wvl**5) * (exp(H * C / (BK * wvl * temp)) - 1._f))
-  
+    
     ! Return the planck intensity to the caller.
     return
   end function

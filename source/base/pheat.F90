@@ -6,8 +6,9 @@
 !!
 !! The net energy absorbed by each particle is calculatated as <qrad>, and
 !! this heating rate is included in the caclulation of <dmdt> in growevapl. The
-!! particle temperature <tpart> and the radiative heating of the
-!! atmosphere by particles <partheat> are also calculated.
+!! particle temperature perturbation realtive to atmospheric temperature <dtpart>
+!! and the radiative heating of the atmosphere by particles <partheat>
+!! are also calculated.
 !!
 !! This algorithm is based upon the model described in the appendix of
 !!   Toon et al., J. Geophys. Res., 94, 11359-11380, 1989.
@@ -18,12 +19,9 @@
 !!   <radint> intensity of incoming radiance (solar+ir) [erg/cm2/sr/s/cm]
 !!   <wave>   wavelengths used for integration [cm]
 !!   <dwave>  width of wavelength bands for integration [cm]
+!!   <do_wave_emit> whether planck emission should be doen for the band
 !!   <qext>   extinction [cm2]
 !!   <ssa>    single scattering albedo
-!!
-!! NOTE: This routine is not currently integrated into the CARMA state. Several variables
-!! have been defined locally here so the routine will compile, but they need to be moved to
-!! CARMA state and supplied/used by other parts of the CARMA code.
 !!
 !! @author Chuck Bardeen
 !! @version Jan-2010
@@ -54,7 +52,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
 
   ! Local declarations
   integer, parameter                   :: MAX_ITER      = 10      ! Maximum number of iterations
-  real(kind=f), parameter              :: DDTP_LIMIT    = 0.1_f   ! Convergence criteria for iteration.
+  real(kind=f), parameter              :: DDTP_LIMIT    = 0.01_f   ! Convergence criteria for iteration.
   
   integer                              :: iter                    ! iteration
   integer                              :: iwvl                    ! wavelength band index
@@ -77,9 +75,11 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   real(kind=f)                         :: pvap
   real(kind=f)                         :: qrad                    ! particle net radiation (erg/s)
   real(kind=f)                         :: rlh                     ! latent heat (erg/g)
+  real(kind=f)                         :: tp                      ! particle temperature (K)
   real(kind=f)                         :: dtp                     ! change in particle temperature (K)
   real(kind=f)                         :: dtpl                    ! last change in particle temperature (K)
   real(kind=f)                         :: ddtp                    ! change in particle temperature in last iteration (K)
+  real(kind=f)                         :: plkint                  ! planck intensity
   
   ! <akas> is combined kelvin (curvature) and solute factors.
   !
@@ -168,15 +168,15 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
 
   ! If particle heating is being considered, then determine qrad and tpart to
   ! determine dmdt.
-  tpart(iz,ibin,igroup)  = t(iz)
-
-  if (.not. do_pheat) then
+  !
+  ! NOTE: If no optical properties, then can't do the particle heating calculation.
+  if ((.not. do_pheat) .or. (.not. do_mie(igroup))) then
 
     ! Ignore the qrad term.
     dmdt = pvap * ( ss + 1._f - akas ) * g0 / ( 1._f + g0 * g1 * pvap )
                      
   else
-
+  
     ! Latent heat of condensing gas 
     if( is_grp_ice(igroup) )then
       rlh = rlhe(iz,igas) + rlhm(iz,igas)
@@ -200,7 +200,8 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
     !      
     !     dtp2 = radp /
     !    $  (4.d0*PI*rlow(ibin+1,igroup)*thcondnc(iz)*ft(iz,ibin+1,igroup))
-
+    tp   = t(iz)
+    dtp  = 0._f
     dtpl = 0._f
         
     do iter = 1, MAX_ITER
@@ -211,8 +212,17 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       qrad = 0._f
           
       do iwvl = 1, NWAVE
-        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow(ibin+1,igroup) ** 2) * &
-             (radint(iz,iwvl) - planckIntensity(wave(iwvl),tpart(iz,ibin,igroup))) * dwave(iwvl)
+
+        ! There may be overlap between bands, so only do the emission
+        ! for each range of wavelengths once.
+        if (do_wave_emit(iwvl)) then
+          plkint = planckIntensity(wave(iwvl),tp)
+        else
+          plkint = 0._f
+        end if
+        
+        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow(ibin+1,igroup) ** 2 * arat(ibin+1,igroup)) * &
+             (radint(iz,iwvl) - plkint) * dwave(iwvl)
       end do
 
       ! Calculate the change in mass using eq. A3 from Toon et al. [1989].
@@ -229,11 +239,11 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
                (4._f * PI * rlow(ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * ft(iz,ibin+1,igroup))
       end if
 
-      tpart(iz,ibin,igroup) = t(iz) + dtp
+      tp = t(iz) + dtp
           
       ddtp = dtp - dtpl
       dtpl = dtp
-          
+
       if (abs(ddtp) .le. DDTP_LIMIT) then
         exit
       end if
@@ -242,6 +252,8 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
         exit
       end if
     end do
+
+    dtpart(iz,ibin,igroup) = dtp
   
     ! Calculate the contribution of this bin to the heating of the atmosphere. CARMA does
     ! not actually apply this heating to change the temperature.

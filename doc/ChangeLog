@@ -1,5 +1,26 @@
 Tag name: 
 Originator(s): Charles Bardeen
+Date: August 4, 2011
+
+One-line Summary:
+
+Enhancements to the particle heating code.
+
+Purpose of changes:
+
+Added the ability to flag overlap bands in for the particle heating
+calculation. These are bands which have added energy coming in; however,
+the emission should only be done in one of the bands. This is needed
+for the CAM radiation bands. Added the Bohren and Huffman mie routine,
+to provide a routine that handles a broader array of sizes and refractive
+indicies. Also changed the output from particle temperature to the difference
+in particle temperature, since that is more relevant to the impact on
+growth rates and temperatures may change for other reasons making it hard
+to do the difference later.
+
+===============================================================
+Tag name: 
+Originator(s): Charles Bardeen
 Date: July 14, 2011
 
 One-line Summary:

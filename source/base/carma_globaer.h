@@ -105,6 +105,8 @@
 #define rrat(ibin,igroup)       carma%f_group(igroup)%f_rrat(ibin) 
 #define qext(iwave,ibin,igroup) carma%f_group(igroup)%f_qext(iwave,ibin)
 #define ssa(iwave,ibin,igroup)  carma%f_group(igroup)%f_ssa(iwave,ibin)
+#define do_mie(igroup)          carma%f_group(igroup)%f_do_mie
+#define imiertn(igroup)         carma%f_group(igroup)%f_imiertn
 
 ! Solute object
 #define solname(isolute)      carma%f_solute(isolute)%f_name
@@ -115,6 +117,7 @@
 ! Optical properties
 #define wave          carma%f_wave
 #define dwave         carma%f_dwave
+#define do_wave_emit  carma%f_do_wave_emit
 
 !  Model option & control variables
 #define do_cnst_rlh   carma%f_do_cnst_rlh
@@ -286,7 +289,7 @@
 #define rlh_nuc       carma%f_rlh_nuc
 #define radint        cstate%f_radint
 #define partheat      cstate%f_partheat
-#define tpart         cstate%f_tpart
+#define dtpart        cstate%f_dtpart
 #define pratt         carma%f_pratt
 #define prat          carma%f_prat
 #define pden1         carma%f_pden1

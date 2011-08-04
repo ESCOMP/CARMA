@@ -34,8 +34,6 @@ subroutine test_grow_pheat()
 
   implicit none
 
-  integer, parameter        :: NX           = 1
-  integer, parameter        :: NY           = 1
   integer, parameter        :: NZ           = 1
   integer, parameter        :: NZP1         = NZ+1
   integer, parameter        :: NELEM        = 1
@@ -76,29 +74,29 @@ subroutine test_grow_pheat()
   type(carmastate_type)               :: cstate
   integer                             :: rc = 0
   
-  real(kind=f), allocatable   :: xc(:,:,:)
-  real(kind=f), allocatable   :: dx(:,:,:)
-  real(kind=f), allocatable   :: yc(:,:,:)
-  real(kind=f), allocatable   :: dy(:,:,:)
-  real(kind=f), allocatable   :: zc(:,:,:)
-  real(kind=f), allocatable   :: zl(:,:,:)
-  real(kind=f), allocatable   :: p(:,:,:)
-  real(kind=f), allocatable   :: pl(:,:,:)
-  real(kind=f), allocatable   :: t(:,:,:)
-  real(kind=f), allocatable   :: relhum(:,:,:)
-  real(kind=f), allocatable   :: rho(:,:,:)
+  real(kind=f), allocatable   :: xc(:)
+  real(kind=f), allocatable   :: dx(:)
+  real(kind=f), allocatable   :: yc(:)
+  real(kind=f), allocatable   :: dy(:)
+  real(kind=f), allocatable   :: zc(:)
+  real(kind=f), allocatable   :: zl(:)
+  real(kind=f), allocatable   :: p(:)
+  real(kind=f), allocatable   :: pl(:)
+  real(kind=f), allocatable   :: t(:)
+  real(kind=f), allocatable   :: relhum(:)
+  real(kind=f), allocatable   :: rho(:)
   
-  real(kind=f), allocatable   :: mmr(:,:,:,:,:)
-  real(kind=f), allocatable   :: tpart(:,:,:,:,:)
-  real(kind=f), allocatable   :: mmr_gas(:,:,:,:)
-  real(kind=f), allocatable   :: satliq(:,:,:,:)
-  real(kind=f), allocatable   :: satice(:,:,:,:)
+  real(kind=f), allocatable   :: mmr(:,:,:)
+  real(kind=f), allocatable   :: dtpart(:,:,:)
+  real(kind=f), allocatable   :: mmr_gas(:,:)
+  real(kind=f), allocatable   :: satliq(:,:)
+  real(kind=f), allocatable   :: satice(:,:)
   
   real(kind=f), allocatable   :: r(:)
   real(kind=f), allocatable   :: rmass(:)
 
-  real(kind=f), allocatable          :: lat(:,:)
-  real(kind=f), allocatable          :: lon(:,:)
+  real(kind=f)                :: lat
+  real(kind=f)                :: lon
   
   real(kind=f), allocatable          :: wave(:)       ! wavelength centers (cm)
   real(kind=f), allocatable          :: dwave(:)      ! wavelength width (cm)
@@ -106,9 +104,6 @@ subroutine test_grow_pheat()
   complex(kind=f), allocatable       :: refidx(:)     ! refractive index
   
   integer               :: i
-  integer               :: ix
-  integer               :: iy
-  integer               :: ixy
   integer               :: istep
   integer               :: igas
   integer               :: igroup
@@ -129,17 +124,16 @@ subroutine test_grow_pheat()
   open(unit=lun,file="carma_pheattest.txt",status="unknown")
   
   ! Allocate the arrays that we need for the model
-  allocate(xc(NZ,NY,NX), dx(NZ,NY,NX), yc(NZ,NY,NX), dy(NZ,NY,NX), &
-           zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
-           t(NZ,NY,NX), rho(NZ,NY,NX)) 
-  allocate(mmr(NZ,NY,NX,NELEM,NBIN))
-  allocate(tpart(NZ,NY,NX,NELEM,NBIN))
-  allocate(mmr_gas(NZ,NY,NX,NGAS))
-  allocate(satliq(NZ,NY,NX,NGAS))
-  allocate(satice(NZ,NY,NX,NGAS))
+  allocate(xc(NZ), dx(NZ), yc(NZ), dy(NZ), &
+           zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
+           t(NZ), rho(NZ)) 
+  allocate(mmr(NZ,NELEM,NBIN))
+  allocate(dtpart(NZ,NELEM,NBIN))
+  allocate(mmr_gas(NZ,NGAS))
+  allocate(satliq(NZ,NGAS))
+  allocate(satice(NZ,NGAS))
   allocate(r(NBIN))
   allocate(rmass(NBIN))
-  allocate(lat(NY,NX), lon(NY,NX))
   allocate(wave(NWAVE), dwave(NWAVE), refidx(NWAVE), radint(NZ,NWAVE))
 
 
@@ -150,15 +144,13 @@ subroutine test_grow_pheat()
 
 
   ! Define the particle-grid extent of the CARMA test
-!  write(*,*) "  CARMA_Create ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT, wave=wave, dwave=dwave)
-  if (rc /=0) stop "    *** FAILED ***"
+  if (rc /=0) stop "    *** CARMA_Create FAILED ***"
 	carma_ptr => carma
 
 
   ! Define the groups
-!  write(*,*) "  Add Group(s) ..."
-  
+
   ! PMC
   rmin  = 2e-8_f
   rmrat = 2.6
@@ -167,49 +159,27 @@ subroutine test_grow_pheat()
 !  rmin  = 1e-4_f
 !  rmrat = 2._f
   call CARMAGROUP_Create(carma, 1, "Ice Crystal", rmin, rmrat, I_SPHERE, 1._f, .TRUE., rc, refidx=refidx, do_mie=.true.)
-  if (rc /=0) stop "    *** FAILED ***"
+  if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
   
   
   ! Define the elements
-!  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "Ice Crystal", RHO_I, I_VOLATILE, I_H2O, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+  if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
   
   ! Define the gases
-!  write(*,*) "  Add Gase(s) ..."
   call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, I_GCOMP_H2O, rc)
-!  call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_GOFF1946, I_GCOMP_H2O, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+  if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
 
   
   ! Setup the CARMA processes to exercise
   call CARMA_AddGrowth(carma, 1, 1, rc)
 
 
-!  write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc, do_grow=.true., do_pheat=.true., do_pheatatm=.true., do_thermo=.true.)
 !  call CARMA_Initialize(carma, rc, do_grow=.true., do_pheat=.true.)
 !  call CARMA_Initialize(carma, rc, do_grow=.true.)
-  if (rc /=0) stop "    *** FAILED ***"
-  
-
-  ! Print the Group Information
-!  write(*,*)  ""
-!  call dumpGroup(carma, rc)
-!  if (rc /=0) stop "    *** FAILED ***"
-  
-  ! Print the Element Information
-!  write(*,*)  ""
-!  call dumpElement(carma, rc)
-!  if (rc /=0) stop "    *** FAILED ***"
-
-  ! Print the Gas Information
-!  write(*,*)  ""
-!  call dumpGas(carma, rc)
-!  if (rc /=0) stop "    *** FAILED ***"
-
-!  write(*,*) ""
-  
+  if (rc /=0) stop "    *** CARMA_Initialize FAILED ***"
+    
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
@@ -217,29 +187,25 @@ subroutine test_grow_pheat()
   ! NOTE: For Cartesian coordinates, the first level is the bottom 
   ! of the model (e.g. z = 0), while for sigma and hybrid coordinates
   ! the first level is the top of the model.
-  lat(:,:) = -40.0_f
-  lon(:,:) = -105.0_f
+  lat = -40.0_f
+  lon = -105.0_f
   
   ! Horizonal centers
-  do ix = 1, NX
-    do iy = 1, NY
-      dx(:,iy,ix) = deltax
-      xc(:,iy,ix) = ix*dx(:,iy,ix) / 2._f
-      dy(:,iy,ix) = deltay
-      yc(:,iy,ix) = iy*dy(:,iy,ix) / 2._f
-    end do
-  end do
+  dx(:) = deltax
+  xc(:) = dx(:) / 2._f
+  dy(:) = deltay
+  yc(:) = dy(:) / 2._f
   
   ! Vertical center
   do i = 1, NZ
-    zc(i,:,:) = zmin + (deltaz * (i - 0.5_f))
+    zc(i) = zmin + (deltaz * (i - 0.5_f))
   end do
   
   call GetStandardAtmosphere(zc, p=p, t=t)
 
   ! Vertical edge
   do i = 1, NZP1
-    zl(i,:,:) = zmin + ((i - 1) * deltaz)
+    zl(i) = zmin + ((i - 1) * deltaz)
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
@@ -249,7 +215,7 @@ subroutine test_grow_pheat()
 
   do igroup = 1, NGROUP
     call CARMAGROUP_Get(carma, igroup, rc, r=r, rmass=rmass)
-    if (rc /=0) stop "    *** FAILED ***"
+    if (rc /=0) stop "    *** CARMAGROUP_Get FAILED ***"
     
     do ibin = 1, NBIN
       write(lun,'(2i4,2e10.3)') igroup, ibin, r(ibin) * 1e4_f, rmass(ibin)
@@ -261,159 +227,133 @@ subroutine test_grow_pheat()
   !
   ! p, T, z, mmrgas, rmin, particle concentration
   ! 90 hPa, 190 K, 17 km, 3.5e-6 g/g, 5 um, 0.1/cm^3.
-!  p(1,:,:)         = 90._f * 100._f
-!  zc(1,:,:)        = 17000._f
-!  t(1,:,:)         = 190._f
-!  zl(1,:,:)        = zc(1,:,:) - deltaz
-!  zl(2,:,:)        = zc(1,:,:) + deltaz
-!  rho(1,:,:)       = (p(1,:,:) * 10._f) / (R_AIR * t(1,:,:)) * (1e-3_f * 1e6_f)
-!  pl(1,:,:)        = p(1,:,:) - (zl(1,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
-!  pl(2,:,:)        = p(1,:,:) - (zl(2,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
-!  mmr_gas(:,:,:,:) = 3.5e-6_f
-!  mmr(:,:,:,1,1)   = (0.1_f * rmass(1) * (1e-3_f * 1e6_f)) / rho(:,:,:)
+!  p(1)         = 90._f * 100._f
+!  zc(1)        = 17000._f
+!  t(1)         = 190._f
+!  zl(1)        = zc(1) - deltaz
+!  zl(2)        = zc(1) + deltaz
+!  rho(1)       = (p(1) * 10._f) / (R_AIR * t(1)) * (1e-3_f * 1e6_f)
+!  pl(1)        = p(1) - (zl(1) - zc(1)) * rho(1) * (GRAV / 100._f)
+!  pl(2)        = p(1) - (zl(2) - zc(1)) * rho(1) * (GRAV / 100._f)
+!  mmr_gas(1,1) = 3.5e-6_f
+!  mmr(1,1,7)   = (100._f * rmass(7) * (1e-3_f * 1e6_f)) / rho(1)
+!  mmr(1,1,8)   = (100._f * rmass(8) * (1e-3_f * 1e6_f)) / rho(1)
   
 
   ! Try Mesopause Conditions ...
   !
   ! p, T, z, mmrgas, rmin, particle concentration
   ! 0.005 hPa, 150 K, 82.5 km, 5e-6 g/g, 0.1 nm, 100/cm^3.
-  p(1,:,:)         = 0.005_f * 100._f
-  zc(1,:,:)        = 82500._f
-  t(1,:,:)         = 140._f
-  zl(1,:,:)        = zc(1,:,:) - deltaz
-  zl(2,:,:)        = zc(1,:,:) + deltaz
-  rho(1,:,:)       = (p(1,:,:) * 10._f) / (R_AIR * t(1,:,:)) * (1e-3_f * 1e6_f)
-  pl(1,:,:)        = p(1,:,:) - (zl(1,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
-  pl(2,:,:)        = p(1,:,:) - (zl(2,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
-  mmr_gas(:,:,:,:) = 4e-6_f
-  mmr(:,:,:,1,7)   = (100._f * rmass(7) * (1e-3_f * 1e6_f)) / rho(:,:,:)
-  mmr(:,:,:,1,8)   = (100._f * rmass(8) * (1e-3_f * 1e6_f)) / rho(:,:,:)
+  p(1)         = 0.005_f * 100._f
+  zc(1)        = 82500._f
+  t(1)         = 140._f
+  zl(1)        = zc(1) - deltaz
+  zl(2)        = zc(1) + deltaz
+  rho(1)       = (p(1) * 10._f) / (R_AIR * t(1)) * (1e-3_f * 1e6_f)
+  pl(1)        = p(1) - (zl(1) - zc(1)) * rho(1) * (GRAV / 100._f)
+  pl(2)        = p(1) - (zl(2) - zc(1)) * rho(1) * (GRAV / 100._f)
+  mmr_gas(1,1) = 4e-6_f
+  mmr(1,1,7)   = (100._f * rmass(7) * (1e-3_f * 1e6_f)) / rho(1)
+  mmr(1,1,8)   = (100._f * rmass(8) * (1e-3_f * 1e6_f)) / rho(1)
   
   ! A crude estimate of band radiative intensity per band (in W/m2/sr/cm). Note the band fluxes
-  ! need to be scaled by 4 pi to convert to intensity and need to be scaled by
+  ! need to be scaled by pi to convert to intensity and need to be scaled by
   ! the band width.
-!  radint(1, :)  = (/ 171._f, 171._f, 100._f, 300._f/)    ! TTL
-  radint(1, :)  = (/ 171._f, 171._f, 60._f, 180._f/)     ! Mesopause
+!  radint(1,:)  = (/ 171._f, 171._f, 100._f, 300._f/)    ! TTL
+  radint(1,:)  = (/ 171._f, 171._f, 60._f, 180._f/)     ! Mesopause
   
-  radint(1, :)  = radint(1, :) / 4. / PI / dwave(:)
+  radint(1,:)  = radint(1, :) / 2._f / PI / dwave(:)
   
   
-!  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
-!  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
-!  do i = 1, NZ
-!    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
-!  end do
-  
-!  write(*,*) ""
-!  write(*,'(a6, 2a12)') "level", "zl", "pl"
-!  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
-!  do i = 1, NZP1
-!    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
-!  end do
-  
-   
   write(lun,*) 0
 
   do ielem = 1, NELEM
     do ibin = 1, NBIN
-      write(lun,'(2i4,2e10.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin)), real(tpart(1,NY,NX,ielem,ibin))
+      write(lun,'(2i4,2e10.3)') ielem, ibin, real(mmr(1,ielem,ibin)), real(dtpart(1,ielem,ibin))
     end do
   end do
 
   do igas = 1, NGAS
-    write(lun,'(i4,3e10.3)') igas, real(mmr_gas(1,NY,NX,igas)), 0., 0.
+    write(lun,'(i4,3e10.3)') igas, real(mmr_gas(1,igas)), 0., 0.
   end do
 
-  write(lun,'(1e12.3)') real(t(1,NY,NX))
+  write(lun,'(1e12.3)') real(t(1))
 		
   ! Iterate the model over a few time steps.
-!  write(*,*) ""
   do istep = 1, nstep
   
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
-!    write(*,'(i4,3f9.3)') istep, t(1,1,1), tpart(1,1,1,1,1), tpart(1,1,1,1,NBIN-1)
+    ! Create a CARMASTATE for this column.
+    call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
+                        I_CART, I_CART, lat, lon, &
+                        xc(:), dx(:), &
+                        yc(:), dy(:), &
+                        zc(:), zl(:), p(:), &
+                        pl(:), t(:), rc, radint=radint)
+  
+    ! Send the bin mmrs to CARMA
+    do ielem = 1, NELEM
+      do ibin = 1, NBIN
+       call CARMASTATE_SetBin(cstate, ielem, ibin, &
+                              mmr(:,ielem,ibin), rc)
+      end do
+    end do
     
-    ! NOTE: This means that there should not be any looping over NX or NY done
-    ! in any other CARMA routines. They should only loop over NZ.
-    do ixy = 1, NX*NY
-      ix = ((ixy-1) / NY) + 1
-      iy = ixy - (ix-1)*NY
-      
-      ! Create a CARMASTATE for this column.
-      call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
-                          I_CART, I_CART, lat(iy,ix), lon(iy,ix), &
-                          xc(:,iy,ix), dx(:,iy,ix), &
-                          yc(:,iy,ix), dy(:,iy,ix), &
-                          zc(:,iy,ix), zl(:,iy,ix), p(:,iy,ix), &
-                          pl(:,iy,ix), t(:,iy,ix), rc, radint=radint)
-		
-      ! Send the bin mmrs to CARMA
-      do ielem = 1, NELEM
-        do ibin = 1, NBIN
-         call CARMASTATE_SetBin(cstate, ielem, ibin, &
-                                mmr(:,iy,ix,ielem,ibin), rc)
-        end do
-      end do
-			
-      ! Send the gas mmrs to CARMA
-      do igas = 1, NGAS
-         call CARMASTATE_SetGas(cstate, igas, &
-                                mmr_gas(:,iy,ix,igas), rc)
-      end do
+    ! Send the gas mmrs to CARMA
+    do igas = 1, NGAS
+       call CARMASTATE_SetGas(cstate, igas, &
+                              mmr_gas(:,igas), rc)
+    end do
 
-      ! Execute the step
-      call CARMASTATE_Step(cstate, rc)
-       
-      ! Get the updated bin mmr.
-      do ielem = 1, NELEM
-        do ibin = 1, NBIN
-         call CARMASTATE_GetBin(cstate, ielem, ibin, &
-                                mmr(:,iy,ix,ielem,ibin), rc, tpart=tpart(:,iy,ix,ielem,ibin))
-        end do
+    ! Execute the step
+    call CARMASTATE_Step(cstate, rc)
+     
+    ! Get the updated bin mmr.
+    do ielem = 1, NELEM
+      do ibin = 1, NBIN
+       call CARMASTATE_GetBin(cstate, ielem, ibin, &
+                              mmr(:,ielem,ibin), rc, dtpart=dtpart(:,ielem,ibin))
       end do
+    end do
 
-      ! Get the updated gas mmr.
-      do igas = 1, NGAS
-         call CARMASTATE_GetGas(cstate, igas, &
-                                mmr_gas(:,iy,ix,igas), rc, &
-                                satliq=satliq(:,iy,ix,igas), &
-                                satice=satice(:,iy,ix,igas))
-      end do
+    ! Get the updated gas mmr.
+    do igas = 1, NGAS
+       call CARMASTATE_GetGas(cstate, igas, &
+                              mmr_gas(:,igas), rc, &
+                              satliq=satliq(:,igas), &
+                              satice=satice(:,igas))
+    end do
 
-      ! Get the updated temperature.
-      call CARMASTATE_GetState(cstate, rc, t=t(:,iy,ix))
-    enddo
+    ! Get the updated temperature.
+    call CARMASTATE_GetState(cstate, rc, t=t(:))
+
 
     ! Write output for the falltest
     write(lun,*) istep*dtime
     do ielem = 1, NELEM
       do ibin = 1, NBIN
-        write(lun,'(2i4,2e12.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin)), real(tpart(1,NY,NX,ielem,ibin))
+        write(lun,'(2i4,2e12.3)') ielem, ibin, real(mmr(1,ielem,ibin)), real(dtpart(1,ielem,ibin))
       end do
     end do
 
     do igas = 1, NGAS
-      write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,NY,NX,igas)), satliq(1,NY,NX,igas), satice(1,NY,NX,igas)
+      write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,igas)), satliq(1,igas), satice(1,igas)
     end do
     
-    write(lun,'(1e12.3)') real(t(1,NY,NX))
+    write(lun,'(1e12.3)') real(t(1))
   end do   ! time loop
 	
-  ! Cleanup the carma state objects
-  call CARMASTATE_Destroy(cstate, rc)
-  if (rc /=0) stop "    *** FAILED ***"
-
   ! Close the output file
   close(unit=lun)	
 	
-!  write(*,*)  ""
+  if (rc /=0) stop "    *** Stepping FAILED ***"
 
-  if (rc /=0) stop "    *** FAILED ***"
+  ! Cleanup the carma state objects
+  call CARMASTATE_Destroy(cstate, rc)
+  if (rc /=0) stop "    *** CARMASTATE_Destroy FAILED ***"
 
-!  write(*,*)  ""
-!  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
-  if (rc /=0) stop "    *** FAILED ***"
+  if (rc /=0) stop "    *** CARMA_Destroy FAILED ***"
 end subroutine

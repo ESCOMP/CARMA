@@ -7,7 +7,7 @@
 !!
 !! @author Andy Ackerman
 !! @version Oct-1997
-subroutine zeromicro(carma, cstate, rc)
+subroutine zeromicro(carma, cstate, iz, rc)
 
   ! types
   use carma_precision_mod
@@ -21,9 +21,8 @@ subroutine zeromicro(carma, cstate, rc)
 
   type(carma_type), intent(in)         :: carma   !! the carma object
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
+  integer, intent(in)                  :: iz      !! vertical index
   integer, intent(inout)               :: rc      !! return code, negative indicates failure
-  
-  integer       :: iz
   
 
   ! Set production terms and loss rates due to nucleation, growth,
@@ -32,14 +31,11 @@ subroutine zeromicro(carma, cstate, rc)
   
   if (do_grow) then
 
-    rlheat(:)   = 0._f
-    partheat(:) = 0._f
-    
-    do iz = 1, NZ
-      tpart(iz,:,:) = t(iz)
-    end do
+    rlheat(iz)     = 0._f
+    partheat(iz)   = 0._f
+    dtpart(iz,:,:) = 0._f
    
-   if (NGAS > 0) gasprod(:) = 0._f
+    if (NGAS > 0) gasprod(:) = 0._f
   
     rnucpe(:,:) = 0._f
     growpe(:,:) = 0._f

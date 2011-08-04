@@ -121,7 +121,7 @@ contains
   !!
   !!  @version Feb-2009 
   !!  @author  Chuck Bardeen 
-  subroutine CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT, wave, dwave)
+  subroutine CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT, wave, dwave, do_wave_emit)
     type(carma_type), intent(out)      :: carma     !! the carma object
     integer, intent(in)                :: NBIN      !! number of radius bins per group
     integer, intent(in)                :: NELEM     !! total number of elements
@@ -133,6 +133,7 @@ contains
     integer, intent(in), optional      :: LUNOPRT   !! logical unit number for output
     real(kind=f), intent(in), optional :: wave(NWAVE)  !! wavelength centers (cm)
     real(kind=f), intent(in), optional :: dwave(NWAVE) !! wavelength width (cm)
+    logical, intent(in), optional      :: do_wave_emit(NWAVE) !! do emission in band?
     
     ! Local Varaibles      
     integer                            :: ier
@@ -300,6 +301,7 @@ contains
       allocate( &
         carma%f_wave(NWAVE), &
         carma%f_dwave(NWAVE), &
+        carma%f_do_wave_emit(NWAVE), &
         stat=ier) 
       if(ier /= 0) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_Create: ERROR allocating wavelengths, NWAVE=", &
@@ -309,8 +311,11 @@ contains
       endif
 
       ! Initialize
+      carma%f_do_wave_emit(:) = .TRUE.
+      
       if (present(wave))  carma%f_wave(:)  = wave(:)
       if (present(dwave)) carma%f_dwave(:) = dwave(:)
+      if (present(do_wave_emit)) carma%f_do_wave_emit(:) = do_wave_emit(:)
     end if
     
     return
@@ -825,61 +830,51 @@ contains
     type(carma_type), intent(inout)    :: carma
     integer, intent(out)               :: rc
     
-    integer                            :: igroup      !! group index
-    integer                            :: iwave       !! wavelength index
-    integer                            :: ibin        !! bin index
-    real(kind=f)                       :: theta(IT)
+    integer                            :: igroup      ! group index
+    integer                            :: iwave       ! wavelength index
+    integer                            :: ibin        ! bin index
     real(kind=f)                       :: Qext
     real(kind=f)                       :: Qsca
-    real(kind=f)                       :: Qbs
-    real(kind=f)                       :: ctbrqs
-    real(kind=f)                       :: wvno
-    real(kind=f)                       :: rfr
-    real(kind=f)                       :: rfi
+    real(kind=f)                       :: asym
+   
     
     ! Assume success.
     rc = RC_OK    
     
-    ! We only care about the forward direction.
-    theta(:) = 0.0_f
-    
     ! Were any wavelengths specified?
     do iwave = 1, carma%f_NWAVE
-    
-      ! Calcualte the wave number.
-      wvno = 2._f * PI / (carma%f_wave(iwave))
-   
       do igroup = 1, carma%f_NGROUP
      
         ! Should we calculate mie properties for this group?
         if (carma%f_group(igroup)%f_do_mie) then 
        
-          rfr = real(carma%f_group(igroup)%f_refidx(iwave))
-          rfi = imag(carma%f_group(igroup)%f_refidx(iwave))
-        
           do ibin = 1, carma%f_NBIN
 
             ! Assume the particle is homogeneous (no core).
-            call miess(carma, &
-                       carma%f_group(igroup)%f_r(ibin), &
-                       rfr, &
-                       rfi, &
-                       theta, &
-                       1, &
-                       Qext, &
-                       Qsca, &
-                       Qbs,&
-                       ctbrqs, &
-                       0.0_f, &
-                       rfr, &
-                       rfi, &
-                       wvno, &
-                       rc)
-            if (rc < RC_OK) return
-  
+            !
+            ! NOTE: The miess does not converge over as broad a
+            ! range of input parameters as bhmie, but it can handle
+            ! coated spheres.
+
+            call mie(carma, &
+                     carma%f_group(igroup)%f_imiertn, &
+                     carma%f_group(igroup)%f_r(ibin), &
+                     carma%f_wave(iwave), &
+                     carma%f_group(igroup)%f_refidx(iwave), &
+                     Qext, &
+                     Qsca, &
+                     asym, &
+                     rc)
+
+            if (rc < RC_OK) then
+              if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_InitializeOptics:: Mie failed for (band, wavelength, group, bin)", iwave, carma%f_wave(iwave), igroup, ibin
+              return
+            end if
+
             carma%f_group(igroup)%f_qext(iwave, ibin) = Qext
             carma%f_group(igroup)%f_ssa(iwave, ibin)  = Qsca / Qext
-            carma%f_group(igroup)%f_asym(iwave, ibin) = ctbrqs / Qsca
+            carma%f_group(igroup)%f_asym(iwave, ibin) = asym
+
           end do
         end if
       end do
@@ -1071,6 +1066,7 @@ contains
         deallocate( &
           carma%f_wave, &
           carma%f_dwave, &
+          carma%f_do_wave_emit, &
           stat=ier) 
         if(ier /= 0) then
           if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_Destroy: ERROR deallocating wavelengths, status=", ier
@@ -1349,7 +1345,7 @@ contains
   !!
   !! @see CARMA_Create
   subroutine CARMA_Get(carma, rc, LUNOPRT, NBIN, NELEM, NGAS, NGROUP, NSOLUTE, NWAVE, do_detrain, &
-    do_drydep, do_fixedinit, do_grow, do_print, do_print_init, do_thermo, wave, dwave)
+    do_drydep, do_fixedinit, do_grow, do_print, do_print_init, do_thermo, wave, dwave, do_wave_emit)
     
     type(carma_type), intent(in)        :: carma                !! the carma object
     integer, intent(out)                :: rc                   !! return code, negative indicates failure
@@ -1369,6 +1365,7 @@ contains
     logical, optional, intent(out)      :: do_thermo            !! do thermodynamics?
     real(kind=f), optional, intent(out) :: wave(carma%f_NWAVE)  !! the wavelengths centers (cm)
     real(kind=f), optional, intent(out) :: dwave(carma%f_NWAVE) !! the wavelengths widths (cm)
+    logical, optional, intent(out)      :: do_wave_emit(carma%f_NWAVE) !! do emission in this band?
     
     ! Assume success.
     rc = RC_OK
@@ -1391,6 +1388,7 @@ contains
 
     if (present(wave))  wave(:)    = carma%f_wave(:)
     if (present(dwave)) dwave(:)   = carma%f_dwave(:)
+    if (present(do_wave_emit)) do_wave_emit(:)   = carma%f_do_wave_emit(:)
 
     return
   end subroutine CARMA_Get

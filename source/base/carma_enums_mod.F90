@@ -83,6 +83,10 @@ module carma_enums_mod
   integer, public, parameter :: I_FALLRTN_STD_SHAPE        = 2   !! Optional CARMA 2.3 routine (supports shapes)
   integer, public, parameter :: I_FALLRTN_HEYMSFIELD2010   = 3   !! Heymsfield & Westbrook [2010] (ice only)
 
+  ! Routines to calculate mie optical properties
+  integer, public, parameter :: I_MIERTN_TOON1981      = 1   !! Shell/Core, Toon & Ackerman [1981]
+  integer, public, parameter :: I_MIERTN_BOHREN1983    = 2   !! Homogeneous Sphere, Bohren & Huffman [1983]
+ 
   ! Gas Composition  
   integer, public, parameter :: I_GCOMP_H2O             = 1   !! Water Vapor
   integer, public, parameter :: I_GCOMP_H2SO4           = 2   !! Sulphuric Acid

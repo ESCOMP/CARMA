@@ -44,7 +44,7 @@ subroutine microfast(carma, cstate, iz, rc)
               ',supsatl='e16.10,',t=',f6.2,',d_gc=',e9.3,',d_t=',f6.2)
 
   ! Set production and loss rates to zero.
-  call zeromicro(carma, cstate, rc)
+  call zeromicro(carma, cstate, iz, rc)
   if (rc < RC_OK) return
   
 
