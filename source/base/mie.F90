@@ -7,10 +7,9 @@
 !! routine provides a generic front end to these different mie
 !! routines.
 !!
-!! Current two methods are included:
-!!  miess - Original CARMA code, from Toon and Ackerman, support core/shell
-!!  bhmie - Homogeneous sphere, from Bohren and Huffman, handles wider range parameters
-
+!! Current methods are:
+!!  miess - Original CARMA code, from Toon and Ackerman, supports core/shell
+!!  bhmie - Homogeneous sphere, from Bohren and Huffman, handles wider range of parameters
 !!
 !! @author Chuck Bardeen
 !! @version 2011

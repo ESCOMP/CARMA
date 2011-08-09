@@ -138,8 +138,8 @@ subroutine test_grow_pheat()
 
 
   ! Define the band centers and widths (in cm) and the refractive indices.
-  wave(:)   = (/ 0.25e-4_f, 0.75e-4_f, 3.0e-4_f, 10e-4_f/)
-  dwave(:)  = (/ 0.5e-4_f, 0.5e-4_f, 4.0e-4_f, 10e-4_f/)
+  wave(:)   = (/ 0.26e-4_f, 0.75e-4_f, 3.0e-4_f, 10e-4_f/)
+  dwave(:)  = (/ 0.48e-4_f, 0.5e-4_f, 4.0e-4_f, 10e-4_f/)
   refidx(:) = (/ (1.35090_f, 2e-11_f), (1.30590_f, 5.87000e-08_f), (1.03900, 4.38000e-01_f), (1.19260_f, 5.00800e-02_f) /)   
 
 

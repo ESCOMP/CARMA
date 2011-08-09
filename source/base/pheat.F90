@@ -35,7 +35,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   use carmastate_mod
   use carma_mod
   
-  use planck, only         : planckIntensity
+  use planck, only         : planckIntensity, planckBandIntensity, planckBandIntensityWidger1976, planckBandIntensityConley2011
 
   implicit none
 
@@ -210,18 +210,47 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       ! integrating the incoming and outgoing flux over the spectral
       ! interval.
       qrad = 0._f
-          
+      
       do iwvl = 1, NWAVE
 
         ! There may be overlap between bands, so only do the emission
         ! for each range of wavelengths once.
         if (do_wave_emit(iwvl)) then
-          plkint = planckIntensity(wave(iwvl),tp)
+        
+          ! Get an integral across the entire band. There are several
+          ! techniques for doing this that vary in accuracy and
+          ! performance. Comments below are based on the CAM RRTMG
+          ! band structure.
+          
+          ! Just use the band center.
+          !
+          ! NOTE: This generates about a 20% error, but is the fastest
+!         plkint = planckIntensity(wave(iwvl), tp)
+          
+          ! Brute Force integral
+          !
+          ! The slowest technique, and not as accurate as either Widger
+          ! and Woodall or Conley, even at 100 iterations.
+!         plkint = planckBandIntensity(wave(iwvl), dwave(iwvl), tp, 60)
+          
+          ! Integral using Widger and Woodall, 1976.
+          ! 
+          ! NOTE: The fastest technique a 2 iterations, but yields errors
+          ! of about 2%.
+          plkint = planckBandIntensityWidger1976(wave(iwvl), dwave(iwvl), tp, 2)
+
+          ! Using method developed by Andrew Conley.
+          !
+          ! This is slightly slower than Widger and Woodall, but is more accurate
+          ! with errors of about 0.3%. However, it can not handle SW bands that
+          ! are very large, but does work with the RRTMG band structure.
+!          plkint = planckBandIntensityConley2011(wave(iwvl), dwave(iwvl), tp, 1)
+          
         else
           plkint = 0._f
         end if
         
-        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow(ibin+1,igroup) ** 2 * arat(ibin+1,igroup)) * &
+        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow(ibin+1,igroup) ** 2) * arat(ibin+1,igroup) * &
              (radint(iz,iwvl) - plkint) * dwave(iwvl)
       end do
 
