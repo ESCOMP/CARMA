@@ -210,7 +210,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       ! integrating the incoming and outgoing flux over the spectral
       ! interval.
       qrad = 0._f
-      
+
       do iwvl = 1, NWAVE
 
         ! There may be overlap between bands, so only do the emission
@@ -235,21 +235,22 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
           
           ! Integral using Widger and Woodall, 1976.
           ! 
-          ! NOTE: The fastest technique a 2 iterations, but yields errors
-          ! of about 2%.
-          plkint = planckBandIntensityWidger1976(wave(iwvl), dwave(iwvl), tp, 2)
+          ! NOTE: One of the fastest technique at 2 iterations, but yields errors
+          ! of about 2%. Can handle wide rage of band sizes.
+!          plkint = planckBandIntensityWidger1976(wave(iwvl), dwave(iwvl), tp, 2)
 
           ! Using method developed by Andrew Conley.
           !
-          ! This is slightly slower than Widger and Woodall, but is more accurate
-          ! with errors of about 0.3%. However, it can not handle SW bands that
-          ! are very large, but does work with the RRTMG band structure.
-!          plkint = planckBandIntensityConley2011(wave(iwvl), dwave(iwvl), tp, 1)
+          ! This is similar in performance to Widger and Woodall, but is more
+          ! accurate with errors of about 0.3%. It had trouble with SW bands that
+          ! are very large, but the latest version has improved performance and
+          ! it does work with the RRTMG band structure.
+          plkint = planckBandIntensityConley2011(wave(iwvl), dwave(iwvl), tp, 1)
           
         else
           plkint = 0._f
         end if
-        
+
         qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow(ibin+1,igroup) ** 2) * arat(ibin+1,igroup) * &
              (radint(iz,iwvl) - plkint) * dwave(iwvl)
       end do

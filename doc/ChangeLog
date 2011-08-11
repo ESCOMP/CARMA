@@ -9,7 +9,8 @@ Enhancements to the particle heating code.
 Purpose of changes:
 
 Added band integrals for the planck function to provide a more
-accurate estimate of outgoing radiation for particle heating.
+accurate estimate of outgoing radiation for particle heating. Also
+modified the test case to start the SW band at a non-zero wavelength.
 
 ===============================================================
 Tag name: 

@@ -29,8 +29,8 @@ described.
 </ul>
 
 <h3>2) Atmospheric State & Model Execution</h3>
-The atmospheric state is put entered via the state object. Once the state is enterred
-and the state initialized, then Step advances the atmospheric state to the next time step.
+The atmospheric state is captured via the state object. Once the state is entered
+and initialized, then the Step method advances the atmospheric state to the next time step.
 Multiple threads can be used by creating multiple state objects (one per thread) and initializing
 each of them with a different column. See the test example <a href="../tests/carma_test.F90">carma_test.F90</a>
 for an example of how to use multiple threads.
@@ -49,11 +49,13 @@ for an example of how to use multiple threads.
 <h3>4) Algorithms</h3>
 The algortihms look very much like the Fortran 77 code from CARMA 2.3. This was
 done to make it easier to transition code to the Fortran 90 framework and so that the
-Fortran 90 code would look familiar to CARMA 3.x developers. The common block variables have
+Fortran 90 code would look familiar to CARMA 2.3 developers. The common block variables have
 been replaced by structures; however, the file <a href="../source/base/carma_globaer.h">carma_globaer.h</a>
-uses macros to map the old common bloack names to the new structure elements.
+uses macros to map the old common bloack names to the new structure elements. You must
+be careful not to try to use the names defined in carma_globaer.h as locally declared variables.
 <ul>
 	<li><a href="f90doc/actdropl.html">actdropl.F90</a></li>
+	<li><a href="f90doc/bhmie.html">bhmie.F90</a></li>
 	<li><a href="f90doc/calcrs.html">calcrs.F90</a></li>
 	<li><a href="f90doc/coagl.html">coagl.F90</a></li>
 	<li><a href="f90doc/coagp.html">coagp.F90</a></li>
@@ -77,6 +79,7 @@ uses macros to map the old common bloack names to the new structure elements.
 	<li><a href="f90doc/melticel.html">melticel.F90</a></li>
 	<li><a href="f90doc/microfast.html">microfast.F90</a></li>
 	<li><a href="f90doc/microslow.html">microslow.F90</a></li>
+	<li><a href="f90doc/mie.html">mie.F90</a></li>
 	<li><a href="f90doc/miess.html">miess.F90</a></li>
 	<li><a href="f90doc/newstate.html">newstate.F90</a></li>
 	<li><a href="f90doc/nsubsteps.html">nsubsteps.F90</a></li>
@@ -121,7 +124,10 @@ uses macros to map the old common bloack names to the new structure elements.
 <h3>5) Tests</h3>
 The test cases exercise the CARMA code. The tests are located in the tests subdirectory.
 Each test creates a file named carma_xxxtest.txt with the results and has a read_xxxtest.pro
-IDL file that is used to analyze and plot the test results.
+IDL file that is used to analyze and plot the test results. The tests can be executed
+interactively using run-carma.csh &lt;executable name&gt; or all can be run in batch mode
+(without display) using the script run-regress.csh. Standard results for each test are
+located in tests/bench.
 <ul>
 	<li><a href="f90doc/carma_bc2gtest.html">carma_bc2gtest.F90</a></li>
 	<li><a href="f90doc/carma_bcoctest.html">carma_bcoctest.F90</a></li>
@@ -133,6 +139,7 @@ IDL file that is used to analyze and plot the test results.
 	<li><a href="f90doc/carma_mietest.html">carma_mietest.F90</a></li>
 	<li><a href="f90doc/carma_nuctest.html">carma_nuctest.F90</a></li>
 	<li><a href="f90doc/carma_pheattest.html">carma_pheattest.F90</a></li>
+	<li><a href="f90doc/carma_scfalltest.html">carma_scfalltest.F90</a></li>
 	<li><a href="f90doc/carma_sigmadrydeptest.html">carma_sigmadrydeptest.F90</a></li>
 	<li><a href="f90doc/carma_sigmafalltest.html">carma_sigmafalltest.F90</a></li>
 	<li><a href="f90doc/carma_swelltest.html">carma_swelltest.F90</a></li>

@@ -105,9 +105,11 @@ DRYDEPTEST.exe : $(CARMA_OBJ) carma_drydeptest.o carma_testutils.o
 	$(FORTRAN) $(FFLAGS) -o DRYDEPTEST.exe carma_drydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)	
 SIGMADRYDEPTEST.exe : $(CARMA_OBJ) carma_sigmadrydeptest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(FFLAGS) -o SIGMADRYDEPTEST.exe carma_sigmadrydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+SCFALLTEST.exe : $(CARMA_OBJ) carma_scfalltest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o SCFALLTEST.exe carma_scfalltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe PHEATTEST.exe CARMA.exe
+all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)

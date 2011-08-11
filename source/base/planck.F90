@@ -188,7 +188,10 @@ contains
   !! 1.7%   error with  10 quadrature points in [100 micrometer, 1 millimeter]
   !! 0.001% error with 100 quadrature points in [100 micrometer, 1 millimeter]
   !!
-  !! For most RRTMG bands, 3 quadrature points are probably sufficient, but testing is
+  !! NOTE: This code was design to work with the CAM RRTMG band structure, it may not work as
+  !! well with arbitrary bands.
+  !!
+  !! NOTE: For most RRTMG bands, 3 quadrature points are probably sufficient, but testing is
   !! left to the reader.
   !!
   !! @author Andrew Conley, Chuck Bardeen
@@ -211,80 +214,111 @@ contains
     integer, intent(in)                  :: iter    !! number of iterations
     real(kind=f)                         :: planckBandIntensityConley2011  !! Planck intensity (erg/s/cm2/sr/cm)
     
-    real(kind=f) :: k = 1.3806488e-23_f     ! boltzmann J/K
-    real(kind=f) :: c = 2.99792458e8_f      ! light m/s
-    real(kind=f) :: h = 6.62606957e-34_f    ! planck J s
-    real(kind=f) :: lambda1                 ! low wavelength m
-    real(kind=f) :: lambda2                 ! high wavelength m
-    real(kind=f) :: sigma = 5.670373e-8_f   ! stef-bolt W/m/m/k/k/k/k
-
+    real(kind=f) :: half = 0.5_f
+    real(kind=f) :: third= 1._f / 3._f
+    real(kind=f) :: sixth= 1._f / 6._f
+    real(kind=f) :: tfth = 1._f /24._f
+    
+    real(kind=f) :: k = 1.3806488e-23_f    ! boltzmann J/K
+    real(kind=f) :: c = 2.99792458e8_f     ! light m/s
+    real(kind=f) :: h = 6.62606957e-34_f   ! planck J s
+    real(kind=f) :: sigma = 5.670373e-8_f  ! stef-bolt W/m/m/k/k/k/k
+    
+    real(kind=f) :: lambda1                ! wavelength m (lower bound)
+    real(kind=f) :: lambda2                ! wavelength m (upper bound)
+    
     ! quadrature iteration
-    integer :: i,inumber 
-    real(kind=f) :: fnumber
+    integer  :: i,inumber 
     
-    
+    ! internal temporary variables
     real(kind=f) :: fr1, fr2         ! frequency bounds of partition
     real(kind=f) :: kt               ! k_boltzmann * temperature
-    real(kind=f) :: l1,l2, ll1, ll2  ! lower and upper bounds of (wavelength) log(wavelength)
-    real(kind=f) :: t1,t3            ! 1st and 3rd order terms
-    real(kind=f) :: total, total2    ! 1st and 3rd order cumulative partial integral
-    real(kind=f) :: dfr,m,e,d,a,o,tt ! terms appearing in integral
+    real(kind=f) :: l1,l2            ! lower and upper bounds of (wavelength)
+    real(kind=f) :: dellam           ! fraction multiplier for next lambda interval
+    real(kind=f) :: t1,t3            ! 2nd and 4th order terms
+    real(kind=f) :: total, total2    ! 2nd and 4th order cumulative partial integral
+    real(kind=f) :: e,d,em1i,di,ci   ! exponential terms appearing in integral
+    real(kind=f) :: dfr,m,a,o,tt,mi  ! terms appearing in integral
+    real(kind=f) :: argexp           ! argument to exponent
     real(kind=f) :: coeff            ! front coefficient of integral
     real(kind=f) :: planck           ! planck function
     
-    total   = 0._f
-    total2  = 0._f
-    inumber = iter
-    fnumber = 1._f * inumber
+    inumber = iter ! number of partitions
     
-    kt  = k*temp
-    lambda1 = (wvl - (dwvl / 2._f)) * 1e-2
-    lambda2 = (wvl + (dwvl / 2._f)) * 1e-2
-    ll1 = log(lambda1)
-    ll2 = log(lambda2)
-  
-!    print *,'number of quadrature points', inumber
-!    print *,'wavelength range',lambda1,lambda2
-  
-    ! step through partition
+    !initialize
+    total  = 0._f ! partial (cumulative) integral (4th order)
+!    total2 = 0._f ! partial (cumulative) integral (2nd order)
+
+    kt = k*temp
+    lambda1 = (wvl - (dwvl / 2._f)) * 1e-2_f
+    lambda2 = (wvl + (dwvl / 2._f)) * 1e-2_f
+    ci = 1._f/c
+    
+    if (inumber .gt. 1) then
+      l1  = lambda1
+      dellam = exp(log(lambda1/lambda2)/inumber)
+      l2 = l1/dellam
+      fr1 = c/l2
+      fr2 = c/l1
+    else
+      dellam = 1._f ! meaningless
+      l1 = lambda1
+      l2 = lambda2
+      fr1 = c/l2
+      fr2 = c/l1
+    endif
+    
+    ! accumulate integral by stepping (backwards) through partions of frequency
     do i = 1,inumber
     
-     ! find bounds, exponentially distributed on freqency 
-     l1 = lambda1 * exp( (i-1)*(ll2-ll1)/fnumber) !lambda1 + (i-1)*(lambda2-lambda1)/50._f
-     l2 = lambda1 * exp( i*(ll2-ll1)/fnumber) !l1 + (lambda2-lambda1)/50._f
-     fr1 = c/l2
-     fr2 = c/l1
-     !print*, 'wavelength interval',l1,l2
+      ! constants
+      dfr = half * (fr2-fr1)  ! half-range freq interval
+      m   = half * (fr1+fr2)  ! mean freq
+      mi  = 1._f/m
+      a   = h/kt              ! alpha
     
-     ! integrate
+      argexp = a*m 
+      if (argexp .lt. 0.5_f) then
+        e = 1._f + &
+                    argexp + &
+                    (argexp*argexp)*half  + &
+                    (argexp*argexp*argexp)*sixth + &
+                    (argexp*argexp*argexp*argexp)*tfth
+        em1i = 1._f/(e - 1._f )
+        di = e*em1i
+      else if (argexp .lt. 20.0_f) then
+        e = exp(argexp)        
+        em1i = 1._f/(e - 1._f )
+        di = e*em1i
+      else 
+        e = 1.e+20_f ! exp(20) is large.  Use this for frequency >> Temperature
+        em1i = 1.e-20_f
+        di = 1._f
+      endif
     
-     ! constants
-     dfr = (fr2-fr1)/2._f  ! delta freq
-     m = (fr1+fr2)/2._f    ! mean freq
-     e = exp(h*m/kt)        ! exponential
-     d = 1._f-1._f/e      ! delta
-     a = h/kt               ! alpha
+      ! frontpiece
+      coeff = 2._f*h*m*m*m*ci*ci*em1i
     
-     ! integrals
-     o = fr2-fr1                     ! int 1 deps
-     tt = 2._f*(dfr*dfr*dfr)/3._f   ! int eps^2 deps
-     !print*,'dfr',dfr,'m',m,'e',e,'d',d,'a',a,'o',o,'t',t
+      ! integrals
+      o = fr2-fr1                     ! int 1 deps
+      tt = 2._f*(dfr*dfr*dfr)*third   ! int eps^2 deps
     
-     ! frontpiece
-     coeff = 2._f*h*m*m*m/c/c/(e-1._f)
-     ! term and 3'rd order correction
-     t1 = o
-     t3 = 3._f/m/m - 3._f*a/d/m + a*a/d/d - a*a/2._f/d
+      ! term and 4th order correction
+      t1 = 1._f
+      t3 = 3._f*mi*mi - 3._f*a*di*mi + a*a*di*di - half*a*a*di
+      ! t3 could be made more stable by placing (-) terms in denominator of pade approx.
      
-     ! sum it up.  Total is 3rd order, total2 is 1st order
-     total  = total + coeff*(t1+tt*t3)
-!       total2 = total2 + coeff*t1
-  
-     end do
+      ! sum it up.  Total is 4th order, total2 is 2nd order
+      total = total + coeff*(o*t1+tt*t3)
+!      total2 = total2 + coeff*o*t1
+
+      fr2 = fr1
+      fr1 = fr1 * dellam
+    enddo
      
-     ! Convert to erg/cm2/s/sr/cm
-     planckBandIntensityConley2011 = total * 1e7 / 1e4 / dwvl
+    ! Convert to erg/cm2/s/sr/cm
+    planckBandIntensityConley2011 = total * 1e7 / 1e4 / dwvl
      
-     return
+    return
   end function
 end
