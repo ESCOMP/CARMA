@@ -13,7 +13,7 @@
 !!
 !! @author Chuck Bardeen
 !! @version 2011
-subroutine mie(carma, miertn, radius, wavelength, m, Qext, Qsca, Asym, rc)
+subroutine mie(carma, miertn, radius, wavelength, m, lqext, lqsca, lasym, rc)
 
   ! types
   use carma_precision_mod
@@ -29,13 +29,13 @@ subroutine mie(carma, miertn, radius, wavelength, m, Qext, Qsca, Asym, rc)
   real(kind=f), intent(in)             :: radius        !! radius (cm)
   real(kind=f), intent(in)             :: wavelength    !! wavelength (cm)
   complex(kind=f), intent(in)          :: m             !! refractive index particle
-  real(kind=f), intent(out)            :: Qext          !! EFFICIENCY FACTOR FOR EXTINCTION
-  real(kind=f), intent(out)            :: Qsca          !! EFFICIENCY FACTOR FOR SCATTERING
-  real(kind=f), intent(out)            :: Asym          !! asymmetry factor
+  real(kind=f), intent(out)            :: lqext          !! EFFICIENCY FACTOR FOR EXTINCTION
+  real(kind=f), intent(out)            :: lqsca          !! EFFICIENCY FACTOR FOR SCATTERING
+  real(kind=f), intent(out)            :: lasym          !! asymmetry factor
   integer, intent(inout)               :: rc            !! return code, negative indicates failure
   
 
-  integer, parameter                 :: nang     = 90   ! Number of angles
+  integer, parameter                 :: nang     = 10   ! Number of angles
   integer, parameter                 :: mieRoutine = I_MIERTN_BOHREN1983  !! Note: This should move to a carma field.
     
   real(kind=f)                       :: theta(IT)
@@ -43,7 +43,7 @@ subroutine mie(carma, miertn, radius, wavelength, m, Qext, Qsca, Asym, rc)
   real(kind=f)                       :: rfr 
   real(kind=f)                       :: rfi
   real(kind=f)                       :: x 
-  real(kind=f)                       :: Qback 
+  real(kind=f)                       :: qback 
   real(kind=f)                       :: ctbrqs 
   real(kind=f)                       :: s1(2*nang-1)
   real(kind=f)                       :: s2(2*nang-1)
@@ -67,9 +67,9 @@ subroutine mie(carma, miertn, radius, wavelength, m, Qext, Qsca, Asym, rc)
                rfi, &
                theta, &
                1, &
-               Qext, &
-               Qsca, &
-               Qback,&
+               lqext, &
+               lqsca, &
+               qback,&
                ctbrqs, &
                0.0_f, &
                rfr, &
@@ -77,7 +77,7 @@ subroutine mie(carma, miertn, radius, wavelength, m, Qext, Qsca, Asym, rc)
                wvno, &
                rc)
                
-    Asym = ctbrqs / Qsca
+    lasym = ctbrqs / lqsca
 
   else if (miertn == I_MIERTN_BOHREN1983) then
   
@@ -89,12 +89,12 @@ subroutine mie(carma, miertn, radius, wavelength, m, Qext, Qsca, Asym, rc)
                nang, &
                s1, &
                s2, &
-               Qext, &
-               Qsca, &
-               Qback, &
-               Asym, &
+               lqext, &
+               lqsca, &
+               qback, &
+               lasym, &
                rc)
-	       
+
   else
     if (do_print) write(LUNOPRT, *) "mie::Unknown Mie routine specified."
     rc = RC_ERROR
@@ -102,9 +102,9 @@ subroutine mie(carma, miertn, radius, wavelength, m, Qext, Qsca, Asym, rc)
   
   ! The mie code isn't perfect, so don't let it return values that aren't
   ! physical.
-  Qext = max(Qext, 0._f)
-  Qsca = max(0._f, min(Qext, Qsca))
-  Asym = max(-1.0_f, min(1.0_f, Asym))
+  lqext = max(lqext, 0._f)
+  lqsca = max(0._f, min(lqext, lqsca))
+  lasym = max(-1.0_f, min(1.0_f, lasym))
   
   return
 end subroutine mie

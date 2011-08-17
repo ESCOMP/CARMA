@@ -44,7 +44,6 @@ subroutine test_grow_simple()
   integer, parameter        :: NGAS         = 1
   integer, parameter        :: NWAVE        = 0
   integer, parameter        :: LUNOPRT      = 6
-  integer, parameter        :: nstep        = 50
   
 
 
@@ -59,13 +58,13 @@ subroutine test_grow_simple()
 !  real(kind=f), parameter   :: dtime  = 5000._f
 !  real(kind=f), parameter   :: dtime  = 10000._f
 !  real(kind=f), parameter   :: dtime  = 50000._f
+
   real(kind=f), parameter   :: deltax = 100._f
   real(kind=f), parameter   :: deltay = 100._f
   real(kind=f), parameter   :: deltaz = 100._f
-  real(kind=f), parameter   :: rhmin  = .4_f
-  real(kind=f), parameter   :: rhmax  = 1.05_f
   real(kind=f), parameter   :: zmin   = 3000._f
 
+  integer, parameter        :: nstep        = 5000 / dtime
   
   integer, parameter        :: I_H2O  = 1
 

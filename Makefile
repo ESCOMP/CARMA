@@ -89,6 +89,8 @@ BC2GTEST.exe : $(CARMA_OBJ) carma_bc2gtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(FFLAGS) -o BC2GTEST.exe carma_bc2gtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 GROWTEST.exe : $(CARMA_OBJ) carma_growtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(FFLAGS) -o GROWTEST.exe carma_growtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+GROWSUBTEST.exe : $(CARMA_OBJ) carma_growsubtest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(FFLAGS) -o GROWSUBTEST.exe carma_growsubtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 INITTEST.exe : $(CARMA_OBJ) carma_inittest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(FFLAGS) -o INITTEST.exe carma_inittest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 MIETEST.exe : $(CARMA_OBJ) carma_mietest.o carma_testutils.o 
@@ -109,7 +111,7 @@ SCFALLTEST.exe : $(CARMA_OBJ) carma_scfalltest.o carma_testutils.o atmosphere_mo
 	$(FORTRAN) $(FFLAGS) -o SCFALLTEST.exe carma_scfalltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe
+all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)
