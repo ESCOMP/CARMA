@@ -86,7 +86,6 @@ subroutine calcrs(carma, cstate, ustar, tmp, radi, cc, vfall, rs, landidx, rc)
 
   ! [Peters and Eiden, 1992]
   eimp = (st / (0.8_f + st))**2
-
 !  eimp = max(eimp, 1.e-10_f)
   
   ! ** Interception
@@ -98,8 +97,12 @@ subroutine calcrs(carma, cstate, ustar, tmp, radi, cc, vfall, rs, landidx, rc)
   else
     eint = 0._f
   end if
-         
-  rs = 1._f / (eps0 * ustar * (ebrn + eimp + eint ))   ! [s/cm]
+  
+  if (ustar > 0._f) then       
+    rs = 1._f / (eps0 * ustar * (ebrn + eimp + eint ))   ! [s/cm]
+  else
+    rs = 0._f
+  end if
      
   return
 end subroutine calcrs

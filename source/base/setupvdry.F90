@@ -10,7 +10,7 @@
 !! use carma_do_drydep flag optionally to decide if the CARMA or the parent model does the dry deposition 
 !! @author Tianyi Fan
 !! @version Nov-2010
-subroutine setupvdry(carma, cstate, surfric, ram, landfrac, ocnfrac, icefrac, rc)
+subroutine setupvdry(carma, cstate, lndfv, ocnfv, icefv, lndram, ocnram, iceram, lndfrac, ocnfrac, icefrac, rc)
   ! types
   use carma_precision_mod
   use carma_enums_mod
@@ -23,12 +23,16 @@ subroutine setupvdry(carma, cstate, surfric, ram, landfrac, ocnfrac, icefrac, rc
 
   type(carma_type), intent(in)                :: carma    !! the carma object
   type(carmastate_type), intent(inout)        :: cstate   !! the carma state object
-  integer, intent(inout)                      :: rc       !! return code, negative indicates failure
-  real(kind=f), intent(in)                    :: surfric  !! the friction velocity  [cm/s]
-  real(kind=f), intent(in)                    :: landfrac !! land fraction
+  real(kind=f), intent(in)                    :: lndfv    !! the surface friction velocity over land  [cm/s]
+  real(kind=f), intent(in)                    :: ocnfv    !! the surface friction velocity over ocean  [cm/s]
+  real(kind=f), intent(in)                    :: icefv    !! the surface friction velocity over ice  [cm/s]
+  real(kind=f), intent(in)                    :: lndram   !! the aerodynamic resistance over land [s/cm]
+  real(kind=f), intent(in)                    :: ocnram   !! the aerodynamic resistance over ocean [s/cm]
+  real(kind=f), intent(in)                    :: iceram   !! the aerodynamic resistance over ice [s/cm]
+  real(kind=f), intent(in)                    :: lndfrac  !! land fraction
   real(kind=f), intent(in)                    :: ocnfrac  !! ocn fraction
   real(kind=f), intent(in)                    :: icefrac  !! ice fraction
-  real(kind=f), intent(in)                    :: ram      !! the aerodynamic resistance  [s/cm]
+  integer, intent(inout)                      :: rc       !! return code, negative indicates failure
   
   ! Local declarations
   integer         :: ielem, igroup, ibin, icnst, k
@@ -62,24 +66,24 @@ subroutine setupvdry(carma, cstate, surfric, ram, landfrac, ocnfrac, icefrac, rc
           vd_ice = 0._f
           
           ! land           
-          if (landfrac .gt. 0._f) then
-            call calcrs(carma, cstate, surfric, t(ibot), r_wet(ibot, ibin, igroup), bpm(ibot, ibin, igroup), vfall(ibin,igroup), rs, 1, rc)                            
-            vd_lnd = vfall(ibin, igroup) + 1._f / (ram + rs)             
+          if (lndfrac > 0._f) then
+            call calcrs(carma, cstate, lndfv, t(ibot), r_wet(ibot, ibin, igroup), bpm(ibot, ibin, igroup), vfall(ibin,igroup), rs, 1, rc)                            
+            vd_lnd = vfall(ibin, igroup) + 1._f / (lndram + rs)             
           end if
           
           ! ocean              
-          if (ocnfrac .gt. 0._f) then       
-            call calcrs(carma, cstate, surfric, t(ibot), r_wet(ibot, ibin, igroup), bpm(ibot, ibin, igroup), vfall(ibin,igroup), rs, 2, rc)                        
-            vd_ocn = vfall(ibin, igroup) + 1._f / (ram + rs)                         
+          if (ocnfrac > 0._f) then       
+            call calcrs(carma, cstate, ocnfv, t(ibot), r_wet(ibot, ibin, igroup), bpm(ibot, ibin, igroup), vfall(ibin,igroup), rs, 2, rc)                        
+            vd_ocn = vfall(ibin, igroup) + 1._f / (ocnram + rs)                         
           end if
           
           ! sea ice        
-          if (icefrac .gt. 0._f) then  
-            call calcrs(carma, cstate, surfric, t(ibot), r_wet(ibot, ibin, igroup), bpm(ibot, ibin, igroup), vfall(ibin,igroup), rs, 3, rc)               
-            vd_ice = vfall(ibin, igroup) + 1._f / (ram + rs)
+          if (icefrac > 0._f) then  
+            call calcrs(carma, cstate, icefv, t(ibot), r_wet(ibot, ibin, igroup), bpm(ibot, ibin, igroup), vfall(ibin,igroup), rs, 3, rc)               
+            vd_ice = vfall(ibin, igroup) + 1._f / (iceram + rs)
           end if
           
-          vd(ibin, igroup) = (landfrac * vd_lnd + ocnfrac * vd_ocn + icefrac * vd_ice)   ![cm/s]                                                      
+          vd(ibin, igroup) = (lndfrac * vd_lnd + ocnfrac * vd_ocn + icefrac * vd_ice)   ![cm/s]                                                      
         end do   ! ibin
       else
         vd(:, igroup) = vfall(:, igroup)   ! [cm/s]
@@ -90,7 +94,7 @@ subroutine setupvdry(carma, cstate, surfric, ram, landfrac, ocnfrac, icefrac, rc
     ! Scale cartesian fallspeeds to the appropriate vertical coordinate system.
     ! Non--cartesion coordinates are assumed to be positive downward, but
     ! vertical velocities in this model are always assumed to be positive upward. 
-    if( igridv .ne. I_CART )then
+    if( igridv /= I_CART )then
       vd(:,:) = -vd(:,:) / zmetl(NZP1)
     end if
   end if

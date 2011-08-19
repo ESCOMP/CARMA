@@ -80,7 +80,7 @@ subroutine gasexchange(carma, cstate, iz, rc)
             rlh = rlhe(iz,igas) + rlhm(iz,igas)
           endif
 
-          rlheat = rlheat - rlh * gprod_nuc(igroup,igas) / ( CP * rhoa(iz) )
+          rlheat(iz) = rlheat(iz) - rlh * gprod_nuc(igroup,igas) / ( CP * rhoa(iz) )
         endif
       enddo     ! ienuc2 = 1,NELEM
     endif      ! (igas = inucgas(ielem) .ne. 0
@@ -121,7 +121,7 @@ subroutine gasexchange(carma, cstate, iz, rc)
         rlh = rlhe(iz,igas)
       endif
 
-      rlheat = rlheat - rlh * gprod_grow(igroup,igas) / &
+      rlheat(iz) = rlheat(iz) - rlh * gprod_grow(igroup,igas) / &
                ( CP * rhoa(iz) )
     endif      ! (igas = igrowgas(ielem)) .ne. 0
   enddo        ! igroup=1,NGROUP

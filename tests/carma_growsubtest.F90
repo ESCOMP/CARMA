@@ -52,7 +52,6 @@ subroutine test_grow_sub()
   ! Different sizes for time steps provide different results
   ! because of the satbility issues.
   integer                    :: maxsubsteps = 32
-!  integer                    :: maxsubsteps = 100
   integer                    :: maxretries  = 10
   
 !  real(kind=f), parameter   :: dtime  = 1._f

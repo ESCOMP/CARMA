@@ -1,5 +1,20 @@
 Tag name: 
 Originator(s): Charles Bardeen
+Date: August 19, 2011
+
+One-line Summary:
+
+Bug fixes and enhancements to the particle heating code.
+
+Purpose of changes:
+
+Fixed a few bugs found running in the debugger, and changed
+dry deposition so that surface friction and aerodynamic resistance
+are provided and used per land surface type.
+
+===============================================================
+Tag name: 
+Originator(s): Charles Bardeen
 Date: August 9, 2011
 
 One-line Summary:

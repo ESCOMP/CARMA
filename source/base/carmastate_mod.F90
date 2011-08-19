@@ -805,18 +805,24 @@ contains
   !! If tendencies are desired, then the difference between the final and
   !! initial state will need to be computed by the caller.
   !!
+  !! NIOTE: xxxfv, xxxram and xxxfrac need to be specified for dry deposition.
+  !!
   !! @author Chuck Bardeen
   !! @version Feb-2009
-  subroutine CARMASTATE_Step(cstate, rc, cldfrc, rhcrit, surfric, ram, landfrac, ocnfrac, icefrac)
+  subroutine CARMASTATE_Step(cstate, rc, cldfrc, rhcrit, lndfv, ocnfv, icefv, lndram, ocnram, iceram, lndfrac, ocnfrac, icefrac)
     type(carmastate_type), intent(inout)  :: cstate
     integer, intent(out)                  :: rc
-    real(kind=f), intent(in), optional    :: cldfrc(cstate%f_NZ)   !! cloud fraction [fraction]
-    real(kind=f), intent(in), optional    :: rhcrit(cstate%f_NZ)   !! relative humidity for onset of liquid clouds [fraction]
-    real(kind=f), intent(in), optional    :: surfric             !! surface friction velocity [m/s]
-    real(kind=f), intent(in), optional    :: ram                 !! aerodynamic resistance [s/m]
-    real(kind=f), intent(in), optional    :: landfrac            !! land fraction
-    real(kind=f), intent(in), optional    :: ocnfrac             !! ocn fraction
-    real(kind=f), intent(in), optional    :: icefrac             !! ice fraction
+    real(kind=f), intent(in), optional    :: cldfrc(cstate%f_NZ)  !! cloud fraction [fraction]
+    real(kind=f), intent(in), optional    :: rhcrit(cstate%f_NZ)  !! relative humidity for onset of liquid clouds [fraction]
+    real(kind=f), intent(in), optional    :: lndfv                !! the surface friction velocity over land  [m/s]
+    real(kind=f), intent(in), optional    :: ocnfv                !! the surface friction velocity over ocean  [m/s]
+    real(kind=f), intent(in), optional    :: icefv                !! the surface friction velocity over ice  [m/s]
+    real(kind=f), intent(in), optional    :: lndram               !! the aerodynamic resistance over land [s/m]
+    real(kind=f), intent(in), optional    :: ocnram               !! the aerodynamic resistance over ocean [s/m]
+    real(kind=f), intent(in), optional    :: iceram               !! the aerodynamic resistance over ice [s/m]
+    real(kind=f), intent(in), optional    :: lndfrac              !! land fraction
+    real(kind=f), intent(in), optional    :: ocnfrac              !! ocn fraction
+    real(kind=f), intent(in), optional    :: icefrac              !! ice fraction
 
     
     integer                               :: iz     ! vertical index
@@ -868,14 +874,20 @@ contains
       
       ! intialize the dry deposition
       if (cstate%f_carma%f_do_drydep) then
-        if (present(surfric) .and. present(ram) .and. present(landfrac) .and. present(ocnfrac) .and. present(icefrac)) then
+        if (present(lndfv) .and. present(lndram) .and. present(lndfrac) .and. &
+            present(ocnfv) .and. present(ocnram) .and. present(ocnfrac) .and. &
+            present(icefv) .and. present(iceram) .and. present(icefrac)) then
         
           ! NOTE: Need to convert surfric and ram from mks to cgs units.
-          call setupvdry(cstate%f_carma, cstate, surfric * 100._f, ram / 100._f, landfrac, ocnfrac, icefrac, rc)
+          call setupvdry(cstate%f_carma, cstate, &
+            lndfv * 100._f, ocnfv * 100._f, icefv * 100._f, &
+            lndram / 100._f, ocnram / 100._f, iceram / 100._f, &
+            lndfrac, ocnfrac, icefrac, rc)
           if (rc < RC_OK) return
         else
-          write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Step: do_drydep requires that the optional inputs surfric, ram, landfrac, ocnfrac and icefrac be provided."
+          write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Step: do_drydep requires that the optional inputs xxxfv, xxxram and xxxfrac be provided."
           rc = RC_ERROR
+          return
         end if
       end if
        
@@ -1052,7 +1064,6 @@ contains
       if (present(numberDensity)) numberDensity(:)   = cstate%f_pc(:, ibin, ielem) / (cstate%f_xmet(:)*cstate%f_ymet(:)*cstate%f_zmet(:))
       if (present(r_wet))         r_wet(:)           = cstate%f_r_wet(:, ibin, igroup)
       if (present(rhop_wet))      rhop_wet(:)        = cstate%f_rhop_wet(:, ibin, igroup)
-      if (present(dtpart))        dtpart(:)          = cstate%f_dtpart(:, ibin, igroup)
 
       if (cstate%f_carma%f_do_vtran) then
         if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup)
@@ -1070,6 +1081,12 @@ contains
         if (present(nucleationRate)) nucleationRate(:) = cstate%f_pc_nucl(:, ibin, ielem) / (cstate%f_xmet(:)*cstate%f_ymet(:)*cstate%f_zmet(:)) / cstate%f_dtime
       else
         if (present(nucleationRate)) nucleationRate(:) = CAM_FILL
+      end if
+
+      if (cstate%f_carma%f_do_pheat) then
+        if (present(dtpart))        dtpart(:)          = cstate%f_dtpart(:, ibin, igroup)
+      else
+        if (present(dtpart))        dtpart(:)          = CAM_FILL
       end if
     else
       if (present(nmr))            nmr(:)             = CAM_FILL
