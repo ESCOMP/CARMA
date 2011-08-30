@@ -276,7 +276,6 @@ subroutine test_drydep()
   
   ! write the dry deposition velocity
   open(unit=lun1,file="carma_vdry.txt",status="unknown")
-  write(lun1, *) NGROUP
   do igroup = 1, NGROUP
     write(lun1,*) igroup, real(vdry(:, igroup))     
   end do  

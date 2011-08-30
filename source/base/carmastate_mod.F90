@@ -1066,13 +1066,19 @@ contains
       if (present(rhop_wet))      rhop_wet(:)        = cstate%f_rhop_wet(:, ibin, igroup)
 
       if (cstate%f_carma%f_do_vtran) then
-        if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup)
+        if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup) / cstate%f_zmetl(:)
       else
         if (present(vf))            vf(:)              = CAM_FILL
       end if
       
       if (cstate%f_carma%f_do_drydep) then
-        if (present(vd))          vd                 = cstate%f_vd(ibin, igroup)
+        if (present(vd)) then
+          if (cstate%f_igridv .eq. I_CART) then
+            vd                 = cstate%f_vd(ibin, igroup) / cstate%f_zmetl(1)
+          else
+            vd                 = cstate%f_vd(ibin, igroup) / cstate%f_zmetl(cstate%f_NZP1)
+          end if
+        end if
       else 
         if (present(vd))          vd                 = CAM_FILL
       end if
