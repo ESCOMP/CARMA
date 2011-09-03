@@ -12,7 +12,7 @@
 !! @version Dec-1995
 subroutine vaporp(carma, cstate, iz, igas, rc)
 
-	!     types
+  !     types
   use carma_precision_mod
   use carma_enums_mod
   use carma_constants_mod
@@ -20,7 +20,7 @@ subroutine vaporp(carma, cstate, iz, igas, rc)
   use carmastate_mod
   use carma_mod
 
-	implicit none
+  implicit none
 
   type(carma_type), intent(in)         :: carma   !! the carma object
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
@@ -43,6 +43,9 @@ subroutine vaporp(carma, cstate, iz, igas, rc)
     case(I_VAPRTN_H2O_GOFF1946)
       call vaporp_h2o_goff1946(carma, cstate, iz, rc, pvapl(iz, igas), pvapi(iz, igas))
     
+    case(I_VAPRTN_H2SO4_AYERS1980)
+      call vaporp_h2so4_ayers1980(carma, cstate, iz, rc, pvapl(iz, igas), pvapi(iz, igas))
+
     case default
       if (do_print) write(LUNOPRT,*) "vaporp:: ERROR - Unknown vapor pressure routine  (", ivaprtn(igas), &
         ") for gas (", igas, ")."

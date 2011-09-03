@@ -130,8 +130,8 @@ subroutine downgxfer(carma, cstate, iz, rc)
 
                 ! Calculate latent heat associated with nucleation to <ibin,ielem>
                 ! from <ifrom,iefrom>
-                rlheat(iz) = rlheat(iz) + rnucprod * rlh_nuc(iefrom,ielem) / &
-                  (CP * rhoa(iz)) * elemass
+!                rlprod = rlprod + rnucprod * rlh_nuc(iefrom,ielem) / &
+!                  (CP * rhoa(iz)) * elemass
 
               endif  ! (rnuclg > 0.)
             endif   ! (pconmax > FEW_PC)

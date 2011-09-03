@@ -70,6 +70,8 @@
 #define gwtmol(igas)          carma%f_gas(igas)%f_wtmol
 #define ivaprtn(igas)         carma%f_gas(igas)%f_ivaprtn
 #define igcomp(igas)          carma%f_gas(igas)%f_icomposition
+#define dgc_threshold(igas)   carma%f_gas(igas)%f_dgc_threshold
+#define ds_threshold(igas)    carma%f_gas(igas)%f_ds_threshold
 
 ! Group object
 #define groupname(igroup)       carma%f_group(igroup)%f_name
@@ -83,6 +85,7 @@
 #define if_sec_mom(igroup)      carma%f_group(igroup)%f_if_sec_mom
 #define is_grp_ice(igroup)      carma%f_group(igroup)%f_is_ice
 #define is_grp_cloud(igroup)    carma%f_group(igroup)%f_is_cloud
+#define is_grp_sulfate(igroup)  carma%f_group(igroup)%f_is_sulfate
 #define grp_do_vtran(igroup)    carma%f_group(igroup)%f_grp_do_vtran
 #define grp_do_drydep(igroup)   carma%f_group(igroup)%f_grp_do_drydep
 #define irhswell(igroup)        carma%f_group(igroup)%f_irhswell
@@ -107,6 +110,7 @@
 #define ssa(iwave,ibin,igroup)  carma%f_group(igroup)%f_ssa(iwave,ibin)
 #define do_mie(igroup)          carma%f_group(igroup)%f_do_mie
 #define imiertn(igroup)         carma%f_group(igroup)%f_imiertn
+#define dpc_threshold(igroup)   carma%f_group(igroup)%f_dpc_threshold
 
 ! Solute object
 #define solname(isolute)      carma%f_solute(isolute)%f_name
@@ -164,6 +168,10 @@
 #define ievp2bin      carma%f_ievp2bin
 #define nnucbin       carma%f_nnucbin
 #define inucbin       carma%f_inucbin
+#define dt_threshold  carma%f_dt_threshold
+#define igash2o       carma%f_igash2o
+#define igash2so4     carma%f_igash2so4
+#define igasso2       carma%f_igasso2
 
 #define max_nsubstep  cstate%f_max_nsubstep
 #define max_nretry    cstate%f_max_nretry
@@ -176,7 +184,11 @@
 #define diffmass      carma%f_diffmass
 #define rhop          cstate%f_rhop
 #define r_wet         cstate%f_r_wet
+#define rlow_wet      cstate%f_rlow_wet
+#define rup_wet       cstate%f_rup_wet
 #define rhop_wet      cstate%f_rhop_wet
+#define r_ref         cstate%f_r_ref
+#define rhop_ref      cstate%f_rhop_ref
 
 !  Atmospheric structure
 #define rhoa          cstate%f_rhoa
@@ -185,6 +197,7 @@
 #define p             cstate%f_p
 #define pl            cstate%f_pl
 #define relhum        cstate%f_relhum
+#define wtpct         cstate%f_wtpct
 #define told          cstate%f_told
 #define rmu           cstate%f_rmu
 #define thcond        cstate%f_thcond
@@ -211,6 +224,7 @@
 #define coagpe        cstate%f_coagpe
 #define rnuclg        cstate%f_rnuclg
 #define rnucpe        cstate%f_rnucpe
+#define rhompe        cstate%f_rhompe
 #define pc_nucl       cstate%f_pc_nucl
 #define growpe        cstate%f_growpe
 #define evappe        cstate%f_evappe
@@ -228,11 +242,13 @@
 #define pc_botbnd     cstate%f_pc_botbnd
 #define ftoppart      cstate%f_ftoppart
 #define fbotpart      cstate%f_fbotpart
-#define cmf     		  cstate%f_cmf
+#define cmf           cstate%f_cmf
 #define totevap       cstate%f_totevap
 #define too_small     cstate%f_too_small
 #define too_big       cstate%f_too_big
 #define nuc_small     cstate%f_nuc_small
+#define rlprod        cstate%f_rlprod
+#define phprod        cstate%f_phprod
 
 !  Coagulation kernels and bin pair mapping
 #define ck0           carma%f_ck0
@@ -243,6 +259,7 @@
 #define kbin          carma%f_kbin
 
 #define ckernel       cstate%f_ckernel
+#define ckernel_scale cstate%f_ckernel_scale
 #define pkernel       carma%f_pkernel
 
 #define volx          carma%f_volx
@@ -262,6 +279,7 @@
 !  Particle fall velocities, transport rates, and coagulation kernels
 #define bpm           cstate%f_bpm
 #define vf            cstate%f_vf
+#define vf_scale      cstate%f_vf_scale
 #define re            cstate%f_re
 #define vf_const      carma%f_vf_const
 #define vd            cstate%f_vd

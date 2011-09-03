@@ -15,13 +15,13 @@ subroutine microfast(carma, cstate, iz, rc)
   use carma_types_mod
   use carmastate_mod
   use carma_mod
-
+  
   implicit none
 
-  type(carma_type), intent(inout)      :: carma   !! the carma object
-  type(carmastate_type), intent(inout) :: cstate  !! the carma state object
-  integer, intent(in)                  :: iz      !! z index
-  integer, intent(inout)               :: rc      !! return code, negative indicates failure
+  type(carma_type), intent(inout)      :: carma       !! the carma object
+  type(carmastate_type), intent(inout) :: cstate      !! the carma state object
+  integer, intent(in)                  :: iz          !! z index
+  integer, intent(inout)               :: rc          !! return code, negative indicates failure
 
   ! Local Variables
   integer                              :: ielem   ! element index
@@ -42,8 +42,8 @@ subroutine microfast(carma, cstate, iz, rc)
               ',supsatl=',e9.3,',t=',f6.2)
   2 format('microfast::ERROR - conditions at beginning of the step : gc=',e9.3,',supsati=',e16.10, &
               ',supsatl='e16.10,',t=',f6.2,',d_gc=',e9.3,',d_t=',f6.2)
-
-  ! Set production and loss rates to zero.
+  
+   ! Set production and loss rates to zero.
   call zeromicro(carma, cstate, iz, rc)
   if (rc < RC_OK) return
   
@@ -62,8 +62,19 @@ subroutine microfast(carma, cstate, iz, rc)
       if (rc < RC_OK) return
     
       previous_supsati(igas) = supsati(iz, igas)
-      previous_supsatl(igas) = supsatl(iz, igas)
+      previous_supsatl(igas) = supsatl(iz, igas)     
     end do
+    
+    ! Have water vapor and sulfuric acid been defined?
+    if ((igash2o /= 0) .and. (igash2so4 /= 0)) then
+      
+      ! Are both gases avaialble?
+      if ((gc(iz, igash2o) > 0._f) .and. (gc(iz,igash2so4) > 0._f)) then
+
+        ! See if any sulfates will form.
+        call sulfnuc(carma, cstate, iz, rc) 
+      endif 
+    end if
     
     call growevapl(carma, cstate, iz, rc)
     if (rc < RC_OK) return
@@ -91,7 +102,7 @@ subroutine microfast(carma, cstate, iz, rc)
     if (rc < RC_OK) return
 
     call melticel(carma, cstate, iz, rc)
-    if (rc < RC_OK) return
+    if (rc < RC_OK) return    
   endif
 
   ! Calculate particle production terms and solve for particle 
@@ -136,7 +147,7 @@ subroutine microfast(carma, cstate, iz, rc)
 
   ! Update temperature if thermal processes requested
   if (do_thermo) then
-    call tsolve(carma, cstate, iz, rc)
+    call tsolve(carma, cstate, iz, rlprod, rc)
     if (rc /= RC_OK) return
   endif
 
@@ -171,24 +182,27 @@ subroutine microfast(carma, cstate, iz, rc)
       srat = max(srat1, srat2)
 
 
-      ! Don't let one substep change the supersaturation by more than 20%.
-!      if (srat >= 0.2_f) then
-      if ((srat >= 0.2_f) .and. (abs(supsatold - supsatnew) > .1_f)) then
-        if (do_substep) then
-          if (nretries == maxretries) then 
-            if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, srat, previous_supsati(igas), previous_supsatl(igas), &
-            supsati(iz, igas), supsatl(iz,igas), t(iz)
-            if (do_print) write(LUNOPRT,2) gcl(iz,igas), supsatiold(iz, igas), supsatlold(iz,igas), told(iz), d_gc(iz, igas), d_t(iz)
+      ! Don't let one substep change the supersaturation by too much.
+      if (ds_threshold(igas) /= 0._f) then
+!        if (srat >= ds_threshold(igas)) then
+        if ((srat >= ds_threshold(igas)) .and. (abs(supsatold - supsatnew) > .1_f)) then
+          if (do_substep) then
+            if (nretries == maxretries) then 
+              if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, srat, previous_supsati(igas), previous_supsatl(igas), &
+              supsati(iz, igas), supsatl(iz,igas), t(iz)       
+              if (do_print) write(LUNOPRT,2) gcl(iz,igas), supsatiold(iz, igas), supsatlold(iz,igas), told(iz), d_gc(iz, igas), d_t(iz)
+            end if
+            
+            rc = RC_WARNING_RETRY
+          else
+            if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, gc(iz,igas), gasprod(igas), &
+              supsati(iz, igas), supsatl(iz,igas), t(iz)
           end if
-        else
-          if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, gc(iz,igas), gasprod(igas), &
-            supsati(iz, igas), supsatl(iz,igas), t(iz)
         end if
-
-        rc = RC_WARNING_RETRY
       end if
     end do
   endif
+
 
   ! Update particle densities
 !  if (do_grow) then

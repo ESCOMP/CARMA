@@ -142,5 +142,5 @@ subroutine setupatm(carma, cstate, rescale, rc)
 
   ! Calculate the thermal properties of the atmosphere.
   rmu(:)     = rmu_const / ( t(:) + rmu_c ) * (t(:) / rmu_t0 )**1.5_f
-  thcond(:)  = (5.69_f + .017_f*(t(:) - T0))*4.186e2_f
+  thcond(:)  = (5.69_f + .017_f*(t(:) - T0)) * 4.186e2_f
 end subroutine

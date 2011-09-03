@@ -23,7 +23,8 @@ vaporp_h2o_murphy2005.o maxconc.o setupbdif.o setupvf_std.o \
 setupvf_std_shape.o totalcondensate.o versub.o freezaerl_tabazadeh2000.o \
 freezaerl_koop2000.o rhoice_heymsfield2010.o setupvf_heymsfield2010.o \
 freezaerl_mohler2010.o setupvdry.o calcrs.o vaporp_h2o_goff1946.o \
-pheat.o planck.o bhmie.o mie.o
+pheat.o planck.o bhmie.o mie.o vaporp_h2so4_ayers1980.o \
+sulfate_utils.o sulfnuc.o sulfnucrate.o
 
 CARMA_DOC = carma_constants_mod.html carma_types_mod.html \
 carmagroup_mod.html carmagas_mod.html carmaelement_mod.html carmasolute_mod.html \
@@ -40,7 +41,8 @@ vaporp_h2o_murphy2005.html  maxconc.html setupbdif.html setupvf_std.html \
 setupvf_std_shape.html totalcondensate.html versub.html freezaerl_tabazadeh2000.html \
 freezaerl_koop2000.html rhoice_heymsfield2010.html setupvf_heymsfield2010.html \
 freezaerl_mohler2010.html setupvdry.html calcrs.html  vaporp_h2o_goff1946.html \
-pheat.html planck.html bhmie.html mie.html
+pheat.html planck.html bhmie.html mie.html vaporp_h2so4_ayers1980.html \
+sulfate_utils.html sulfnuc.html sulfnucrate.html
 
 carma_precision_mod.o : carma_precision_mod.F90
 	$(FORTRAN) $(FFLAGS) -c $<
@@ -183,7 +185,7 @@ psolve.o : psolve.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_typ
 rhoice_heymsfield2010.o : rhoice_heymsfield2010.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
 	$(FORTRAN) $(FFLAGS) -c $<
 
-rhopart.o : rhopart.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
+rhopart.o : rhopart.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod sulfate_utils.mod wetr.mod	
 	$(FORTRAN) $(FFLAGS) -c $<
 
 setupatm.o : setupatm.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 
@@ -201,7 +203,7 @@ setupckern.o : setupckern.F90	carma_globaer.h carma_mod.mod carmastate_mod.mod c
 setupcoag.o : setupcoag.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
 	$(FORTRAN) $(FFLAGS) -c $<
 
-setupgkern.o : setupgkern.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 
+setupgkern.o : setupgkern.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod sulfate_utils.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
 setupgrow.o : setupgrow.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 
@@ -231,6 +233,15 @@ smallconc.o : smallconc.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod car
 step.o : step.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
 	$(FORTRAN) $(FFLAGS) -c $<
 
+sulfate_utils.o : sulfate_utils.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
+	$(FORTRAN) $(FFLAGS) -c $<
+
+sulfnuc.o : sulfnuc.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
+	$(FORTRAN) $(FFLAGS) -c $<
+
+sulfnucrate.o : sulfnucrate.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
+	$(FORTRAN) $(FFLAGS) -c $<
+
 supersat.o : supersat.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
 	$(FORTRAN) $(FFLAGS) -c $<
 
@@ -244,6 +255,9 @@ upgxfer.o : upgxfer.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_t
 	$(FORTRAN) $(FFLAGS) -c $<
 
 vaporp.o : vaporp.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
+	$(FORTRAN) $(FFLAGS) -c $<
+
+vaporp_h2so4_ayers1980.o : vaporp_h2so4_ayers1980.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	
 	$(FORTRAN) $(FFLAGS) -c $<
 
 vaporp_h2o_buck1981.o : vaporp_h2o_buck1981.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod 	

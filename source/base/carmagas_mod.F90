@@ -31,15 +31,17 @@ contains
   !!
   !! @see CARMA_AddGas
   !! @see CARMAGAS_Destroy
-  subroutine CARMAGAS_Create(carma, igas, name, wtmol, ivaprtn, icomposition, rc, shortname)
+  subroutine CARMAGAS_Create(carma, igas, name, wtmol, ivaprtn, icomposition, rc, shortname, dgc_threshold, ds_threshold)
     type(carma_type), intent(inout)       :: carma           !! the carma object
     integer, intent(in)                   :: igas            !! the gas index
     character(*), intent(in)              :: name            !! the gas name, maximum of 255 characters
     real(kind=f), intent(in)              :: wtmol           !! the gas molecular weight [g/mol]
     integer, intent(in)                   :: ivaprtn         !! vapor pressure routine for this gas
-		integer, intent(in)                   :: icomposition    !! gas compound specification
+    integer, intent(in)                   :: icomposition    !! gas compound specification
     integer, intent(out)                  :: rc              !! return code, negative indicates failure
     character(*), optional, intent(in)    :: shortname       !! the gas shortname, maximum of 6 characters
+    real(kind=f), optional, intent(in)    :: dgc_threshold   !! convergence criteria for gas concentration [fraction]
+    real(kind=f), optional, intent(in)    :: ds_threshold    !! convergence criteria for gas saturation [fraction]
 
     ! Assume success.
     rc = RC_OK
@@ -60,10 +62,14 @@ contains
     
     
     ! Defaults for optional parameters
-    carma%f_gas(igas)%f_shortname    = ""
+    carma%f_gas(igas)%f_shortname       = ""
+    carma%f_gas(igas)%f_dgc_threshold   = 0._f
+    carma%f_gas(igas)%f_ds_threshold    = 0._f
     
     ! Set optional parameters.
-    if (present(shortname))  carma%f_gas(igas)%f_shortname    = shortname
+    if (present(shortname))     carma%f_gas(igas)%f_shortname      = shortname
+    if (present(dgc_threshold)) carma%f_gas(igas)%f_dgc_threshold  = dgc_threshold
+    if (present(ds_threshold))  carma%f_gas(igas)%f_ds_threshold   = ds_threshold
 
     return
   end subroutine CARMAGAS_Create
@@ -105,15 +111,17 @@ contains
   !!
   !! @see CARMAGAS_Create
   !! @see CARMA_GetGas
-  subroutine CARMAGAS_Get(carma, igas, rc, name, shortname, wtmol, ivaprtn, icomposition)
-    type(carma_type), intent(in)                :: carma        !! the carma object
-    integer, intent(in)                         :: igas         !! the gas index
-    integer, intent(out)                        :: rc           !! return code, negative indicates failure
-    character(len=*), optional, intent(out)     :: name         !! the gas name
-    character(len=*), optional, intent(out)     :: shortname    !! the gas short name
-    real(kind=f), optional, intent(out)         :: wtmol        !! the gas molecular weight [g/mol]
-    integer, optional, intent(out)              :: ivaprtn      !! vapor pressure routine for this gas
-		integer, optional, intent(out)              :: icomposition !! gas compound specification
+  subroutine CARMAGAS_Get(carma, igas, rc, name, shortname, wtmol, ivaprtn, icomposition, dgc_threshold, ds_threshold)
+    type(carma_type), intent(in)                :: carma         !! the carma object
+    integer, intent(in)                         :: igas          !! the gas index
+    integer, intent(out)                        :: rc            !! return code, negative indicates failure
+    character(len=*), optional, intent(out)     :: name          !! the gas name
+    character(len=*), optional, intent(out)     :: shortname     !! the gas short name
+    real(kind=f), optional, intent(out)         :: wtmol         !! the gas molecular weight [g/mol]
+    integer, optional, intent(out)              :: ivaprtn       !! vapor pressure routine for this gas
+    integer, optional, intent(out)              :: icomposition  !! gas compound specification
+    real(kind=f), optional, intent(out)         :: dgc_threshold !! convergence criteria for gas concentration [fraction]
+    real(kind=f), optional, intent(out)         :: ds_threshold  !! convergence criteria for gas saturation [fraction]
 
     ! Assume success.
     rc = RC_OK
@@ -132,6 +140,8 @@ contains
     if (present(wtmol))        wtmol        = carma%f_gas(igas)%f_wtmol
     if (present(ivaprtn))      ivaprtn      = carma%f_gas(igas)%f_ivaprtn
     if (present(icomposition)) icomposition = carma%f_gas(igas)%f_icomposition
+    if (present(dgc_threshold)) dgc_threshold = carma%f_gas(igas)%f_dgc_threshold
+    if (present(ds_threshold)) ds_threshold = carma%f_gas(igas)%f_ds_threshold
         
     return
   end subroutine CARMAGAS_Get
@@ -154,6 +164,8 @@ contains
     real(kind=f)                              :: wtmol         !! molecular weight (g/mol)
     integer                                   :: ivaprtn       !! vapor pressure routine for this gas
     integer                                   :: icomposition  !! gas compound specification
+    real(kind=f)                              :: dgc_threshold !! convergence criteria for gas concentration [fraction]
+    real(kind=f)                              :: ds_threshold  !! convergence criteria for gas saturation [fraction]
 
     ! Assume success.
     rc = RC_OK
@@ -168,6 +180,8 @@ contains
       write(carma%f_LUNOPRT,*) "    name          : ", trim(name)
       write(carma%f_LUNOPRT,*) "    shortname     : ", trim(shortname)
       write(carma%f_LUNOPRT,*) "    wtmol         : ", wtmol, " (g/mol)"
+      write(carma%f_LUNOPRT,*) "    dgc_threshold : ", dgc_threshold
+      write(carma%f_LUNOPRT,*) "    ds_threshold  : ", ds_threshold
 
       select case(ivaprtn)
         case (I_VAPRTN_H2O_BUCK1981)

@@ -27,7 +27,7 @@ module carma_enums_mod
   integer, public, parameter :: I_COREMASS   = 3    !! Core Mass
   integer, public, parameter :: I_VOLCORE    = 4    !! Voltile Core
   integer, public, parameter :: I_CORE2MOM   = 5    !! Core Mass - 2 Moments
-
+    
   !!  Define values of flag used for nucleation process
   !!  specification (inucproc).
   integer, public, parameter :: I_DROPACT     = 1   !! Droplet Activation
@@ -37,6 +37,7 @@ module carma_enums_mod
   integer, public, parameter :: I_HETNUC      = 5   !! Heterogeneous Nucleation
   integer, public, parameter :: I_GLFREEZE    = 6   !! Glassy Aerosol Freezing
   integer, public, parameter :: I_GLAERFREEZE = 7   !! Glassy & Aerosol Freezing (both I_AERFREEZE and I_GLFREEZE)
+  integer, public, parameter :: I_HOMNUC      = 8   !! Binary homogeneous gas-to-particle nucleation
   
   !  Define values of flag used for collection process (icollec)
   integer, public, parameter :: I_COLLEC_CONST = 1   !! Constant Collection Efficiency
@@ -53,8 +54,10 @@ module carma_enums_mod
   integer, public, parameter :: I_CYLINDER = 3   !! circular disks, cylinders, or spheroids
   
   !  Define values of flag used for particle swelling parameterization (irhswell)
+  integer, public, parameter :: I_NO_SWELLING  = 0   !! No swelling
   integer, public, parameter :: I_FITZGERALD   = 1   !! Fitzgerald
   integer, public, parameter :: I_GERBER       = 2   !! Gerber
+  integer, public, parameter :: I_WTPCT_H2SO4  = 3   !! The weight percent method for sulfate aerosol
   
   !  Define vallues of flag used for particle swelling composition (Fiztgerald)
   integer, public, parameter :: I_SWF_NH42SO4   = 1   !! (NH4)2SO4
@@ -77,6 +80,7 @@ module carma_enums_mod
   integer, public, parameter :: I_VAPRTN_H2O_BUCK1981      = 1   !! H2O, Buck[1981]
   integer, public, parameter :: I_VAPRTN_H2O_MURPHY2005    = 2   !! H2O, Murphy & Koop [2005]
   integer, public, parameter :: I_VAPRTN_H2O_GOFF1946      = 3   !! H2O, Goff & Gratch [1946], used in CAM
+  integer, public, parameter :: I_VAPRTN_H2SO4_AYERS1980   = 4   !! H2SO4, Ayers [1980] & Kumala [1990]
 
   ! Routines to calculate fall velocities
   integer, public, parameter :: I_FALLRTN_STD              = 1   !! Standard CARMA 2.3 routine (spherical only)
@@ -90,10 +94,7 @@ module carma_enums_mod
   ! Gas Composition  
   integer, public, parameter :: I_GCOMP_H2O             = 1   !! Water Vapor
   integer, public, parameter :: I_GCOMP_H2SO4           = 2   !! Sulphuric Acid
-  
-  ! Gas Index for Water Vapor
-  integer, public, parameter :: I_GAS_H2O               = 1   !! Water Vapor
-
+  integer, public, parameter :: I_GCOMP_SO2             = 3   !! Sulfer Dioxide
   
   ! How is the CARMA group represented in the parent model
   integer, public, parameter :: I_CNSTTYPE_PROGNOSTIC   = 1   !! Prognostic, advected constituent for each bin

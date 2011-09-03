@@ -68,6 +68,9 @@ carma_sigmafalltest.o : carma_sigmafalltest.F90 atmosphere_mod.mod carma_mod.mod
 carma_swelltest.o : carma_swelltest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
 	$(FORTRAN) $(FFLAGS) -c $<
 	
+carma_sulfatetest.o : carma_sulfatetest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
+	$(FORTRAN) $(FFLAGS) -c $<
+	
 carma_test.o : carma_test.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod 
 	$(FORTRAN) $(FFLAGS) -c $<
 	

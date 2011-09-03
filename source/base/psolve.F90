@@ -55,8 +55,8 @@ subroutine psolve(carma, cstate, iz, ibin, ielem, rc)
   if(do_grow) then
   
     ! Compute total production rate
-    ppd = rnucpe(ibin,ielem) + growpe(ibin,ielem) + evappe(ibin,ielem)
-
+    ppd = rnucpe(ibin,ielem) + rhompe(ibin,ielem) + growpe(ibin,ielem) + evappe(ibin,ielem)
+    
     ! Sum up nucleation loss rates
     rnuclgtot = sum(rnuclg(ibin,igroup,:))
 
@@ -64,12 +64,12 @@ subroutine psolve(carma, cstate, iz, ibin, ielem, rc)
     pls = rnuclgtot + growlg(ibin,igroup) + evaplg(ibin,igroup) 
 
     ! Update net particle number concentration during current timestep
-    ! due to production and loss rates
+    ! due to production and loss rates.
     pc(iz,ibin,ielem) = (pc(iz,ibin,ielem) + dtime * ppd) / (ONE + pls * dtime)
     
     ! Figure out how many particles were produced from nucleation. This is just
     ! for statistics and is done as a total for the step, not per substep.
-    pc_nonuc = (pc(iz,ibin,ielem) + dtime * (ppd - rnucpe(ibin,ielem))) / (ONE + pls * dtime)
+    pc_nonuc = (pc(iz,ibin,ielem) + dtime * (ppd - rnucpe(ibin,ielem) - rhompe(ibin,ielem))) / (ONE + pls * dtime)
     pc_nucl(iz,ibin,ielem) = pc_nucl(iz,ibin,ielem) + (pc(iz,ibin,ielem) - pc_nonuc)
   end if 
   

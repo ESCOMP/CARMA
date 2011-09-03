@@ -38,6 +38,7 @@ subroutine setupgkern(carma, cstate, rc)
   use carma_types_mod
   use carmastate_mod
   use carma_mod
+  use sulfate_utils
 
   implicit none
 
@@ -76,6 +77,8 @@ subroutine setupgkern(carma, cstate, rc)
   real(kind=f)                   :: x1
   real(kind=f)                   :: x2
   real(kind=f)                   :: fv
+  real(kind=f)                   :: surf_tens  ! surface tension of H2SO4 particle
+  real(kind=f)                   :: rho_H2SO4  ! wet density of H2SO4 particle
   
 
   ! Specify radius-independent parameters.
@@ -98,7 +101,7 @@ subroutine setupgkern(carma, cstate, rc)
     !
     rhoa_cgs(:, igas) = rhoa(:) / (xmet(:)*ymet(:)*zmet(:))
 
-    if (igas .eq. 1 )then
+    if (igas .eq. igash2o) then
         
       ! Condensing gas is water vapor
       !
@@ -120,11 +123,25 @@ subroutine setupgkern(carma, cstate, rc)
 
       akelvini(:,igas) = 2._f*gwtmol(igas)*surfctia(:) & 
                         / ( t(:)*RHO_W*RGAS )
-    else
+                        
+    ! condensing gas is H2SO4                    
+    else if (igas .eq. igash2so4) then
+    
+      ! Calculate Kelvin curvature factor for H2SO4 interactively with temperature:
+      do k = 1, NZ  
+        surf_tens = sulfate_surf_tens(carma, wtpct(k), t(k), rc)
+        rho_H2SO4 = sulfate_density(carma, wtpct(k), t(k), rc)
+        akelvin(k, igas) = 2._f * gwtmol(igas) * surf_tens / (t(k) * rho_H2SO4 * RGAS)
+        
+        ! Not doing condensation of h2So4 on ice, so just set it to the value
+        ! for water vapor.
+        akelvini(k, igas) = akelvini(k, igash2o)
+      end do   
+    else 
 
       ! Condensing gas is not yet configured.
       if (do_print) write(LUNOPRT,*) 'setupgkern::ERROR - invalid igas'
-      rc = -1
+      rc = RC_ERROR
       return
     endif
 
@@ -143,11 +160,11 @@ subroutine setupgkern(carma, cstate, rc)
   do igroup = 1, NGROUP
 
     ! Use gstickl or gsticki, depending on whether group is ice or not
-		if( is_grp_ice(igroup) ) then
-			gstick = gsticki
-		else
-			gstick = gstickl
-		endif
+    if( is_grp_ice(igroup) ) then
+      gstick = gsticki
+    else
+      gstick = gstickl
+    endif
 
     ! Non-spherical corrections (need a reference for these)
     if( ishape(igroup) .eq. I_SPHERE )then
@@ -201,20 +218,20 @@ subroutine setupgkern(carma, cstate, rc)
       do k = 1, NZ
 
         ! Latent heat of condensing gas 
-				if( is_grp_ice(igroup) )then
-					rlh = rlhe(k,igas) + rlhm(k,igas)
-				else
-					rlh = rlhe(k,igas)
-				endif
+        if( is_grp_ice(igroup) )then
+          rlh = rlhe(k,igas) + rlhm(k,igas)
+        else
+          rlh = rlhe(k,igas)
+        endif
 
         ! Radius-dependent parameters 
         do i = 1, NBIN
 
-          br = rlow(i,igroup)     ! particle bin Boundary Radius
+          br = rlow_wet(k,i,igroup)     ! particle bin Boundary Radius
 
           ! These are Knudsen numbers
-          rknudn  = freep(k,igas) /br
-          rknudnt = freept(k,igas) /br
+          rknudn  = freep(k,igas) / br
+          rknudnt = freept(k,igas) / br
 
           ! These are "lambdas" used in correction for gas kinetic effects.
           rlam  = ( 1.33_f*rknudn  + 0.71_f ) / ( rknudn  + 1._f ) &
@@ -223,8 +240,8 @@ subroutine setupgkern(carma, cstate, rc)
           rlamt = ( 1.33_f*rknudnt + 0.71_f ) / ( rknudnt + 1._f ) &
                 + ( 4._f*( 1._f - tstick ) ) / ( 3._f*tstick )
 
-					! Diffusion coefficient and thermal conductivity modified for
-					! free molecular limit and for particle shape.
+          ! Diffusion coefficient and thermal conductivity modified for
+          ! free molecular limit and for particle shape.
           diffus1 = diffus(k,igas)*cor / ( 1._f + rlam*rknudn*cor/phish )
           thcond1 = thcond(k)*cor / ( 1._f + rlamt*rknudnt*cor/phish )
 
@@ -285,20 +302,20 @@ subroutine setupgkern(carma, cstate, rc)
 
           ! Growth kernel for particle without radiation or heat conduction at
           ! radius lower boundary [g cm^3 / erg / s]
-					gro(k,i,igroup) = 4._f*PI*br &
-												* diffus1*fv*gwtmol(igas) &
-												/ ( BK*t(k)*AVG )
-	
-					! Coefficient for conduction term in growth kernel [s/g]
-					gro1(k,i,igroup) = gwtmol(igas)*rlh**2 &
-								/ ( RGAS*t(k)**2*ft(k,i,igroup)*thcond1 ) &
-								/ ( 4._f*PI*br )
-	
-					! Coefficient for radiation term in growth kernel [g/erg]
-					! (note: no radial dependence).
-					if( i .eq. 1 )then
-						gro2(k,igroup) = 1._f / rlh
-					endif
+          gro(k,i,igroup) = 4._f*PI*br &
+                        * diffus1*fv*gwtmol(igas) &
+                        / ( BK*t(k)*AVG )
+  
+          ! Coefficient for conduction term in growth kernel [s/g]
+          gro1(k,i,igroup) = gwtmol(igas)*rlh**2 &
+                / ( RGAS*t(k)**2*ft(k,i,igroup)*thcond1 ) &
+                / ( 4._f*PI*br )
+  
+          ! Coefficient for radiation term in growth kernel [g/erg]
+          ! (note: no radial dependence).
+          if( i .eq. 1 )then
+            gro2(k,igroup) = 1._f / rlh
+          endif
  
         enddo   ! i=1,NBIN
       enddo    ! k=1,NZ

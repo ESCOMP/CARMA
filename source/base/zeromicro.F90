@@ -31,20 +31,22 @@ subroutine zeromicro(carma, cstate, iz, rc)
   
   if (do_grow) then
 
-    rlheat(iz)     = 0._f
-    partheat(iz)   = 0._f
+    phprod         = 0._f
+    rlprod         = 0._f
     dtpart(iz,:,:) = 0._f
-   
+
     if (NGAS > 0) gasprod(:) = 0._f
-  
-    rnucpe(:,:) = 0._f
-    growpe(:,:) = 0._f
-    evappe(:,:) = 0._f
+
+    rhompe(:, :)  = 0._f
+    rnucpe(:,:)   = 0._f
+    growpe(:,:)   = 0._f
+    evappe(:,:)   = 0._f
     rnuclg(:,:,:) = 0._f
-    growlg(:,:) = 0._f
-    evaplg(:,:) = 0._f
+    growlg(:,:)   = 0._f
+    evaplg(:,:)   = 0._f
+
   end if
-  
+
   ! Return to caller with fast microphysics sinks and sources zeroed.
   return
 end

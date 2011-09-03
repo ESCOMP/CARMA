@@ -75,16 +75,20 @@ module carma_types_mod
   !! access fields of this structure directly.
   type, public :: carmagas_type
   
-    !   name        Name of the gas
-    !   shortname   Short name of the gas
-    !   wtmol       Molecular weight for the gas [g/mol]
-    !   ivaprtn     vapor pressure routine for the gas
+    !   name          Name of the gas
+    !   shortname     Short name of the gas
+    !   wtmol         Molecular weight for the gas [g/mol]
+    !   ivaprtn       vapor pressure routine for the gas
+    !   dgc_threshold convergence criteria for gas concentration [fraction]
+    !   ds_threshold  convergence criteria for gas saturation [fraction]
     !
     character(len=CARMA_NAME_LEN)               :: f_name
     character(len=CARMA_SHORT_NAME_LEN)         :: f_shortname
     real(kind=f)                                :: f_wtmol
     integer                                     :: f_ivaprtn
     integer                                     :: f_icomposition
+    real(kind=f)                                :: f_dgc_threshold
+    real(kind=f)                                :: f_ds_threshold
   end type carmagas_type
 
 
@@ -121,6 +125,7 @@ module carma_types_mod
     !   solfac      Solubility factor for wet deposition
     !   is_ice      If .true. then ice particle 
     !   is_cloud    If .true. then cloud particle
+    !   is_sulfate  If .true. then sulfate particle
     !   do_mie      If .true. then do mie calculations 
     !   do_wetdep   If .true. then do wet deposition 
     !   grp_do_drydep If .true. then do dry deposition 
@@ -149,6 +154,7 @@ module carma_types_mod
     !   asym        asymmetry factor
     !   ifallrtn    routine to use to calculate fall velocity  [I_FALLRTN_...]
     !   imiertn     mie routine for optical properties [I_MIERTN_...]
+    !   dpc_threshold convergence criteria for particle concentration [fraction]
     !
     character(len=CARMA_NAME_LEN)               :: f_name
     character(len=CARMA_SHORT_NAME_LEN)         :: f_shortname
@@ -164,6 +170,7 @@ module carma_types_mod
     logical                                     :: f_if_sec_mom
     logical                                     :: f_is_ice
     logical                                     :: f_is_cloud
+    logical                                     :: f_is_sulfate
     logical                                     :: f_do_mie
     logical                                     :: f_do_wetdep
     logical                                     :: f_grp_do_drydep
@@ -191,6 +198,7 @@ module carma_types_mod
     integer, allocatable, dimension(:)          :: f_icorelem   ! (NELEM)
     real(kind=f), allocatable, dimension(:)     :: f_arat       ! (NBIN)
     real(kind=f), allocatable, dimension(:)     :: f_rrat       ! (NBIN)
+    real(kind=f)                                :: f_dpc_threshold
   end type carmagroup_type
   
   
@@ -345,6 +353,10 @@ module carma_types_mod
     !   maxsubsteps Maximum number of time substeps allowed
     !   minsubsteps Maximum number of time substeps allowed
     !   maxretries  Maximum number of substepping retries allowed
+    !   igash2o     gas index for H2O
+    !   igash2so4   gas index for H2SO4
+    !   igasso2     gas index for SO2
+    !   dt_threshold convergence criteria for temperature [fraction]
     !
     logical                                       :: f_do_vdiff
     logical                                       :: f_do_drydep
@@ -364,6 +376,9 @@ module carma_types_mod
     logical                                       :: f_do_cnst_rlh
     logical, allocatable, dimension(:,:)          :: f_if_nuc       !(NELEM,NELEM)
     real(kind=f)                                  :: f_conmax
+    integer                                       :: f_igash2o
+    integer                                       :: f_igash2so4
+    integer                                       :: f_igasso2
     integer                                       :: f_maxsubsteps 
     integer                                       :: f_minsubsteps 
     integer                                       :: f_maxretries 
@@ -387,6 +402,7 @@ module carma_types_mod
     integer, allocatable, dimension(:,:,:)        :: f_ievp2bin     ! (NBIN,NGROUP,NGROUP)
     integer, allocatable, dimension(:,:,:)        :: f_nnucbin      ! (NGROUP,NBIN,NGROUP)
     integer, allocatable, dimension(:,:,:,:)      :: f_inucbin      ! (NBIN*NGROUP,NGROUP,NBIN,NGROUP)
+    real(kind=f)                                  :: f_dt_threshold
   
 
     ! Particle bin structure
@@ -569,11 +585,19 @@ module carma_types_mod
     !
     !   rhop      Mass density of particle groups [g/cm^3]
     !   r_wet     Wet particle radius from RH swelling [cm]             {setupvfall}
+    !   rlow_wet  Wet particle radius (lower bound) from RH swelling [cm]             {setupvfall}
+    !   rup_wet   Wet particle radius (upper bound) from RH swelling [cm]             {setupvfall}
     !   rhop_wet  Wet Mass density of particle groups [g/cm^3]
+    !   r_ref     Reference wet particle radius from RH swelling [cm]             {setupvfall}
+    !   rhop_ref  Reference wet Mass density of particle groups [g/cm^3]
     !
     real(kind=f), allocatable, dimension(:,:,:) :: f_rhop       ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:) :: f_rhop_wet   ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:) :: f_r_wet      ! (NZ,NBIN,NGROUP)
+    real(kind=f), allocatable, dimension(:,:,:) :: f_rlow_wet   ! (NZ,NBIN,NGROUP)
+    real(kind=f), allocatable, dimension(:,:,:) :: f_rup_wet    ! (NZ,NBIN,NGROUP)
+    real(kind=f), allocatable, dimension(:,:,:) :: f_r_ref      ! (NZ,NBIN,NGROUP)
+    real(kind=f), allocatable, dimension(:,:,:) :: f_rhop_ref   ! (NZ,NBIN,NGROUP)
 
     ! Primary model state variables
     !
@@ -609,6 +633,7 @@ module carma_types_mod
     !   coagpe      Particle production due to coagulation 
     !   rnuclg      Total particle loss rate due to nucleation for group
     !   rnucpe      Particle production due to nucleation 
+    !   rhompe      Particle production due to homogeneous nucleation 
     !   pc_nucl     Particles produced due to nucleation (for the whole step, not just the substep)
     !   growlg      Total particle loss rate due to growth for group
     !   growle      Partial particle loss rate due to growth for element 
@@ -621,7 +646,7 @@ module carma_types_mod
     !   evdrop      Particle production of droplet number
     !   evcore      Particle production of core elements
     !   gasprod     Gas production term
-    !   rlheat      Latent heating rate [deg_K/s]   
+    !   rlheat      Latent heating rate (per step) [deg_K/s]   
     !   ftoppart    Downward particle flux across top boundary of model
     !   fbotpart    Upward flux particle across bottom boundary of model
     !   pc_topbnd   Particle concentration assumed just above the top boundary
@@ -631,6 +656,7 @@ module carma_types_mod
     !   too_small   .true. if cores are smaller than smallest CN
     !   too_big     .true. if cores are larger than largest CN
     !   nuc_small   .true. if cores are smaller than smallest nucleated CN
+    !   rlprod      Latent heat production (per substep) (K/s)
     !
     real(kind=f), allocatable, dimension(:,:,:)   :: f_pcl        ! (NZ,NBIN,NELEM
     real(kind=f), allocatable, dimension(:,:)     :: f_gcl        ! (NZ,NGAS)
@@ -642,6 +668,7 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:,:)   :: f_coagpe     ! (NZ,NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:,:)   :: f_rnuclg     ! (NBIN,NGROUP,NGROUP)
     real(kind=f), allocatable, dimension(:,:)     :: f_rnucpe     ! (NBIN,NELEM)
+    real(kind=f), allocatable, dimension(:,:)     :: f_rhompe     ! (NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:,:)   :: f_pc_nucl    ! (NZ,NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:)     :: f_growpe     ! (NBIN,NELEM)
     real(kind=f), allocatable, dimension(:,:)     :: f_evappe     ! (NBIN,NELEM)
@@ -662,26 +689,31 @@ module carma_types_mod
     logical                                       :: f_too_small
     logical                                       :: f_too_big
     logical                                       :: f_nuc_small
- 
+    real(kind=f)                                  :: f_rlprod
+
     !  Coagulation kernels and bin pair mapping
     !
     !   ckernel       Coagulation kernels [cm^3/s]          {setupckern}
+    !   ckernel_scale Coagulation kernels scaling for wet radius at fixed init
     !
     real(kind=f), allocatable, dimension(:,:,:,:,:) :: f_ckernel ! (NZ,NBIN,NBIN,NGROUP,NGROUP)
+    real(kind=f), allocatable, dimension(:,:,:,:,:) :: f_ckernel_scale ! (NZ,NBIN,NBIN,NGROUP,NGROUP)
 
     !  Particle fall velocities and diffusivities
     !
     !   bpm       Corrects for non-sphericity and non-continuum effects {setupvfall}
-    !   vf        Fall velocities at layer mid-pt                       {setupvfall}
+    !   vf        Fall velocities at layer endge                       {setupvfall}
     !   re        Reynolds' number based on <vfall>                     {setupvfall}
     !   dkz       Vert Brownian diffusion coef at layer boundary [z_units^2/s] {setupbdif}
     !   vd        Particle dry deposition velocity  [z_units/s]         {setupvdry}
+    !   vf_scale  Fall velocity scaling for wet radius and fixed init
     !
     real(kind=f), allocatable, dimension(:,:,:)     :: f_bpm        ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: f_vf         ! (NZP1,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: f_re         ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: f_dkz        ! (NZP1,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:)       :: f_vd         ! (NBIN,NGROUP)
+    real(kind=f), allocatable, dimension(:,:,:)     :: f_vf_scale   ! (NZP1,NBIN,NGROUP)
     
     ! Atmospheric Structure
     !
@@ -695,6 +727,7 @@ module carma_types_mod
     !  thcondnc  Adjusted thermal conductivity of dry air [erg/cm/sec/deg_K] {initatm}
     !  told      Temperature at beginning of time-step
     !  relhum    Hacked in relative humidity from hostmodel
+    !  wtpct     Sulfate weight percent
     !
     real(kind=f), allocatable, dimension(:)     :: f_rhoa       ! (NZ)
     real(kind=f), allocatable, dimension(:)     :: f_rhoa_wet   ! (NZ)
@@ -706,6 +739,7 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:,:) :: f_thcondnc   ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:)     :: f_told       ! (NZ)
     real(kind=f), allocatable, dimension(:)     :: f_relhum     ! (NZ)
+    real(kind=f), allocatable, dimension(:)     :: f_wtpct      ! (NZ)
 
     ! Condensational growth parameters
     !
@@ -713,7 +747,6 @@ module carma_types_mod
     ! the calculations. They may no longer be necessary, when the code is
     ! implemented as F90 and values as passed as parameters between subroutines.
     !
-    !   gwtmol    Molecular weight for gases [g/mol]                  {setupgrow}
     !   diffus    Diffusivity of gas in air [cm^2/s]                  {setupgrow}
     !   rlhe      Latent heat of evaporation for gas [cm^2/s^2]       {setupgrow}
     !   rlhm      Latent heat of ice melting for gas [cm^2/s^2]       {setupgrow}
@@ -734,8 +767,10 @@ module carma_types_mod
     !   supsatiold Supersaturation (ice) before time-step    {prestep}
     !   scrit     Critical supersaturation for nucleation [dimless]   {setupnuc}
     !   radint    Incoming radiative intensity [erg/cm2/sr/s/um]
-    !   partheat  Diffusional heating from particles [K/s]
+    !   partheat  Diffusional heating from particles (step) [K/s]
     !   dtpart    Delta particle temperature [K]
+    !   phprod    Particle heating production (substep) [K/s]
+    !
     real(kind=f), allocatable, dimension(:,:)    :: f_diffus     ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:)    :: f_rlhe       ! (NZ,NGAS)
     real(kind=f), allocatable, dimension(:,:)    :: f_rlhm       ! (NZ,NGAS)
@@ -757,6 +792,7 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:,:,:)  :: f_scrit      ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:)    :: f_radint     ! (NZ,NWAVE)
     real(kind=f), allocatable, dimension(:)      :: f_partheat   ! (NZ)
-    real(kind=f), allocatable, dimension(:,:,:)  :: f_dtpart      ! (NZ,NBIN,NGROUP)
-  end type carmastate_type   
+    real(kind=f), allocatable, dimension(:,:,:)  :: f_dtpart     ! (NZ,NBIN,NGROUP)
+    real(kind=f)                                 :: f_phprod
+   end type carmastate_type   
 end module

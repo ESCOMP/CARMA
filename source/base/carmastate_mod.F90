@@ -214,8 +214,8 @@ contains
     !
     ! NOTE: How should these be set? Optional parameters?
     if (carma_ptr%f_do_vtran) then
-      cstate%f_ftoppart(:,:) = 0._f
-      cstate%f_fbotpart(:,:) = 0._f
+      cstate%f_ftoppart(:,:)  = 0._f
+      cstate%f_fbotpart(:,:)  = 0._f
       cstate%f_pc_topbnd(:,:) = 0._f
       cstate%f_pc_botbnd(:,:) = 0._f
     end if
@@ -227,6 +227,16 @@ contains
       if (present(radint)) cstate%f_radint(:,:) = radint(:,:) * 1e7_f / 1e4_f
     end if
     
+    ! Scaling factors are used to adjust when using fixed initialization
+    ! with particle swelling. Set the scaling to 1 for no adjustment.
+    if (carma_ptr%f_do_vtran) then
+      cstate%f_vf_scale(:,:,:)          = 1._f
+    end if
+    
+    if (carma_ptr%f_do_coag) then
+      cstate%f_ckernel_scale(:,:,:,:,:) = 1._f
+    end if
+    
     return
   end subroutine CARMASTATE_Create
 
@@ -235,14 +245,18 @@ contains
   !! atmospheric state.
   !! 
   !! This call is similar to CARMASTATE_Create, but differs in that all the
-  !! initialization happens here based on the the fixed state inofrmation provided rather
+  !! initialization happens here based on the the fixed state information provided rather
   !! than occurring in CARMASTATE_Step.
   !!
   !! This call should be done before CARMASTATE_Create when do_fixedinit has been
   !! specified. The temperatures and pressures specified here should be the reference
-  !! state used for all columns, not an actual column from the model. This approach
-  !! should not be used if particle swelling occurs, since the initialization needs to
-  !! be recalculated based upon the wet radius.
+  !! state used for all columns, not an actual column from the model.
+  !!
+  !! A water vapor profile is optional, but is used whenever  either qh2o (preferred)
+  !! or relhum have been provided. If this is not provided, then initialization will
+  !! be done on a dry profile. If particle swelling occurs, initialization will be
+  !! done on the wet radius; however, most of the initialized values will not get
+  !! recalculated as the wet radius changes.
   !!
   !! CARMASTATE_Create should still be called again after this call with the actual
   !! column of state information from the model. The initialization will be done once 
@@ -257,7 +271,7 @@ contains
   !! @see CARMA_Initialize
   !! @see CARMASTATE_Destroy
   subroutine CARMASTATE_CreateFromReference(cstate, carma_ptr, time, dtime, NZ, igridv, igridh,  &
-      lat, lon, xc, dx, yc, dy, zc, zl, p, pl, t, rc)
+      lat, lon, xc, dx, yc, dy, zc, zl, p, pl, t, rc, qh2o, relhum)
     type(carmastate_type), intent(inout)    :: cstate      !! the carma state object
     type(carma_type), pointer, intent(in)   :: carma_ptr   !! (in) the carma object
     real(kind=f), intent(in)                :: time        !! the model time [s]
@@ -277,8 +291,11 @@ contains
     real(kind=f), intent(in)                :: pl(NZ+1)    !! presssure at edge [Pa]
     real(kind=f), intent(in)                :: t(NZ)       !! temperature at center [K]
     integer, intent(out)                    :: rc          !! return code, negative indicates failure
-
+    real(kind=f), intent(in) , optional     :: qh2o(NZ)    !! specific humidity at center [mmr]
+    real(kind=f), intent(in) , optional     :: relhum(NZ)  !! relative humidity at center [fraction]
+    
     integer                                 :: iz
+    integer                                 :: igas
     real(kind=f)                            :: rvap
     real(kind=f)                            :: pvap_liq
     real(kind=f)                            :: pvap_ice
@@ -345,6 +362,46 @@ contains
     call setupatm(carma_ptr, cstate, .false., rc)
     if (rc < 0) return
 
+    ! If the model uses a gas, then set the relative and
+    ! specific humidities.
+    if (carma_ptr%f_igash2o /= 0) then
+      if (present(qh2o)) then
+        cstate%f_gc(:, carma_ptr%f_igash2o) = qh2o(:) * cstate%f_rhoa_wet(:)
+      
+        ! Define gas constant for this gas
+        rvap = RGAS/WTMOL_H2O
+  
+        ! Calculate relative humidity
+        do iz = 1, NZ
+          call vaporp_h2o_murphy2005(carma_ptr, cstate, iz, rc, pvap_liq, pvap_ice)
+          if (rc < 0) return
+  
+          gc_cgs = qh2o(iz) * cstate%f_rhoa_wet(iz) / (cstate%f_zmet(iz)*cstate%f_xmet(iz)*cstate%f_ymet(iz))
+          cstate%f_relhum(iz) = (gc_cgs * rvap * t(iz)) / pvap_liq
+        enddo
+        
+      else if (present(relhum)) then
+        cstate%f_relhum(:) = relhum
+        
+        ! Calculate specific humidity
+        do iz = 1, NZ
+          call vaporp_h2o_murphy2005(carma_ptr, cstate, iz, rc, pvap_liq, pvap_ice)
+          if (rc < 0) return
+  
+          gc_cgs = (rvap * t(iz)) / (pvap_liq * relhum(iz))
+          cstate%f_gc(iz, carma_ptr%f_igash2o) = gc_cgs * (cstate%f_zmet(iz)*cstate%f_xmet(iz)*cstate%f_ymet(iz)) / cstate%f_rhoa_wet(iz) 
+        enddo
+      end if
+    end if
+
+    ! Determine the gas supersaturations.
+    do iz = 1, cstate%f_NZ
+      do igas = 1, cstate%f_carma%f_NGAS
+        call supersat(cstate%f_carma, cstate, iz, igas, rc)
+        if (rc < 0) return
+      end do
+    end do
+
     ! Need for vertical transport.
     !
     ! NOTE: How should these be set? Optional parameters?
@@ -362,6 +419,12 @@ contains
     ! Determine the particle densities.
     call rhopart(cstate%f_carma, cstate, rc)
     if (rc < 0) return
+    
+    ! Save off the wet radius and wet density as reference values to be used
+    ! later to scale process rates based upon changes to the wet radius and
+    ! wet density when particle swelling is used.
+    cstate%f_r_ref(:,:,:)    = cstate%f_r_wet(:,:,:)
+    cstate%f_rhop_ref(:,:,:) = cstate%f_rhop_wet(:,:,:)
 
     ! If configured for fixed initialization, then we will lose some accuracy
     ! in the calculation of the fall velocities, growth kernels, ... and in return
@@ -450,13 +513,18 @@ contains
         cstate%f_rhcrit(NZ), &
         cstate%f_rhop(NZ,NBIN,NGROUP), &
         cstate%f_r_wet(NZ,NBIN,NGROUP), &
+        cstate%f_rlow_wet(NZ,NBIN,NGROUP), &
+        cstate%f_rup_wet(NZ,NBIN,NGROUP), &
         cstate%f_rhop_wet(NZ,NBIN,NGROUP), &
+        cstate%f_r_ref(NZ,NBIN,NGROUP), &
+        cstate%f_rhop_ref(NZ,NBIN,NGROUP), &
         cstate%f_rhoa(NZ), &
         cstate%f_rhoa_wet(NZ), &
         cstate%f_t(NZ), &
         cstate%f_p(NZ), &
         cstate%f_pl(NZP1), &
         cstate%f_relhum(NZ), &
+        cstate%f_wtpct(NZ), &
         cstate%f_rmu(NZ), &
         cstate%f_thcond(NZ), &
         cstate%f_thcondnc(NZ,NBIN,NGROUP), &
@@ -517,6 +585,7 @@ contains
         allocate( &
           cstate%f_bpm(NZ,NBIN,NGROUP), &
           cstate%f_vf(NZP1,NBIN,NGROUP), &
+          cstate%f_vf_scale(NZP1,NBIN,NGROUP), &
           cstate%f_re(NZ,NBIN,NGROUP), &
           cstate%f_dkz(NZP1,NBIN,NGROUP), &
           cstate%f_ftoppart(NBIN,NELEM), &
@@ -578,6 +647,7 @@ contains
           cstate%f_gro2(NZ,NGROUP),  &
           cstate%f_scrit(NZ,NBIN,NGROUP), &
           cstate%f_rnuclg(NBIN,NGROUP,NGROUP),&
+          cstate%f_rhompe(NBIN,NELEM), &
           cstate%f_rnucpe(NBIN,NELEM), &
           cstate%f_pc_nucl(NZ,NBIN,NELEM), &
           cstate%f_growpe(NBIN,NELEM), &
@@ -607,6 +677,7 @@ contains
           cstate%f_coaglg(NZ,NBIN,NGROUP), &
           cstate%f_coagpe(NZ,NBIN,NELEM), &
           cstate%f_ckernel(NZ,NBIN,NBIN,NGROUP,NGROUP), &
+          cstate%f_ckernel_scale(NZ,NBIN,NBIN,NGROUP,NGROUP), &
           stat = ier)
         if (ier /= 0) then
           if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating coag arrays, status=", ier
@@ -668,13 +739,18 @@ contains
         cstate%f_rhcrit, &
         cstate%f_rhop, &
         cstate%f_r_wet, &
+        cstate%f_rlow_wet, &
+        cstate%f_rup_wet, &
         cstate%f_rhop_wet, &
+        cstate%f_r_ref, &
+        cstate%f_rhop_ref, &
         cstate%f_rhoa, &
         cstate%f_rhoa_wet, &
         cstate%f_t, &
         cstate%f_p, &
         cstate%f_pl, &
         cstate%f_relhum, &
+        cstate%f_wtpct, &
         cstate%f_rmu, &
         cstate%f_thcond, &
         cstate%f_thcondnc, &
@@ -711,6 +787,7 @@ contains
         deallocate( &
           cstate%f_bpm, &
           cstate%f_vf, &
+          cstate%f_vf_scale, &
           cstate%f_re, &
           cstate%f_dkz, &
           cstate%f_ftoppart, &
@@ -743,6 +820,7 @@ contains
           cstate%f_scrit, &
           cstate%f_rnuclg,&
           cstate%f_rnucpe, &
+          cstate%f_rhompe, &
           cstate%f_pc_nucl, &
           cstate%f_growpe, &
           cstate%f_evappe, &
@@ -785,6 +863,7 @@ contains
           cstate%f_coaglg, &
           cstate%f_coagpe, &
           cstate%f_ckernel, &
+          cstate%f_ckernel_scale, &
           stat = ier)
         if (ier /= 0) then
           if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating coag arrays, status=", ier
@@ -830,6 +909,8 @@ contains
     integer                               :: ielem
     integer                               :: ibin
     integer                               :: igroup
+    logical                               :: swelling   ! Do any groups undergo partcile swelling?
+    integer                               :: i1, i2, j1, j2
   
     ! Assume success.
     rc = RC_OK
@@ -861,8 +942,58 @@ contains
     ! NOTE: If configured for fixed initialization, then we will lose some accuracy
     ! in the calculation of the fall velocities, growth kernels, ... and in return
     ! will gain a significant performance by not having to initialize as often.
-    if (.not. cstate%f_carma%f_do_fixedinit) then
+    ! However, adjust the coagulation and fall velocity coefficients based on scaling
+    ! arguments.
+    if (cstate%f_carma%f_do_fixedinit) then
+    
+      ! Is there any particle swelling?
+!      swelling = .false.
+      
+!      do igroup = 1, cstate%f_carma%f_NGROUP
+!        if (cstate%f_carma%f_group(igroup)%f_irhswell /= I_NO_SWELLING) then
+!          swelling = .true.
+!          exit
+!        end if
+!      end do
+      
+!      if (swelling) then
+!        if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow) then
+  
+          ! Scale vf
+!          cstate%f_vf_scale(:,:,:) = (cstate%f_rhop_wet(:,:,:) * cstate%f_r_wet(:,:,:)) / &
+!                                     (cstate%f_rhop_ref(:,:,:) * cstate%f_r_ref(:,:,:))
+!        end if
+  
+        
+!        if (cstate%f_carma%f_do_coag) then
+        
+          ! NOTE: This scaling is really based upon the gravitational term. If that is
+          ! not the dominant term for a particular CARMA model that includes particle
+          ! swelling, then it should change the scaling here or it should not use
+          ! fixed initialization.
+!          do j2 = 1, cstate%f_carma%f_NGROUP
+!            do j1 = 1, cstate%f_carma%f_NGROUP
+!              if ((cstate%f_carma%f_group(j2)%f_irhswell /= I_NO_SWELLING) .or. (cstate%f_carma%f_group(j2)%f_irhswell /= I_NO_SWELLING)) then
+!                do i2 = 1, cstate%f_carma%f_NBIN
+!                  do i1 = 1, cstate%f_carma%f_NBIN
+!                    cstate%f_ckernel_scale(:,i1,i2,j1,j2) = &
+!                                                   ((cstate%f_r_wet(:,i1,j1) + cstate%f_r_wet(:,i2,j2)) / &
+!                                                    (cstate%f_r_ref(:,i1,j1) + cstate%f_r_ref(:,i2,j2)))**2 * &
+!                                                   abs((cstate%f_vf(:,i1,j1) * cstate%f_vf_scale(:,i1,j1) - &
+!                                                        cstate%f_vf(:,i2,j2) * cstate%f_vf_scale(:,i2,j2)) / &
+!                                                       (cstate%f_vf(:,i1,j1) - cstate%f_vf(:,i2,j2)))
+!                  end do
+!                end do
+!              end if
+!            end do
+!          end do
+!        end if
+!      end if
+    
 
+    ! Perform a full initialization.
+    else
+    
       ! Initialize the vertical transport.
       if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow) then
         call setupvf(cstate%f_carma, cstate, rc)
@@ -1230,12 +1361,13 @@ contains
   !! @version Feb-2009
   !! @see CARMA_Step 
   !! @see CARMASTATE_Create
-  subroutine CARMASTATE_GetState(cstate, rc, t, p, rhoa_wet)
-    type(carmastate_type), intent(in)     :: cstate              !! the carma state object
-    integer, intent(out)                  :: rc                  !! return code, negative indicates failure
+  subroutine CARMASTATE_GetState(cstate, rc, t, p, rhoa_wet, rlheat)
+    type(carmastate_type), intent(in)     :: cstate                !! the carma state object
+    integer, intent(out)                  :: rc                    !! return code, negative indicates failure
     real(kind=f), optional, intent(out)   :: t(cstate%f_NZ)        !! the air temperature [K]
     real(kind=f), optional, intent(out)   :: p(cstate%f_NZ)        !! the air pressure [Pa]
     real(kind=f), optional, intent(out)   :: rhoa_wet(cstate%f_NZ) !! air density [kg m-3]
+    real(kind=f), optional, intent(out)   :: rlheat(cstate%f_NZ)   !! latent heat [K/s]
     
     ! Assume success.
     rc = RC_OK
@@ -1249,6 +1381,8 @@ contains
     ! Convert rhoa from the scaled units to mks.
     if (present(rhoa_wet))  rhoa_wet(:) = (cstate%f_rhoa_wet(:) / (cstate%f_zmet(:)*cstate%f_xmet(:)*cstate%f_ymet(:))) * 1e6_f / 1e3_f
     
+    if (present(rlheat))    rlheat(:) = cstate%f_rlheat(:)
+
     return
   end subroutine CARMASTATE_GetState
   

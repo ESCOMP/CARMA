@@ -72,7 +72,6 @@ subroutine growevapl(carma, cstate, iz, rc)
   real(kind=f)                   :: a6(NBIN)
   real(kind=f)                   :: dmdt(NBIN)
   real(kind=f)                   :: growlg_max
-  real(kind=f)                   :: scaling
 
   
   do igroup = 1,NGROUP
@@ -83,11 +82,10 @@ subroutine growevapl(carma, cstate, iz, rc)
     ! condensing gas
     igas = igrowgas(iepart)
 
-    if( igas .ne. 0 )then
-
-      ! Only valid for condensing liquid water currently.
-      if( igcomp(igas) .ne. I_GCOMP_H2O )then
-        if (do_print) write(LUNOPRT,*) 'groevapl::ERROR - Invalid gas (', igas, ').'
+    if (igas .ne. 0) then
+      ! Only valid for condensing liquid water and sulfric acid currently.
+      if ((igas /= igash2o) .and. (igas .ne. igash2so4)) then
+        if (do_print) write(LUNOPRT,*) 'growevapl::ERROR - Invalid gas (', igas, ').'
         rc = -1
         return
       endif
@@ -96,7 +94,6 @@ subroutine growevapl(carma, cstate, iz, rc)
       !
       ! Bypass calculation if few particles are present 
       if( pconmax(iz,igroup) .gt. FEW_PC )then
-
         do ibin = 1,NBIN-1
 
           ! Determine the growth rate (dmdt). This calculation may take into account

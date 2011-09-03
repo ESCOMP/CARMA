@@ -61,7 +61,7 @@ subroutine tsolve(carma, cstate, iz, rc)
   !
   ! NOTE: Radiative heating by the particles is handled by the parent model, so
   ! that term does not need to be added here.
-  dt = dtime * rlheat(iz)
+  dt = dtime * rlprod
   
   ! With particle heating, you must also include the impact of heat
   ! conduction from the particle
@@ -69,34 +69,14 @@ subroutine tsolve(carma, cstate, iz, rc)
   ! NOTE: We are ignoring the energy to heat the particle, since we
   ! are not tracking the particle temperature. Thus ...
   if (do_pheatatm) then
-    dt = dt + dtime * partheat(iz)
+    dt = dt + dtime * phprod
   end if
   
   t(iz) = t(iz) + dt
  
-  ! Don't let the temperature change by more than 2 K in any given substep, to prevent
-  ! overshooting that doesn't result in negative gas concentrations, but does result
-  ! in excessive temperature swings. This can happen in the tropics near the surface
-  ! where there is a lot of vapor and an active hydrological cycle.
-  !
-  ! NOTE: If doing incloud calculations, then the threshold needs to be scaled by the
-  ! cloud fraction since the cloud mass has been scaled by the cloud fraction.
-  t_threshold = 2._f
-  if (do_incloud) t_threshold = t_threshold / cldfrc(iz)
-  
-  if (abs(abs(dt)) > t_threshold) then
-    if (do_substep) then
-      if (nretries == maxretries) then 
-        if (do_print) write(LUNOPRT,2) iz, lat, lon, t(iz), rlheat(iz)*dtime, dtime*partheat(iz), told(iz), d_gc(iz, 1), d_t(iz)
-      end if
-    else
-      if (do_print) write(LUNOPRT,3) iz, lat, lon, t(iz), rlheat(iz)*dtime, dtime*partheat(iz), told(iz)
-    end if
-
-    rc = RC_WARNING_RETRY
   
   ! Don't let the temperature go negative.
-  else if (t(iz) < 0._f) then
+  if (t(iz) < 0._f) then
     if (do_substep) then
       if (do_print) write(LUNOPRT,1) iz, lat, lon, t(iz), dt, told(iz), d_gc(iz, 1), d_t(iz)
     else
@@ -104,6 +84,29 @@ subroutine tsolve(carma, cstate, iz, rc)
     end if
     
     rc = RC_WARNING_RETRY
+  end if
+
+  ! Don't let the temperature change by more than the threshold in any given substep,
+  ! to prevent overshooting that doesn't result in negative gas concentrations, but
+  ! does result in excessive temperature swings.
+  !
+  ! NOTE: If doing incloud calculations, then the threshold needs to be scaled by the
+  ! cloud fraction since the cloud mass has been scaled by the cloud fraction.
+  t_threshold = dt_threshold
+  if (do_incloud) t_threshold = t_threshold / cldfrc(iz)
+  
+  if (t_threshold /= 0._f) then
+    if (abs(abs(dt)) > t_threshold) then
+      if (do_substep) then
+        if (nretries == maxretries) then 
+          if (do_print) write(LUNOPRT,2) iz, lat, lon, t(iz), rlprod*dtime, dtime*partheat(iz), told(iz), d_gc(iz, 1), d_t(iz)
+        end if
+      else
+        if (do_print) write(LUNOPRT,3) iz, lat, lon, t(iz), rlprod*dtime, dtime*partheat(iz), told(iz)
+      end if
+  
+      rc = RC_WARNING_RETRY
+    end if
   end if
 
   ! Return to caller with new temperature.

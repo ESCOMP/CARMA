@@ -147,7 +147,8 @@ subroutine test_grow_sub()
 
   ! Define the particle-grid extent of the CARMA test
 !  write(*,*) "  CARMA_Create ..."
-  call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT)
+  call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, &
+      LUNOPRT=LUNOPRT, dt_threshold=2._f)
   if (rc /=0) stop "    *** CARMA_Create FAILED ***"
 	carma_ptr => carma
 
@@ -166,7 +167,8 @@ subroutine test_grow_sub()
   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
   
   ! Define the gases
-  call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, I_GCOMP_H2O, rc)
+  call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, &
+      I_GCOMP_H2O, rc, ds_threshold=0.2_f)
 !  call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_GOFF1946, I_GCOMP_H2O, rc)
   if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
 

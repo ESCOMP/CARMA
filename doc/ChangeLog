@@ -1,3 +1,23 @@
+===============================================================
+Tag name: 
+Originator(s): Charles Bardeen, Tianyi Fan
+Date: September 3, 2011
+
+One-line Summary:
+
+Added sulfate aerosols.
+
+Purpose of changes:
+
+Added support for sulfuric acid and sulfate aerosols. Also fixed
+some problems with the way latent and particle heats were applied
+when substepping was being used. Made the convergence criteria
+more configurable. The sulfate aerosol code is a significantly
+modified version of code from that provided by Tianyi Fan. Her
+code started with work done by Mike Mills and then was modified
+by Jason English, Tianyi Fan and Chuck Bardeen.
+
+===============================================================
 Tag name: 
 Originator(s): Charles Bardeen
 Date: August 19, 2011

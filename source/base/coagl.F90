@@ -63,8 +63,8 @@ subroutine coagl(carma, cstate, rc)
               do j = 1, NBIN
   
               coaglg(iz,i,ig) = coaglg(iz,i,ig) & 
-                        + ckernel(iz,i,j,ig,jg) * pcl(iz,j,je) &
-                        * volx(igrp,ig,jg,i,j) 
+                        + ckernel(iz,i,j,ig,jg) * ckernel_scale(iz,i,j,ig,jg) * &
+                        pcl(iz,j,je) * volx(igrp,ig,jg,i,j) 
               enddo
             enddo
           endif
@@ -85,7 +85,8 @@ subroutine coagl(carma, cstate, rc)
               do j = 1, NBIN
 
                 coaglg(iz,i,ig) = coaglg(iz,i,ig) &
-                      +  ckernel(iz,i,j,ig,jg) * pcl(iz,j,je)
+                      + ckernel(iz,i,j,ig,jg) * ckernel_scale(iz,i,j,ig,jg) * &
+                      pcl(iz,j,je)
 
               enddo
             enddo

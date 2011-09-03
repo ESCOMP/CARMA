@@ -40,7 +40,7 @@ subroutine setupgrow(carma, cstate, rc)
   integer                        :: ielem    !! element index
   integer                        :: k        !! z index
   integer                        :: i
-
+  real(kind=f)                   :: rhoa_cgs, aden
   ! Define formats
   1 format(a,':  ',12i6)
   2 format(a,':  ',i6)
@@ -63,30 +63,43 @@ subroutine setupgrow(carma, cstate, rc)
 
     ! Diffusivity of water vapor in air from Pruppacher & Klett (eq. 13-3);
     ! units are [cm^2/s].
-    diffus(k,1) =  0.211_f * ( 1.01325e+6_f / p(k) ) &
-                   * ( t(k) / 273.15_f )**1.94_f
+    if (igash2o /= 0) then 
+      diffus(k, igash2o) = 0.211_f * (1.01325e+6_f / p(k)) * (t(k) / 273.15_f )**1.94_f
+  
+      ! Latent heat of evaporation for water; units are [cm^2/s^2]
+      if (do_cnst_rlh) then
+        rlhe(k, igash2o) = RLHE_CNST
+      else
+        ! from Stull
+        rlhe(k, igash2o) = (2.5_f - .00239_f * (t(k) - 273.16_f)) * 1.e10_f      
+      end if
+  
+      ! Latent heat of ice melting; units are [cm^2/s^2]
+      if (do_cnst_rlh) then
+        rlhm(k, igash2o) = RLHM_CNST
+      else
+  
+        ! from Pruppacher & Klett (eq. 4-85b)
+        !
+        ! NOTE: This expression yields negative values for rlmh at mesospheric
+        ! temperatures.
+        rlhm(k, igash2o) = (79.7_f + 0.485_f * (t(k) - 273.16_f) - 2.5e-3_f * &
+          ((t(k) - 273.16_f)**2)) * 4.186e7_f
+      end if
+    end if
 
-    ! Latent heat of evaporation for water; units are [cm^2/s^2]
-    if (do_cnst_rlh) then
-      rlhe(k,1) = RLHE_CNST
-    else
-    
-      ! from Stull
-      rlhe(k,1) = ( 2.5_f - .00239_f*( t(k) - 273.16_f ) )*1.e10_f
+    ! Properties for H2SO4
+    if (igash2so4 /= 0) then
+      ! Diffusivity
+      rhoa_cgs = rhoa(k) / (xmet(k) * ymet(k) * zmet(k))
+      aden     = rhoa_cgs * AVG / WTMOL_AIR
+      diffus(k,igash2so4) = 1.76575e+17_f * sqrt(t(k)) / aden
+  
+      ! HACK: make H2SO4 latent heats same as water
+      rlhe(k,igash2so4) = rlhe(k, igash2o)
+      rlhm(k,igash2so4) = rlhe(k, igash2o)
     end if
     
-    ! Latent heat of ice melting; units are [cm^2/s^2]
-    if (do_cnst_rlh) then
-      rlhm(k,1) = RLHM_CNST
-    else
-    
-      ! from Pruppacher & Klett (eq. 4-85b)
-      !
-      ! NOTE: This expression yields negative values for rlmh at mesospheric
-      ! temperatures.
-      rlhm(k,1) = ( 79.7_f + 0.485_f*(t(k)-273.16_f) - 2.5e-3_f * &
-                  ( (t(k) - 273.16_f)**2 ) )*4.186e7_f
-    end if
   enddo
 
 #ifdef DEBUG

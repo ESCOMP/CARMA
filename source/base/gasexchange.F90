@@ -5,7 +5,7 @@
 !! This routine calculates the total production of gases due to nucleation,
 !! growth, and evaporation <gasprod> [g/x_units/y_units/z_units/s].
 !! It also calculates the latent heating rate from a condensing gas
-!! <rlheat> [deg_K/s]
+!! <rlprod> [deg_K/s]
 !!
 !! @author Andy Ackerman
 !! @version Dec-1995
@@ -66,21 +66,22 @@ subroutine gasexchange(carma, cstate, iz, rc)
 
             gprod_nuc(igroup,igas) = gprod_nuc(igroup,igas) - &
               pc(iz,i,ielem) * rnuclg(i,igroup,ig2) * &
-              diffmass(i2,ig2,i,igroup)
+              diffmass(i2,ig2,i,igroup) - rhompe(i,ielem) * rmass(i,igroup)
           enddo    
 
           ! Latent heating rate from condensing gas: <rlh> is latent heat of evaporation 
           ! ( + fusion, for ice deposition ) [erg/g]
-          if( inucproc(ielem,ienuc2) .eq. I_DROPACT )then
-            rlh = rlhe(iz,igas)
-          elseif(( inucproc(ielem,ienuc2) .eq. I_AERFREEZE ) .or. &
-                 ( inucproc(ielem,ienuc2) .eq. I_GLFREEZE ) .or. &
-                 ( inucproc(ielem,ienuc2) .eq. I_HETNUC ) .or. &
-                 ( inucproc(ielem,ienuc2) .eq. I_GLAERFREEZE ))then
-            rlh = rlhe(iz,igas) + rlhm(iz,igas)
-          endif
+!          if(( inucproc(ielem,ienuc2) .eq. I_DROPACT ) .or. &
+!             ( inucproc(ielem,ienuc2) .eq. I_HOMNUC  )) then
+!            rlh = rlhe(iz,igas)
+!          elseif(( inucproc(ielem,ienuc2) .eq. I_AERFREEZE ) .or. &
+!                 ( inucproc(ielem,ienuc2) .eq. I_GLFREEZE ) .or. &
+!                 ( inucproc(ielem,ienuc2) .eq. I_HETNUC ) .or. &
+!                 ( inucproc(ielem,ienuc2) .eq. I_GLAERFREEZE ))then
+!            rlh = rlhe(iz,igas) + rlhm(iz,igas)
+!          endif
 
-          rlheat(iz) = rlheat(iz) - rlh * gprod_nuc(igroup,igas) / ( CP * rhoa(iz) )
+!          rlprod = rlprod - rlh * gprod_nuc(igroup,igas) / ( CP * rhoa(iz) )
         endif
       enddo     ! ienuc2 = 1,NELEM
     endif      ! (igas = inucgas(ielem) .ne. 0
@@ -115,14 +116,14 @@ subroutine gasexchange(carma, cstate, iz, rc)
 
       ! Latent heating rate from condensing gas: <rlh> is latent heat of evaporation 
       ! ( + fusion, for ice deposition ) [erg/g]
-      if( is_grp_ice(igroup) )then
-        rlh = rlhe(iz,igas) + rlhm(iz,igas)
-      else
-        rlh = rlhe(iz,igas)
-      endif
+!      if( is_grp_ice(igroup) )then
+!        rlh = rlhe(iz,igas) + rlhm(iz,igas)
+!      else
+!        rlh = rlhe(iz,igas)
+!      endif
 
-      rlheat(iz) = rlheat(iz) - rlh * gprod_grow(igroup,igas) / &
-               ( CP * rhoa(iz) )
+!      rlprod = rlprod - rlh * gprod_grow(igroup,igas) / &
+!               ( CP * rhoa(iz) )
     endif      ! (igas = igrowgas(ielem)) .ne. 0
   enddo        ! igroup=1,NGROUP
 

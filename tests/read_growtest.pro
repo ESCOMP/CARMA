@@ -25,10 +25,16 @@
 
   data = fltarr(3)
   datag = fltarr(4)
+  
+  t_ = 0.
+  rlheat_ = 0.
 
-  nt = 0
+  nt = 0L
   while(not(eof(lun))) do begin
     readf, lun, t1
+
+    readf, lun, t_, rlheat_
+
     for ielem = 0, nelem-1 do begin
       for ibin = 0, nbin-1 do begin
         readf, lun, data
@@ -38,11 +44,15 @@
     endfor
    
     if (nt eq 0) then begin
-      time = t1
-      mmr  = mmr_
+      time   = t1
+      mmr    = mmr_
+      t      = t_
+      rlheat = rlheat_
     endif else begin
-      time = [time,t1]
-      mmr  = [mmr,mmr_]
+      time   = [time,t1]
+      mmr    = [mmr,mmr_]
+      t      = [t,t_]
+      rlheat = [rlheat,rlheat_]
     endelse
    
     for igas = 0, ngas-1 do begin
@@ -72,9 +82,8 @@
   mmrgas = reform(mmrgas,nt,ngas)
   satliq = reform(satliq,nt,ngas)
   satice = reform(satice,nt,ngas)
-  
-  
-  !p.multi = [0,1,3]
+
+  !p.multi = [0,1,5]
   loadct, 39
 
   ;Calculate the column mass, which should be conserved.
@@ -82,7 +91,7 @@
   mmrtotal   = fltarr(nt)
   
   for ielem = 0, nelem-1 do begin
-    for it = 0, nt-1 do begin
+    for it = 0L, nt-1 do begin
       mmrelem[it,ielem] = total(mmr[ielem,it,*])
       mmrtotal[it] = total(mmrelem[it,*]) + total(mmrgas[it, *])
     endfor
@@ -94,10 +103,10 @@
 satliq[0,*] = !Values.F_NAN
 satice[0,*] = !Values.F_NAN
  
-  for it = 0, nt-1 do begin
+  for it = 0L, nt-1 do begin
     plot, r[*], mmr[0,0,*], yrange=[1e-30, 10*max(mmrtotal)], $
          title = 'time = '+string(time[it])+' seconds', $
-         xtitle='Radius [um]', ytitle = 'MMR [kg/kg]', thick=6, $
+         xtitle='Radius [um]', ytitle = 'MMR [kg/kg]', thick=3, $
          /XLOG, /YLOG, charsize=2.0
  
     ; Add a legend
@@ -107,15 +116,15 @@ satice[0,*] = !Values.F_NAN
     xyouts, 63, 1e-5, 'Water Vapor', color=96
 
     for ielem = 0, nelem-1 do begin
-      oplot, r[*], mmr[ielem,it,*], lin=ielem, thick=6, color=66
+      oplot, r[*], mmr[ielem,it,*], lin=ielem, thick=3, color=66
     endfor
 
    for igas = 0, ngas-1 do begin
-      oplot, [min(r), max(r)], [mmrgas[it, igas], mmrgas[it, igas]], thick=6, color=96, lin=igas
+      oplot, [min(r), max(r)], [mmrgas[it, igas], mmrgas[it, igas]], thick=3, color=96, lin=igas
     endfor
 
     ; Show the mmr evolution.
-    plot, mmrtotal[*], xtitle = 'Time Step', ytitle = 'mmr [kg/kg]', thick=6, $
+    plot, mmrtotal[*], xtitle = 'Time Step', ytitle = 'mmr [kg/kg]', thick=3, $
         title = 'Total mmr evolution', charsize=2.0, $
         yrange=[min([min(mmrtotal), min(mmrgas), min(mmrelem)]), max([max(mmrtotal), 1.5*max(mmrgas), max(mmrelem)])] 
 
@@ -129,24 +138,24 @@ satice[0,*] = !Values.F_NAN
 
 
     for ielem = 0, nelem-1 do begin
-      oplot, mmrelem[*,ielem], thick=6, lin=ielem
+      oplot, mmrelem[*,ielem], thick=3, lin=ielem
     endfor
      for igas = 0, ngas-1 do begin
-      oplot, mmrgas[*,igas], thick=6, lin=igas
+      oplot, mmrgas[*,igas], thick=3, lin=igas
     endfor
 
-    oplot, mmrtotal[0:it], thick=6, color=26
+    oplot, mmrtotal[0:it], thick=3, color=26
 
     for ielem = 0, nelem-1 do begin
-      oplot, mmrelem[0:it,ielem], thick=6, color=66, lin=ielem
+      oplot, mmrelem[0:it,ielem], thick=3, color=66, lin=ielem
     endfor
     
    for igas = 0, ngas-1 do begin
-      oplot, mmrgas[0:it, igas], thick=6, color=96, lin=igas
+      oplot, mmrgas[0:it, igas], thick=3, color=96, lin=igas
     endfor
 
     ; Show the saturation evolution.
-    plot, satice[*], xtitle = 'Time Step', ytitle = 's', thick=6, $
+    plot, satice[*], xtitle = 'Time Step', ytitle = 's', thick=3, $
         title = 'Gas Saturation Ratio', $
         yrange=[0, 5], charsize=2.0 
         
@@ -159,16 +168,30 @@ satice[0,*] = !Values.F_NAN
     oplot, [0, nt], [1., 1.], thick=3
 
     for igas = 0, ngas-1 do begin
-      oplot, satliq[*,igas], thick=6, lin=igas
-      oplot, satice[*,igas], thick=6, lin=igas
+      oplot, satliq[*,igas], thick=3, lin=igas
+      oplot, satice[*,igas], thick=3, lin=igas
     endfor
 
    for igas = 0, ngas-1 do begin
-      oplot, satliq[0:it, igas], thick=6, color=196, lin=igas
-      oplot, satice[0:it, igas], thick=6, color=66, lin=igas
+      oplot, satliq[0:it, igas], thick=3, color=196, lin=igas
+      oplot, satice[0:it, igas], thick=3, color=66, lin=igas
     endfor
 
-    wait, 15. / nt
+    ; Show the temperature evolution.
+    plot, t[*], xtitle = 'Time Step', ytitle = 'dT (K)', thick=3, $
+        title = 'Delta Temperature', $
+        yrange=[0., max(t)], charsize=2.0 
+        
+    oplot, t[0:it], thick=3, lin=0, color=66
+
+    ; Show the latent heat.
+    plot, rlheat[*], xtitle = 'Time Step', ytitle = 'LH (K/s)', thick=3, $
+        title = 'Latent Heat', $
+        yrange=[min(rlheat), max(rlheat)], charsize=2.0 
+        
+    oplot, rlheat[0:it], thick=3, lin=0, color=66
+
+    wait, 2. / nt
   endfor
   
 end

@@ -62,7 +62,13 @@ subroutine vertical(carma, cstate, rc)
               vtrans(NZP1) = -vd(ibin, ig)
             end if
           end if
-
+          
+          ! Scale the velocity to adjust for changes in wet particle size when
+          ! using fixed initialization.
+          if (ifall .ne. 0) then
+            vtrans(:) = vtrans(:) * vf_scale(:,ibin,ig)
+          end if
+          
           !  Calculate particle transport rates due to vertical advection
           !  and vertical diffusion, and solve for concentrations at end of time step.
           call vertadv(carma, cstate, vtrans, pc(:,ibin,ielem), itbnd_pc, ibbnd_pc, &

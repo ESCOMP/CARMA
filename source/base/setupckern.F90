@@ -6,6 +6,9 @@
 !!  [cm^3 s^-1] and pkernel. Indices correspond to aritrary array of columns <ic, iy>
 !!  vertical level <k>, aerosol groups <j1,j2> and bins <i1,i2> of colliding particles.
 !!
+!!  ckernel is calculated as a static array for use each timestep
+!!  ckern0 is also created for a basis to calculate new ckernels each timestep, if desired. (coagwet.f)
+!!
 !!  This routine requires that vertical profiles of temperature <T>,
 !!  air density <rhoa>, and viscosity <rmu> are defined.
 !!
@@ -20,13 +23,13 @@ subroutine setupckern(carma, cstate, rc)
   use carma_types_mod
   use carmastate_mod
   use carma_mod
-
+  
   implicit none
 
   type(carma_type), intent(in)         :: carma   !! the carma object
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
-  integer, intent(inout)               :: rc       !! return code, negative indicates failure
-
+  integer, intent(inout)               :: rc      !! return code, negative indicates failure
+  
   ! Local declarations
   ! 2-D collision efficiency for current group pair under
   ! consideration (for extrapolation of input data)
@@ -41,7 +44,7 @@ subroutine setupckern(carma, cstate, rc)
       
   integer :: ip
   integer :: ig, jg
-  real(kind=f) :: cstick
+  real(kind=f) :: cstick    ! the probability that two particles that collide through thermal coagulation will stick to each other.
   integer :: i1, i2, j1, j2, k
   integer :: i, j
   integer :: igrp
@@ -116,6 +119,19 @@ subroutine setupckern(carma, cstate, rc)
   real(kind=f) :: cgr 
   
 
+!  Add constants for calculating effect of Van Der Waal's forces on coagulation
+!  See Chan and Mozurkewich, J. Atmos. Sci., June 2001  
+  real(kind=f), parameter :: vwa1 = 0.0757_f
+  real(kind=f), parameter :: vwa3 = 0.0015_f
+  real(kind=f), parameter :: vwb0 = 0.0151_f
+  real(kind=f), parameter :: vwb1 = -0.186_f
+  real(kind=f), parameter :: vwb3 = -0.0163_f
+  real(kind=f), parameter :: ham  = 6.4e-13_f   ! erg, Hamaker constant
+  real(kind=f) :: hp, hpln, Enot, Einf
+  logical      :: use_vw(NGROUP, NGROUP)
+  integer      :: ielem
+  
+
 !  Initialization of input data for gravitational collection.
 !  The data were compiled by Hall (J. Atmos. Sci. 37, 2486-2507, 1980).
 
@@ -170,12 +186,8 @@ subroutine setupckern(carma, cstate, rc)
     0.0001, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, &
     1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, &
     1.0000, 1.0000, 1.0000, 1.0000, 1.0000 /
-     
 
-  ! <cstick> is the probability that two particles that collide
-  ! through thermal coagulation will stick to each other.
-  cstick = 1._f
-  
+
   ! Use constant kernel if <icoagop> = I_COAGOP_CONST
   if( icoagop .eq. I_COAGOP_CONST )then
     ckernel(:,:,:,:,:) = ck0
@@ -211,17 +223,23 @@ subroutine setupckern(carma, cstate, rc)
   
       temp1 = BK*t(k)
       temp2 = 6._f*PI*rmu(k)
+      
+      do j1 = 1, NGROUP
+        do j2 = j1, NGROUP
+          use_vw(j1, j2) = is_grp_sulfate(j1) .and. is_grp_sulfate(j2)
+        end do
+      end do
   
       ! Loop over groups!
       do j1 = 1, NGROUP
         do j2 = 1, NGROUP
-  
+    
           if( icoag(j1,j2) .ne. 0 )then
   
             ! First particle
             do i1 = 1, NBIN
     
-              r1 = r(i1,j1)
+              r1 = r_wet(k,i1,j1)
               di = temp1*bpm(k,i1,j1)/(temp2*r1)
               gi  = sqrt( 8._f*temp1/(PI*rmass(i1,j1)) )
               rlbi = 8._f*di/(PI*gi)
@@ -232,7 +250,7 @@ subroutine setupckern(carma, cstate, rc)
   
               !  Second particle
               do i2 = 1, NBIN
-                r2  = r(i2,j2)
+                r2  = r_wet(k,i2,j2)
                 dj  = temp1*bpm(k,i2,j2)/(temp2*r2)
                 gj  = sqrt( 8._f*temp1/(PI*rmass(i2,j2)) )
                 rlbj = 8._f*dj/(PI*gj)
@@ -240,7 +258,21 @@ subroutine setupckern(carma, cstate, rc)
                 dtj2= (4._f*r2*r2 + rlbj*rlbj)**1.5_f
                 dtj = 1._f/(6._f*r2*rlbj)
                 dtj = dtj*(dtj1 - dtj2) - 2._f*r2
-  
+                
+                !  Account for the charging effect of small particles (Van Der Waal's forces).  
+                !  Set cstick to E_infinity/Eo, then multiply cbr kernel by Eo
+                !  See Chan and Mozurkewich, J. Atmos. Sci., June 2001
+                !  Only applicable to groups with sulfate elements    
+                if (use_vw(j1,j2)) then
+                  hp = ham / temp1 * (4._f * r1 * r2 / (r1 + r2)**2)
+                  hpln = log(1._f + hp)
+                  Enot = 1._f + vwa1 * hpln + vwa3 * hpln**3
+                  Einf = 1._f + sqrt(hp / 3._f) / (1._f + vwb0*sqrt(hp)) + vwb1 * hpln + vwb3 * hpln**3
+                  cstick =  Einf / Enot
+                else
+                  cstick = 1._f
+                end if
+
                 !  First calculate thermal coagulation kernel
                 rp  = r1 + r2
                 dp  = di + dj
@@ -478,7 +510,7 @@ subroutine setupckern(carma, cstate, rc)
       enddo     ! first particle group
     enddo     ! vertical level
   endif     ! not constant
-
+  
   ! return to caller with coagulation kernels evaluated.
   return
 end

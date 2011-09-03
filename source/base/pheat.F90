@@ -85,7 +85,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   !
   ! Ignore solute factor for ice particles.
   if( is_grp_ice(igroup) )then
-    expon = akelvini(iz,igas) / rup(ibin,igroup)
+    expon = akelvini(iz,igas) / rup_wet(iz,ibin,igroup)
   else
   
     argsol = 0._f
@@ -140,7 +140,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       endif 
     endif    ! nelemg(igroup) > 1
 
-    expon = akelvin(iz,igas)  / rup(ibin,igroup) - argsol 
+    expon = akelvin(iz,igas)  / rup_wet(iz,ibin,igroup) - argsol 
   endif
   
   expon = max(-POWMAX, expon)
@@ -251,7 +251,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
           plkint = 0._f
         end if
 
-        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow(ibin+1,igroup) ** 2) * arat(ibin+1,igroup) * &
+        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow_wet(iz,ibin+1,igroup) ** 2) * arat(ibin+1,igroup) * &
              (radint(iz,iwvl) - plkint) * dwave(iwvl)
       end do
 
@@ -263,10 +263,10 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       ! energy being absorbed.
       if ((dmdt * dtime) .le. (- rmass(ibin+1, igroup))) then
         dtp = ((rlh * (- rmass(ibin+1, igroup) / dtime)) + qrad) / &
-               (4._f * PI * rlow(ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * ft(iz,ibin+1,igroup))
+               (4._f * PI * rlow_wet(iz,ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * ft(iz,ibin+1,igroup))
       else
         dtp = ((rlh * dmdt) + qrad) / &
-               (4._f * PI * rlow(ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * ft(iz,ibin+1,igroup))
+               (4._f * PI * rlow_wet(iz,ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * ft(iz,ibin+1,igroup))
       end if
 
       tp = t(iz) + dtp
@@ -306,8 +306,9 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
     ! NOTE: If the particle is going to evaporate entirely during the timestep,
     ! then assume that there is no particle heating.
     if ((dmdt * dtime) .gt. (- rmass(ibin+1, igroup))) then
-      partheat(iz) = partheat(iz) + 4._f * PI * rlow(ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * &
+      phprod =  4._f * PI * rlow_wet(iz,ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * &
                      ft(iz,ibin+1,igroup) * dtp * pc(iz,ibin+1,iepart) / (CP * rhoa(iz))
+      partheat(iz) = partheat(iz) + phprod * dtime
     end if      
   end if
 

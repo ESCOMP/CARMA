@@ -172,6 +172,9 @@ subroutine newstate(carma, cstate, rc)
           pcd_last(:,:) = pcd(iz,:,:)
         end if
         
+        ! Reset average heating rates.
+        rlheat(iz)     = 0._f
+        partheat(iz)   = 0._f
         
         do isubstep = 1,ntsubsteps
           
@@ -274,6 +277,11 @@ subroutine newstate(carma, cstate, rc)
   
     ! Restore normal timestep
     dtime = dtime_orig
+    
+    ! Calculate average heating rates.
+    rlheat(:)    = rlheat(:)   / dtime
+    partheat(:)  = partheat(:) / dtime
+    
   else
   
     ! If there is no reason to substep, but substepping was enabled, get the gas and

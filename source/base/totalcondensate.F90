@@ -70,6 +70,9 @@ subroutine totalcondensate(carma, cstate, iz, total_ice, total_liquid, rc)
         
         ! There seem to be times when the coremass becomes larger than the total
         ! mass. This shouldn't happen, but check for it here.
+        !
+        ! NOTE: This can be caused by advection in the parent model or sedimentation
+        ! in this model.
         if (volatilemass > 0._f) then
           if (is_grp_ice(igroup)) then
             total_ice(igas) = total_ice(igas) + volatilemass

@@ -31,6 +31,7 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
   real(kind=f)                         :: rvap
   real(kind=f)                         :: total_ice(NGAS)      ! total ice
   real(kind=f)                         :: total_liquid(NGAS)   ! total liquid
+  real(kind=f)                         :: gc_threshold         ! threshold for changes to gc
   
   
   1 format(/,'gsolve::ERROR - negtive gas concentration for ',a,' : iz=',i4,',lat=', &
@@ -38,22 +39,25 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
               ',supsatl=',e9.3,',t=',f6.2)
   2 format('gsolve::ERROR - conditions at beginning of the step : gc=',e9.3,',supsati=',e16.10, &
               ',supsatl='e16.10,',t=',f6.2,',d_gc=',e9.3,',d_t=',f6.2)
+  3 format(/,'microfast::WARNING - gas concentration change exceeds threshold: ',a,' : iz=',i4,',lat=', &
+              f7.2,',lon=',f7.2, ', (gc-gcl)/gcl=', e9.3)
   
 
   ! Determine the total amount of condensate for each gas.
   call totalcondensate(carma, cstate, iz, total_ice, total_liquid, rc)
   
-  ! Update each gas concentration using gas production rates
-  rlheat(iz) = 0._f
-
   do igas = 1,NGAS
   
     ! We do not seem to be conserving mass and energy, so rather than relying upon gasprod
     ! and rlheat, recalculate the total change in condensate to determine the change
     ! in gas and energy.
+    !
+    ! This is because in the old scheme, the particles were solved for implicitly, but the
+    ! gas and latent heat were solved for explicitly using the same rates.
     gasprod(igas) = ((previous_ice(igas) - total_ice(igas)) + (previous_liquid(igas) - total_liquid(igas))) / dtime
-    rlheat(iz)    = rlheat(iz) - ((previous_ice(igas) - total_ice(igas)) * (rlhe(iz,igas) + rlhm(iz,igas)) + &
-                                     (previous_liquid(igas) - total_liquid(igas)) * (rlhe(iz,igas))) / (CP * rhoa(iz) * dtime)     
+    rlprod        = - ((previous_ice(igas) - total_ice(igas)) * (rlhe(iz,igas) + rlhm(iz,igas)) + &
+                       (previous_liquid(igas) - total_liquid(igas)) * (rlhe(iz,igas))) / (CP * rhoa(iz) * dtime)     
+    rlheat(iz)    = rlheat(iz) + rlprod * dtime   
 
     ! Don't let the gas concentration go negative.
     gc(iz,igas) = gc(iz,igas) + dtime * gasprod(igas)
@@ -71,6 +75,28 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
       end if
 
       rc = RC_WARNING_RETRY
+    end if
+    
+    ! If gas changes by too much, then retry the calculation.
+    gc_threshold = dgc_threshold(igas)
+    if (do_incloud) gc_threshold = gc_threshold / cldfrc(iz)
+    !
+    ! NOTE: If doing incloud calculations, then the threshold needs to be scaled by the
+    ! cloud fraction since the cloud mass has been scaled by the cloud fraction.
+    
+    if (gc_threshold /= 0._f) then
+      if ((dtime * gasprod(igas) / gc(iz,igas)) > gc_threshold) then
+        if (do_substep) then
+          if (nretries == maxretries) then 
+            if (do_print) write(LUNOPRT,3) trim(gasname(igas)), iz, lat, lon, dtime * gasprod(igas) / gc(iz,igas)
+            if (do_print) write(LUNOPRT,2) gcl(iz,igas), supsatiold(iz,igas), supsatlold(iz,igas), told(iz), d_gc(iz,igas), d_t(iz)
+          end if
+        else
+          if (do_print) write(LUNOPRT,3) trim(gasname(igas)), iz, lat, lon, dtime * gasprod(igas) / gc(iz,igas)
+        end if
+  
+        rc = RC_WARNING_RETRY
+      end if
     end if
   end do
 

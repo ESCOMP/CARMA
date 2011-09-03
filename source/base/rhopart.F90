@@ -25,6 +25,8 @@ subroutine rhopart(carma, cstate, rc)
   use carma_types_mod
   use carmastate_mod
   use carma_mod
+  use sulfate_utils
+  use wetr
 
   implicit none
 
@@ -42,6 +44,7 @@ subroutine rhopart(carma, cstate, rc)
   real(kind=f)    :: vcore(NBIN)
   real(kind=f)    :: mcore(NBIN)
   real(kind=f)    :: r_ratio
+  real(kind=f)    :: gc_cgs
 
   1 format(/,'rhopart::WARNING - core mass > total mass, truncating : iz=',i4,',igroup=',&
               i4,',ibin=',i4,',total mass=',e9.3,',core mass=',e9.3,',using rhop=',f9.4)
@@ -114,17 +117,51 @@ subroutine rhopart(carma, cstate, rc)
       ! humidity, then caclulate a wet radius and wet density. Otherwise the wet
       ! and dry radius are the same.
     
+      ! Determine the weight percent of sulfate, and store it for later use.
+      if (irhswell(igroup) == I_WTPCT_H2SO4) then
+        gc_cgs     = gc(iz, igash2so4) / (xmet(iz) * ymet(iz) * zmet(iz))
+        wtpct(iz)  = wtpct_tabaz(carma, t(iz), gc_cgs, pvapl(iz, igash2o), rc)
+        if (rc < 0) return
+      end if
+          
       ! Loop over particle size bins.
       do ibin = 1,NBIN
       
         ! If humidty affects the particle, then determine the equilbirium
         ! radius and density based upon the relative humidity.
-        call wetr(carma, igroup, relhum(iz), r(ibin,igroup), r_wet(iz,ibin,igroup), rc)
-        if (rc < 0) return
-                  
-        ! Determine the wet density from the wet radius.
-        r_ratio  = (r(ibin,igroup) / r_wet(iz,ibin,igroup))**3
-        rhop_wet(iz,ibin,igroup) = r_ratio * rhop(iz,ibin,igroup) + (1._f - r_ratio) * RHO_W
+        if (irhswell(igroup) == I_WTPCT_H2SO4) then
+        
+          ! rlow
+          call getwetr(carma, igroup, relhum(iz), rlow(ibin,igroup), rlow_wet(iz,ibin,igroup), &
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, wgtpct=wtpct(iz), temp=t(iz))
+          if (rc < 0) return
+
+          ! rup
+          call getwetr(carma, igroup, relhum(iz), rup(ibin,igroup), rup_wet(iz,ibin,igroup), &
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, wgtpct=wtpct(iz), temp=t(iz))
+          if (rc < 0) return
+
+          ! r
+          call getwetr(carma, igroup, relhum(iz), r(ibin,igroup), r_wet(iz,ibin,igroup), &
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, wgtpct=wtpct(iz), temp=t(iz))
+          if (rc < 0) return
+
+        else
+          ! rlow
+          call getwetr(carma, igroup, relhum(iz), rlow(ibin,igroup), rlow_wet(iz,ibin,igroup), &
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc)
+          if (rc < 0) return
+
+          ! rup
+          call getwetr(carma, igroup, relhum(iz), rup(ibin,igroup), rup_wet(iz,ibin,igroup), &
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc)
+          if (rc < 0) return
+
+          ! r
+          call getwetr(carma, igroup, relhum(iz), r(ibin,igroup), r_wet(iz,ibin,igroup), &
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc)
+          if (rc < 0) return
+        end if
       end do
     end do
   enddo

@@ -36,7 +36,7 @@ contains
 
   subroutine CARMAGROUP_Create(carma, igroup, name, rmin, rmrat, ishape, eshape, is_ice, &
       rc, irhswell, irhswcomp, refidx, do_mie, do_wetdep, do_drydep, do_vtran, solfac, scavcoef, shortname, &
-      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin, imiertn)
+      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin, imiertn, is_sulfate, dpc_threshold)
     type(carma_type), intent(inout)             :: carma               !! the carma object
     integer, intent(in)                         :: igroup              !! the group index
     character(*), intent(in)                    :: name                !! the group name, maximum of 255 characters
@@ -62,6 +62,8 @@ contains
     logical, optional, intent(in)               :: is_cloud            !! is this a cloud particle?
     real(kind=f), optional, intent(in)          :: rmassmin            !! the minimum mass, when used overrides rmin[g]
     integer, optional, intent(in)               :: imiertn             !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983]
+    logical, optional, intent(in)               :: is_sulfate          !! is this a sulfate particle?
+    real(kind=f), optional, intent(in)          :: dpc_threshold       !! convergence criteria for particle concentration [fraction]
 
     ! Local variables
     integer                               :: ier
@@ -109,6 +111,8 @@ contains
     carma%f_group(igroup)%f_ifallrtn    = I_FALLRTN_STD
     carma%f_group(igroup)%f_imiertn     = I_MIERTN_TOON1981
     carma%f_group(igroup)%f_is_cloud    = .false.
+    carma%f_group(igroup)%f_is_sulfate  = .false.
+    carma%f_group(igroup)%f_dpc_threshold = 0._f
     
 
     ! Any optical properties?
@@ -172,6 +176,8 @@ contains
     if (present(is_cloud))   carma%f_group(igroup)%f_is_cloud     = is_cloud
     if (present(rmassmin))   carma%f_group(igroup)%f_rmassmin     = rmassmin
     if (present(imiertn))    carma%f_group(igroup)%f_imiertn      = imiertn
+    if (present(is_sulfate)) carma%f_group(igroup)%f_is_sulfate   = is_sulfate
+    if (present(dpc_threshold)) carma%f_group(igroup)%f_dpc_threshold = dpc_threshold
 
     
     ! Initialize other properties.
@@ -284,7 +290,7 @@ contains
   subroutine CARMAGROUP_Get(carma, igroup, rc, name, shortname, rmin, rmrat, ishape, eshape, is_ice, &
       irhswell, irhswcomp, cnsttype, r, rlow, rup, dr, rmass, dm, vol, qext, ssa, asym, do_mie, &
       do_wetdep, do_drydep, do_vtran, solfac, scavcoef, ienconc, refidx, ncore, icorelem, maxbin, &
-      ifallrtn, is_cloud, rmassmin, arat, rrat, imiertn)
+      ifallrtn, is_cloud, rmassmin, arat, rrat, imiertn, is_sulfate, dpc_threshold)
       
     type(carma_type), intent(in)              :: carma                        !! the carma object
     integer, intent(in)                       :: igroup                       !! the group index
@@ -326,6 +332,8 @@ contains
     logical, optional, intent(out)            :: is_cloud                     !! is this a cloud particle?
     real(kind=f), optional, intent(out)       :: rmassmin                     !! the minimum mass [g]
     integer, optional, intent(out)            :: imiertn                      !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983]
+    logical, optional, intent(out)            :: is_sulfate                   !! is this a sulfate particle?
+    real(kind=f), optional, intent(out)       :: dpc_threshold                !! convergence criteria for particle concentration [fraction]
 
     ! Assume success.
     rc = RC_OK
@@ -372,6 +380,8 @@ contains
     if (present(is_cloud))     is_cloud     = carma%f_group(igroup)%f_is_cloud
     if (present(rmassmin))     rmassmin     = carma%f_group(igroup)%f_rmassmin
     if (present(imiertn))      imiertn      = carma%f_group(igroup)%f_imiertn
+    if (present(is_sulfate))   is_sulfate   = carma%f_group(igroup)%f_is_sulfate
+    if (present(dpc_threshold)) dpc_threshold = carma%f_group(igroup)%f_dpc_threshold
     
     if (carma%f_NWAVE == 0) then
       if (present(refidx) .or. present(qext) .or. present(ssa) .or. present(asym)) then
@@ -427,6 +437,8 @@ contains
     logical                                   :: do_drydep          ! do dry deposition for this particle?
     logical                                   :: do_vtran           ! do sedimentation for this particle?
     integer                                   :: imiertn            ! mie velocity routine
+    logical                                   :: is_sulfate         ! is this a sulfate particle?
+    real(kind=f)                              :: dpc_threshold      ! convergence criteria for particle concentration [fraction]
 
     ! Assume success.
     rc = RC_OK
@@ -445,6 +457,7 @@ contains
       write(carma%f_LUNOPRT,*) "    rmin          : ", rmin, " (cm)"
       write(carma%f_LUNOPRT,*) "    rmassmin      : ", rmassmin, " (g)"
       write(carma%f_LUNOPRT,*) "    rmrat         : ", rmrat
+      write(carma%f_LUNOPRT,*) "    dpc_threshold : ", dpc_threshold
 
       select case(ishape)
         case (I_SPHERE)
@@ -460,6 +473,7 @@ contains
       write(carma%f_LUNOPRT,*) "    eshape        : ", eshape
       write(carma%f_LUNOPRT,*) "    is_ice        : ", is_ice
       write(carma%f_LUNOPRT,*) "    is_cloud      : ", is_cloud
+      write(carma%f_LUNOPRT,*) "    is_sulfate    : ", is_sulfate
       
       write(carma%f_LUNOPRT,*) "    do_drydep     : ", do_drydep
       write(carma%f_LUNOPRT,*) "    do_mie        : ", do_mie

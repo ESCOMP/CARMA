@@ -121,7 +121,9 @@ contains
   !!
   !!  @version Feb-2009 
   !!  @author  Chuck Bardeen 
-  subroutine CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT, wave, dwave, do_wave_emit)
+  subroutine CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, &
+    LUNOPRT, wave, dwave, do_wave_emit, dt_threshold)
+
     type(carma_type), intent(out)      :: carma     !! the carma object
     integer, intent(in)                :: NBIN      !! number of radius bins per group
     integer, intent(in)                :: NELEM     !! total number of elements
@@ -134,6 +136,7 @@ contains
     real(kind=f), intent(in), optional :: wave(NWAVE)  !! wavelength centers (cm)
     real(kind=f), intent(in), optional :: dwave(NWAVE) !! wavelength width (cm)
     logical, intent(in), optional      :: do_wave_emit(NWAVE) !! do emission in band?
+    real(kind=f), intent(in), optional :: dt_threshold !! convergence criteria for temperature [fraction]
     
     ! Local Varaibles      
     integer                            :: ier
@@ -173,6 +176,9 @@ contains
     ! Initialize
     carma%f_icoag(:, :) = 0
     carma%f_inucgas(:) = 0
+    
+    carma%f_dt_threshold = 0._f
+    if (present(dt_threshold)) carma%f_dt_threshold = dt_threshold
     
     
     ! Allocate tables for the elements.
@@ -331,8 +337,10 @@ contains
   !!
   !!  @version Feb-2009 
   !!  @author  Chuck Bardeen 
-  subroutine CARMA_Initialize(carma, rc, do_cnst_rlh, do_coag, do_detrain, do_fixedinit, do_grow, do_incloud, do_explised, do_print_init, do_substep, &
-      do_thermo, do_vdiff, do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax, do_pheat, do_pheatatm)
+  subroutine CARMA_Initialize(carma, rc, do_cnst_rlh, do_coag, do_detrain, do_fixedinit, &
+      do_grow, do_incloud, do_explised, do_print_init, do_substep, do_thermo, do_vdiff, &
+      do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax, &
+      do_pheat, do_pheatatm)
     type(carma_type), intent(inout)     :: carma         !! the carma object
     integer, intent(out)                :: rc            !! return code, negative indicates failure
     logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats (instead of varying with temperature)?
@@ -812,6 +820,29 @@ contains
         write(carma%f_LUNOPRT,4) 'mass density    ',carma%f_solute(isol)%f_rho    
       enddo
     endif
+    
+    
+    ! Initialize indexes for the gases and check to make sure if H2SO4 is used
+    ! that it occurs after H2O. This is necessary for supersaturation calculations.
+    carma%f_igash2o   = 0
+    carma%f_igash2so4 = 0
+    carma%f_igasso2   = 0
+
+    do igas = 1, carma%f_NGAS
+      if (carma%f_gas(igas)%f_icomposition == I_GCOMP_H2O) then
+        carma%f_igash2o = igas
+      else if (carma%f_gas(igas)%f_icomposition == I_GCOMP_H2SO4) then
+        carma%f_igash2so4 = igas
+      else if (carma%f_gas(igas)%f_icomposition == I_GCOMP_SO2) then
+        carma%f_igasso2 = igas
+      end if
+    end do
+    
+    if ((carma%f_igash2so4 /= 0) .and. (carma%f_igash2o > carma%f_igash2so4)) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::ERROR - H2O gas must come before H2SO4.'
+      rc = RC_ERROR
+      return
+    end if
 
     return
   end subroutine CARMA_InitializeGrowth         
