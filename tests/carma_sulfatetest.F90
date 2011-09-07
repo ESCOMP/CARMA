@@ -132,7 +132,7 @@ subroutine test_sulfate_simple()
 
   ! Define the particle-grid extent of the CARMA test
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, &
-      LUNOPRT=LUNOPRT, dt_threshold=1._f)
+      LUNOPRT=LUNOPRT)
   if (rc /=0) stop "    *** CARMA_Create FAILED ***"
   
   carma_ptr => carma
@@ -177,7 +177,7 @@ subroutine test_sulfate_simple()
 
 
   call CARMA_Initialize(carma, rc, do_grow=.true., do_coag=.true., do_substep=.true., &
-          do_thermo=.true., maxretries= 20, maxsubsteps=128)
+          do_thermo=.true., maxretries= 20, maxsubsteps=128, dt_threshold=1._f)
   if (rc /=0) stop "    *** CARMA_Initialize FAILED ***"
   
   ! For simplicity of setup, do a case with Cartesian coordinates,

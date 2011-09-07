@@ -44,7 +44,7 @@ subroutine setupckern(carma, cstate, rc)
       
   integer :: ip
   integer :: ig, jg
-  real(kind=f) :: cstick    ! the probability that two particles that collide through thermal coagulation will stick to each other.
+  real(kind=f) :: cstick_calc    ! the probability that two particles that collide through thermal coagulation will stick to each other.
   integer :: i1, i2, j1, j2, k
   integer :: i, j
   integer :: igrp
@@ -268,15 +268,15 @@ subroutine setupckern(carma, cstate, rc)
                   hpln = log(1._f + hp)
                   Enot = 1._f + vwa1 * hpln + vwa3 * hpln**3
                   Einf = 1._f + sqrt(hp / 3._f) / (1._f + vwb0*sqrt(hp)) + vwb1 * hpln + vwb3 * hpln**3
-                  cstick =  Einf / Enot
+                  cstick_calc =  Einf / Enot
                 else
-                  cstick = 1._f
+                  cstick_calc = cstick
                 end if
 
                 !  First calculate thermal coagulation kernel
                 rp  = r1 + r2
                 dp  = di + dj
-                gg  = sqrt(gi*gi + gj*gj)*cstick
+                gg  = sqrt(gi*gi + gj*gj)*cstick_calc
                 delt= sqrt(dti*dti + dtj*dtj)
                 term1 = rp/(rp + delt)
                 term2 = 4._f*dp/(gg*rp)

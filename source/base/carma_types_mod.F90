@@ -357,6 +357,10 @@ module carma_types_mod
     !   igash2so4   gas index for H2SO4
     !   igasso2     gas index for SO2
     !   dt_threshold convergence criteria for temperature [fraction]
+    !   cstick      accommodation coefficient - coagulation
+    !   gsticki     accommodation coefficient - growth (ice), default = 0.93
+    !   gstickl     accommodation coefficient - growth (liquid), default = 1.0
+    !   tstick      accommodation coefficient - temperature, default = 1.0
     !
     logical                                       :: f_do_vdiff
     logical                                       :: f_do_drydep
@@ -403,6 +407,10 @@ module carma_types_mod
     integer, allocatable, dimension(:,:,:)        :: f_nnucbin      ! (NGROUP,NBIN,NGROUP)
     integer, allocatable, dimension(:,:,:,:)      :: f_inucbin      ! (NBIN*NGROUP,NGROUP,NBIN,NGROUP)
     real(kind=f)                                  :: f_dt_threshold
+    real(kind=f)                                  :: f_tstick
+    real(kind=f)                                  :: f_gsticki
+    real(kind=f)                                  :: f_gstickl
+    real(kind=f)                                  :: f_cstick
   
 
     ! Particle bin structure

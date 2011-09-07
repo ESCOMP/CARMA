@@ -52,9 +52,6 @@ subroutine setupgkern(carma, cstate, rc)
   integer                        :: k        !! z index
   integer                        :: igroup   !! group index
   integer                        :: i
-  real(kind=f)                   :: gstickl
-  real(kind=f)                   :: gsticki
-  real(kind=f)                   :: tstick
   real(kind=f)                   :: gstick
   real(kind=f)                   :: cor
   real(kind=f)                   :: phish
@@ -81,16 +78,6 @@ subroutine setupgkern(carma, cstate, rc)
   real(kind=f)                   :: rho_H2SO4  ! wet density of H2SO4 particle
   
 
-  ! Specify radius-independent parameters.
-  !
-  ! Sticking coefficient for growth (also called mass accomodation coefficient)
-  gstickl = 1.0_f
-  gsticki = 0.93_f
-  
-  ! Thermal accommodation coefficient
-  tstick = 1.0_f
-  
-  
   ! Calculate gas properties for all of the gases. Better to do them all once, than to
   ! repeat this for multiple groups.
   do igas = 1, NGAS

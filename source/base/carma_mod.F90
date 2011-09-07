@@ -122,7 +122,7 @@ contains
   !!  @version Feb-2009 
   !!  @author  Chuck Bardeen 
   subroutine CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, &
-    LUNOPRT, wave, dwave, do_wave_emit, dt_threshold)
+    LUNOPRT, wave, dwave, do_wave_emit)
 
     type(carma_type), intent(out)      :: carma     !! the carma object
     integer, intent(in)                :: NBIN      !! number of radius bins per group
@@ -136,8 +136,7 @@ contains
     real(kind=f), intent(in), optional :: wave(NWAVE)  !! wavelength centers (cm)
     real(kind=f), intent(in), optional :: dwave(NWAVE) !! wavelength width (cm)
     logical, intent(in), optional      :: do_wave_emit(NWAVE) !! do emission in band?
-    real(kind=f), intent(in), optional :: dt_threshold !! convergence criteria for temperature [fraction]
-    
+
     ! Local Varaibles      
     integer                            :: ier
     
@@ -174,12 +173,8 @@ contains
     endif
     
     ! Initialize
-    carma%f_icoag(:, :) = 0
-    carma%f_inucgas(:) = 0
-    
-    carma%f_dt_threshold = 0._f
-    if (present(dt_threshold)) carma%f_dt_threshold = dt_threshold
-    
+    carma%f_icoag(:, :)  = 0
+    carma%f_inucgas(:)   = 0    
     
     ! Allocate tables for the elements.
     allocate( &
@@ -340,7 +335,7 @@ contains
   subroutine CARMA_Initialize(carma, rc, do_cnst_rlh, do_coag, do_detrain, do_fixedinit, &
       do_grow, do_incloud, do_explised, do_print_init, do_substep, do_thermo, do_vdiff, &
       do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax, &
-      do_pheat, do_pheatatm)
+      do_pheat, do_pheatatm, dt_threshold, cstick, gsticki, gstickl, tstick)
     type(carma_type), intent(inout)     :: carma         !! the carma object
     integer, intent(out)                :: rc            !! return code, negative indicates failure
     logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats (instead of varying with temperature)?
@@ -363,6 +358,11 @@ contains
     real(kind=f), intent(in), optional  :: conmax        !! minimum relative concentration to consider, default = 1e-1
     logical, intent(in), optional       :: do_pheat      !! do particle heating
     logical, intent(in), optional       :: do_pheatatm   !! do particle heating of atmosphere
+    real(kind=f), intent(in), optional  :: dt_threshold  !! convergence criteria for temperature [fraction]
+    real(kind=f), intent(in), optional  :: cstick        !! accommodation coefficient - coagulation, default = 1.0
+    real(kind=f), intent(in), optional  :: gsticki       !! accommodation coefficient - growth (ice), default = 0.93
+    real(kind=f), intent(in), optional  :: gstickl       !! accommodation coefficient - growth (liquid), default = 1.0
+    real(kind=f), intent(in), optional  :: tstick        !! accommodation coefficient - temperature, default = 1.0
     
     ! Assume success.
     rc = RC_OK
@@ -383,7 +383,12 @@ contains
     carma%f_do_vdiff      = .FALSE.
     carma%f_do_vtran      = .FALSE.
     carma%f_do_drydep     = .FALSE.
-    
+    carma%f_dt_threshold  = 0._f
+    carma%f_cstick        = 1._f
+    carma%f_gsticki       = 0.93_f
+    carma%f_gstickl       = 1._f
+    carma%f_tstick        = 1._f
+
     ! Store off any control flag values that have been supplied.
     if (present(do_cnst_rlh))   carma%f_do_cnst_rlh   = do_cnst_rlh
     if (present(do_coag))       carma%f_do_coag       = do_coag
@@ -400,6 +405,12 @@ contains
     if (present(do_vdiff))      carma%f_do_vdiff      = do_vdiff
     if (present(do_vtran))      carma%f_do_vtran      = do_vtran 
     if (present(do_drydep))     carma%f_do_drydep     = do_drydep
+    if (present(dt_threshold))  carma%f_dt_threshold  = dt_threshold
+    if (present(cstick))        carma%f_cstick        = cstick
+    if (present(gsticki))       carma%f_gsticki       = gsticki
+    if (present(gstickl))       carma%f_gstickl       = gstickl
+    if (present(tstick))        carma%f_tstick        = tstick
+    
     
     ! Setup the bin structure.
     call setupbins(carma, rc)

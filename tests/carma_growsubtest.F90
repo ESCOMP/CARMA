@@ -148,7 +148,7 @@ subroutine test_grow_sub()
   ! Define the particle-grid extent of the CARMA test
 !  write(*,*) "  CARMA_Create ..."
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, &
-      LUNOPRT=LUNOPRT, dt_threshold=2._f)
+      LUNOPRT=LUNOPRT)
   if (rc /=0) stop "    *** CARMA_Create FAILED ***"
 	carma_ptr => carma
 
@@ -179,7 +179,7 @@ subroutine test_grow_sub()
 
 
   call CARMA_Initialize(carma, rc, do_grow=.true., do_substep=.true., do_thermo=.true., &
-     minsubsteps=1, maxsubsteps=maxsubsteps, maxretries=maxretries)
+     minsubsteps=1, maxsubsteps=maxsubsteps, maxretries=maxretries, dt_threshold=2._f)
   if (rc /=0) stop "    ***  CARMA_Initialize FAILED ***"
   
   

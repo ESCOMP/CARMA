@@ -172,6 +172,10 @@
 #define igash2o       carma%f_igash2o
 #define igash2so4     carma%f_igash2so4
 #define igasso2       carma%f_igasso2
+#define tstick        carma%f_tstick
+#define gsticki       carma%f_gsticki
+#define gstickl       carma%f_gstickl
+#define cstick        carma%f_cstick
 
 #define max_nsubstep  cstate%f_max_nsubstep
 #define max_nretry    cstate%f_max_nretry
