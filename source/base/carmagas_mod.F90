@@ -40,8 +40,8 @@ contains
     integer, intent(in)                   :: icomposition    !! gas compound specification
     integer, intent(out)                  :: rc              !! return code, negative indicates failure
     character(*), optional, intent(in)    :: shortname       !! the gas shortname, maximum of 6 characters
-    real(kind=f), optional, intent(in)    :: dgc_threshold   !! convergence criteria for gas concentration [fraction]
-    real(kind=f), optional, intent(in)    :: ds_threshold    !! convergence criteria for gas saturation [fraction]
+    real(kind=f), optional, intent(in)    :: dgc_threshold   !! convergence criteria for gas concentration [0 : off; > 0 : percentage change]
+    real(kind=f), optional, intent(in)    :: ds_threshold    !! convergence criteria for gas saturation [0 : off; > 0 : percentage change; < 0 : amount past 0 crossing]
 
     ! Assume success.
     rc = RC_OK

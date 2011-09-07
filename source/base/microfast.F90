@@ -36,12 +36,16 @@ subroutine microfast(carma, cstate, iz, rc)
   real(kind=f)                         :: srat
   real(kind=f)                         :: srat1
   real(kind=f)                         :: srat2
+  real(kind=f)                         :: s_threshold
 
   1 format(/,'microfast::ERROR - excessive change in supersaturation for ',a,' : iz=',i4,',lat=', &
               f7.2,',lon=',f7.2,',srat=',e9.3,',supsatiold=',e9.3,',supsatlold=',e9.3,',supsati=',e9.3, &
               ',supsatl=',e9.3,',t=',f6.2)
   2 format('microfast::ERROR - conditions at beginning of the step : gc=',e9.3,',supsati=',e16.10, &
               ',supsatl='e16.10,',t=',f6.2,',d_gc=',e9.3,',d_t=',f6.2)
+  3 format(/,'microfast::ERROR - excessive change in supersaturation for ',a,' : iz=',i4,',lat=', &
+              f7.2,',lon=',f7.2,',supsatiold=',e9.3,',supsatlold=',e9.3,',supsati=',e9.3, &
+              ',supsatl=',e9.3,',t=',f6.2)
   
    ! Set production and loss rates to zero.
   call zeromicro(carma, cstate, iz, rc)
@@ -166,38 +170,85 @@ subroutine microfast(carma, cstate, iz, rc)
         supsatold = previous_supsati(igas)
         supsatnew = supsati(iz,igas)
       end if
+
+      ! If ds_threshold is positive, then it indicates that the criteria should
+      ! be based on the percentage change in saturation.
+      if (ds_threshold(igas) > 0._f) then
       
-      if (supsatold >= 1.e-4_f) then
-        srat1 = abs(supsatnew / supsatold - 1._f)
-      else
-        srat1 = 0._f
-      end if
+        if (supsatold >= 1.e-4_f) then
+          srat1 = abs(supsatnew / supsatold - 1._f)
+        else
+          srat1 = 0._f
+        end if
+    
+        if (supsatnew >= 1.e-4_f) then
+          srat2 = abs(supsatold / supsatnew - 1._f)
+        else
+          srat2 = 0._f
+        end if
+    
+        srat = max(srat1, srat2)
   
-      if (supsatnew >= 1.e-4) then
-        srat2 = abs(supsatold / supsatnew - 1._f)
-      else
-        srat2 = 0._f
-      end if
-  
-      srat = max(srat1, srat2)
+        ! Don't let one substep change the supersaturation by too much.
+        if (ds_threshold(igas) > 0._f) then
+!          if (srat >= ds_threshold(igas)) then
+          if ((srat >= ds_threshold(igas)) .and. (abs(supsatold - supsatnew) > 0.1_f)) then
+            if (do_substep) then
+              if (nretries == maxretries) then 
+                if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, srat, previous_supsati(igas), previous_supsatl(igas), &
+                supsati(iz, igas), supsatl(iz,igas), t(iz)       
+                if (do_print) write(LUNOPRT,2) gcl(iz,igas), supsatiold(iz, igas), supsatlold(iz,igas), told(iz), d_gc(iz, igas), d_t(iz)
+              end if
+              
+              rc = RC_WARNING_RETRY
+            else
+              if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, gc(iz,igas), gasprod(igas), &
+                supsati(iz, igas), supsatl(iz,igas), t(iz)
+            end if
+          end if
+        end if
+        
+      
+      ! If ds_threshold is negative, then it indicates that the criteria is based
+      ! upon the supersaturation crossing 0, Indicating a shift from growth to
+      ! evaporation and a potential overshoot in the result.
+      else if (ds_threshold(igas) < 0._f) then
 
+        ! Adjust the saturation threshold to allow a worse solution if getting a better
+        ! solution is taking too much time. The particular solution at any individual
+        ! point is probably not going to affect the overall result by too much.
+        s_threshold = abs(ds_threshold(igas))
+        
+        if (nretries >= (0.8_f * maxretries)) then
+          s_threshold = 4._f  * s_threshold
+        else if (nretries >= (0.7_f * maxretries)) then
+          s_threshold = 3.5_f * s_threshold
+        else if (nretries >= (0.6_f * maxretries)) then
+          s_threshold = 3._f  * s_threshold
+        else if (nretries >= (0.5_f * maxretries)) then
+          s_threshold = 2.5_f * s_threshold
+        else if (nretries >= (0.4_f * maxretries)) then
+          s_threshold = 2._f  * s_threshold
+        end if
+        
+        ! If the supersaturation changed signs, then we went from growth to evaporation
+        ! or vice versa. Don't let the new supersaturation go too far past 0 in one substep.
+        ! This is to prevent overshooting as growth/evaporation should normally stop when
+        ! the supersaturation is 0.
+        if (((supsatnew * supsatold) < 0._f) .and. (abs(supsatnew) > s_threshold)) then
 
-      ! Don't let one substep change the supersaturation by too much.
-      if (ds_threshold(igas) /= 0._f) then
-!        if (srat >= ds_threshold(igas)) then
-        if ((srat >= ds_threshold(igas)) .and. (abs(supsatold - supsatnew) > .1_f)) then
           if (do_substep) then
             if (nretries == maxretries) then 
-              if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, srat, previous_supsati(igas), previous_supsatl(igas), &
-              supsati(iz, igas), supsatl(iz,igas), t(iz)       
-              if (do_print) write(LUNOPRT,2) gcl(iz,igas), supsatiold(iz, igas), supsatlold(iz,igas), told(iz), d_gc(iz, igas), d_t(iz)
+              if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, previous_supsati(igas), previous_supsatl(igas), &
+              supsati(iz, igas), supsatl(iz,igas), t(iz)
+              if (do_print) write(LUNOPRT,3) gcl(iz,igas), supsatiold(iz, igas), supsatlold(iz,igas), told(iz), d_gc(iz, igas), d_t(iz)
             end if
-            
-            rc = RC_WARNING_RETRY
           else
             if (do_print) write(LUNOPRT,1) trim(gasname(igas)), iz, lat, lon, gc(iz,igas), gasprod(igas), &
               supsati(iz, igas), supsatl(iz,igas), t(iz)
           end if
+  
+          rc = RC_WARNING_RETRY
         end if
       end if
     end do
