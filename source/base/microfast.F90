@@ -102,6 +102,9 @@ subroutine microfast(carma, cstate, iz, rc)
     call freezglaerl_murray2010(carma, cstate, iz, rc)
     if (rc < RC_OK) return
 
+    call hetnucl(carma, cstate, iz, rc)
+    if (rc < RC_OK) return
+
     call freezdropl(carma, cstate, iz, rc)
     if (rc < RC_OK) return
 
