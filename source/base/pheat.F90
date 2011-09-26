@@ -74,7 +74,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   real(kind=f)                         :: ss
   real(kind=f)                         :: pvap
   real(kind=f)                         :: qrad                    ! particle net radiation (erg/s)
-  real(kind=f)                         :: qrad0                   ! particle net radiation (Tp=Ta) (erg/s)
+!  real(kind=f)                         :: qrad0                   ! particle net radiation (Tp=Ta) (erg/s)
   real(kind=f)                         :: rlh                     ! latent heat (erg/g)
   real(kind=f)                         :: tp                      ! particle temperature (K)
   real(kind=f)                         :: dtp                     ! change in particle temperature (K)
@@ -116,7 +116,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
           ieother(nother) = ieoth_abs
           otherm(nother) = pc(iz,ibin,ieoth_abs)
           othermtot = othermtot + otherm(nother)
-         endif
+        endif
   
       enddo
   
@@ -257,14 +257,9 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       end do
       
       ! Save of the Qrad association with the ambient air temperature.
-      if (iter == 0) then
-        qrad0 = qrad
-      end if
-
-      ! Save of the Qrad association with the ambient air temperature.
-      if (iter == 0) then
-        qrad0 = qrad
-      end if
+!      if (iter == 0) then
+!        qrad0 = qrad
+!      end if
 
       ! Calculate the change in mass using eq. A3 from Toon et al. [1989].
       dmdt = pvap * ( ss + 1._f - akas * (1._f + qrad * g1 * g2 )) * &
@@ -332,6 +327,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
                  ft(iz,ibin+1,igroup) * dtp * pc(iz,ibin+1,iepart) / (CP * rhoa(iz))
       end if
     end if
+  end if
 
   !  Return to caller with particle loss rates for growth and evaporation
   !  evaluated.
