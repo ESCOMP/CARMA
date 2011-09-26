@@ -278,10 +278,6 @@ subroutine newstate(carma, cstate, rc)
     ! Restore normal timestep
     dtime = dtime_orig
     
-    ! Calculate average heating rates.
-    rlheat(:)    = rlheat(:)   / dtime
-    partheat(:)  = partheat(:) / dtime
-    
   else
   
     ! If there is no reason to substep, but substepping was enabled, get the gas and
@@ -303,6 +299,10 @@ subroutine newstate(carma, cstate, rc)
       pcd(:,:,:)   = 0._f
     end if
   end if
+  
+  ! Calculate average heating rates.
+  rlheat(:)    = rlheat(:)   / dtime
+  partheat(:)  = partheat(:) / dtime
   
   
   ! Convert particles, gas and temperature to gridbox average values
@@ -329,6 +329,9 @@ subroutine newstate(carma, cstate, rc)
     end do
         
     t(:) = (1._f - scale_cldfrc(:)) * t_orig(:) + scale_cldfrc(:) * t(:)
+    
+    rlheat(:)   = scale_cldfrc(:) * rlheat(:)
+    partheat(:) = scale_cldfrc(:) * partheat(:)
     
     if (do_substep) then
       t(:) = t(:) + (1._f - scale_cldfrc(:)) * d_t(:)

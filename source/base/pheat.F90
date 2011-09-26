@@ -74,6 +74,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   real(kind=f)                         :: ss
   real(kind=f)                         :: pvap
   real(kind=f)                         :: qrad                    ! particle net radiation (erg/s)
+  real(kind=f)                         :: qrad0                   ! particle net radiation (Tp=Ta) (erg/s)
   real(kind=f)                         :: rlh                     ! latent heat (erg/g)
   real(kind=f)                         :: tp                      ! particle temperature (K)
   real(kind=f)                         :: dtp                     ! change in particle temperature (K)
@@ -255,6 +256,11 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
              (radint(iz,iwvl) - plkint) * dwave(iwvl)
       end do
 
+      ! Save of the Qrad association with the ambient air temperature.
+      if (iter == 0) then
+        qrad0 = qrad
+      end if
+
       ! Calculate the change in mass using eq. A3 from Toon et al. [1989].
       dmdt = pvap * ( ss + 1._f - akas * (1._f + qrad * g1 * g2 )) * &
              g0 / ( 1._f + g0 * g1 * pvap )
@@ -303,13 +309,24 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
     !
     ! where dtp = Tp(r) - T
     ! 
+    ! NOTE: Using these terms will cause the model parent model to go out of
+    ! energy balance, since qrad difference is not being communicated to the
+    ! other layers.
+    if (do_pheatatm) then
+
     ! NOTE: If the particle is going to evaporate entirely during the timestep,
     ! then assume that there is no particle heating.
     if ((dmdt * dtime) .gt. (- rmass(ibin+1, igroup))) then
-      phprod =  4._f * PI * rlow_wet(iz,ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * &
+    
+        ! If the particles are radiatively active, then the parent model's radiation
+        ! code is calculated based upon Ta, not Tp. Adjust for this error in Qrad.
+!        phprod = phprod + (qrad - qrad0) * pc(iz,ibin+1,iepart) / CP / rhoa(iz)
+
+        ! Now add in the heating from thermal conduction.
+        phprod = phprod + 4._f * PI * rlow_wet(iz,ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * &
                      ft(iz,ibin+1,igroup) * dtp * pc(iz,ibin+1,iepart) / (CP * rhoa(iz))
-      partheat(iz) = partheat(iz) + phprod * dtime
     end if      
+  end if
   end if
 
   !  Return to caller with particle loss rates for growth and evaporation

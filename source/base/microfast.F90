@@ -154,7 +154,7 @@ subroutine microfast(carma, cstate, iz, rc)
 
   ! Update temperature if thermal processes requested
   if (do_thermo) then
-    call tsolve(carma, cstate, iz, rlprod, rc)
+    call tsolve(carma, cstate, iz, rc)
     if (rc /= RC_OK) return
   endif
 

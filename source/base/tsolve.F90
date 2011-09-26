@@ -62,6 +62,7 @@ subroutine tsolve(carma, cstate, iz, rc)
   ! NOTE: Radiative heating by the particles is handled by the parent model, so
   ! that term does not need to be added here.
   dt = dtime * rlprod
+  rlheat(iz) = rlheat(iz) + rlprod * dtime   
   
   ! With particle heating, you must also include the impact of heat
   ! conduction from the particle
@@ -70,6 +71,7 @@ subroutine tsolve(carma, cstate, iz, rc)
   ! are not tracking the particle temperature. Thus ...
   if (do_pheatatm) then
     dt = dt + dtime * phprod
+    partheat(iz) = partheat(iz) + phprod * dtime
   end if
   
   t(iz) = t(iz) + dt
