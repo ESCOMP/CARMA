@@ -255,6 +255,11 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
         qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow_wet(iz,ibin+1,igroup) ** 2) * arat(ibin+1,igroup) * &
              (radint(iz,iwvl) - plkint) * dwave(iwvl)
       end do
+      
+      ! Save of the Qrad association with the ambient air temperature.
+      if (iter == 0) then
+        qrad0 = qrad
+      end if
 
       ! Save of the Qrad association with the ambient air temperature.
       if (iter == 0) then
@@ -314,9 +319,9 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
     ! other layers.
     if (do_pheatatm) then
 
-    ! NOTE: If the particle is going to evaporate entirely during the timestep,
-    ! then assume that there is no particle heating.
-    if ((dmdt * dtime) .gt. (- rmass(ibin+1, igroup))) then
+      ! NOTE: If the particle is going to evaporate entirely during the timestep,
+      ! then assume that there is no particle heating.
+      if ((dmdt * dtime) .gt. (- rmass(ibin+1, igroup))) then
     
         ! If the particles are radiatively active, then the parent model's radiation
         ! code is calculated based upon Ta, not Tp. Adjust for this error in Qrad.
@@ -324,10 +329,9 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
 
         ! Now add in the heating from thermal conduction.
         phprod = phprod + 4._f * PI * rlow_wet(iz,ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * &
-                     ft(iz,ibin+1,igroup) * dtp * pc(iz,ibin+1,iepart) / (CP * rhoa(iz))
-    end if      
-  end if
-  end if
+                 ft(iz,ibin+1,igroup) * dtp * pc(iz,ibin+1,iepart) / (CP * rhoa(iz))
+      end if
+    end if
 
   !  Return to caller with particle loss rates for growth and evaporation
   !  evaluated.
