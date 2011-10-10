@@ -31,12 +31,12 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
 
   !  Local declarations     
   integer           :: i, ibin, ie    
-  real(kind=f)      :: dens(45)
-  real(kind=f)      :: pa(45)
-  real(kind=f)      :: pb(45)
-  real(kind=f)      :: c1(45)
-  real(kind=f)      :: c2(45)
-  real(kind=f)      :: fct(45)
+  real(kind=f)      :: dens(46)
+  real(kind=f)      :: pa(46)
+  real(kind=f)      :: pb(46)
+  real(kind=f)      :: c1(46)
+  real(kind=f)      :: c2(46)
+  real(kind=f)      :: fct(46)
   real(kind=f)      :: wtmolr         ! molecular weight ration of H2SO4/H2O
   real(kind=f)      :: h2o_cgs        ! H2O densities in g/cm3
   real(kind=f)      :: h2so4_cgs      ! H2SO4 densities in g/cm3
@@ -96,7 +96,7 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
   !  agreement.  Ayers (GRL, 7, 433-436, 1980) refers to F2|o-F2 as mu - mu_0 
   !  (chemical potential).  This parameterization may be replaced by a lookup
   !  table, as was done ultimately in the Garcia-Solomon sulfate code.
-  do i = 1, 45
+  do i = 1, 46
     dnpot(i) = 4.184_f * (23624.8_f - 1.14208e8_f / ((dnwtp(i) - 105.318_f)**2 + 4798.69_f))
     dnwf(i) = dnwtp(i) / 100._f
   end do
@@ -120,9 +120,7 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
   h2so4ln = log(h2so4_cgs * (RGAS / gwtmol(igash2so4)) * t(iz))
 
   ! loop through wt pcts and calculate vp/composition for each
-  dens(1) = dnc0(1) + dnc1(1) * t(iz)
-
-  do i = 2, 45
+  do i = 1, 46
     dens(i) = dnc0(i) + dnc1(i) * t(iz)
 
     ! Calc. water eq.vp over solution using (Lin & Tabazadeh eqn 5, JGR, 2001)  
@@ -175,12 +173,12 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
   end do  ! end of loop through wtpcts
 
   ! Now loop through until we find the c1+c2 combination with minimum Gibbs free energy
-  dw2     = dnwtp(45) - dnwtp(44)
-  dens1   = (dens(45) - dens(44)) / dw2
-  fct(45) = c1(45) + c2(45) * 100._f * dens1 / dens(45)
+  dw2     = dnwtp(46) - dnwtp(45)
+  dens1   = (dens(46) - dens(45)) / dw2
+  fct(46) = c1(46) + c2(46) * 100._f * dens1 / dens(46)
   dens12 = dens1
     
-  do i = 44, 2, -1
+  do i = 45, 2, -1
     dw1    = dw2
     dens11 = dens12
     dw2    = dnwtp(i) - dnwtp(i-1)
@@ -200,6 +198,9 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
       
   ! Possibility 1: loop finds no saddle, so no nucleation occurs:
   if (fct(i) * fct(i+1) > 0._f) then
+    nucbin  = 0 
+    nucrate = 0.0_f
+    
     return
 
   ! Possibility 2: loop crossed the saddle; interpolate to find exact value:
@@ -235,7 +236,12 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
   ! Critical Y (eqn 13 in Zhao & Turco 1993) [erg/cm3]
   ystar = dstar * RGAS * t(iz) * (wfstar / gwtmol(igash2so4) &
       * raln + (1._f - wfstar) / gwtmol(igash2o) * rhln)
-  if (ystar < 1.e-20_f) return
+  if (ystar < 1.e-20_f) then
+    nucbin  = 0 
+    nucrate = 0.0_f
+
+    return
+  end if
 
   ! Critical cluster radius [cm]        
   rstar = 2._f * sigma / ystar 
@@ -271,7 +277,7 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
   ! Gstar exponential term in Zhao & Turco eqn 16 [unitless]
   ahom = (-gstar / BK / t(iz)) + cfac
   if (ahom .lt. -500._f) then
-    exhom=0.0
+    exhom=0.0_f
   else
     exhom = exp(min(ahom, 28.0_f))
   endif

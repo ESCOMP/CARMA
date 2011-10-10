@@ -228,6 +228,7 @@ subroutine test_sulfate_simple()
   ! 90 hPa, 190 K, 17 km, H2O mmr 3.5e-6 g/g, H2SO4 mmr 100 ppb
   p(1)         = 90._f * 100._f
   zc(1)        = 17000._f
+!  t(1)         = 871._f
   t(1)         = 250._f
 !  t(1)         = 210._f
 !  t(1)         = 190._f

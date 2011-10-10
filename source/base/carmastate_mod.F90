@@ -1583,7 +1583,7 @@ contains
           
           do iz = 1, cstate%f_NZ
             call supersat(cstate%f_carma, cstate, iz, igas, rc)
-            if (rc /= RC_OK) return
+            if (rc < RC_OK) return
           
             if (present(satice_old)) then
               if (satice_old(iz) == -1._f) then

@@ -19,27 +19,30 @@ module sulfate_utils
   
   real(kind=f), public:: dnwtp(46), dnc0(46), dnc1(46)
    
-  data dnwtp/0,1,5,10,20,25,30,35,40,41,45,50,53,55,56,60,65,66,70, &
-     & 72,73,74,75,76,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,  &
-     & 94,95,96,97,98,100/
+  data dnwtp / 0._f, 1._f, 5._f, 10._f, 20._f, 25._f, 30._f, 35._f, 40._f, &
+     41._f, 45._f, 50._f, 53._f, 55._f, 56._f, 60._f, 65._f, 66._f, 70._f, &
+     72._f, 73._f, 74._f, 75._f, 76._f, 78._f, 79._f, 80._f, 81._f, 82._f, &
+     83._f, 84._f, 85._f, 86._f, 87._f, 88._f, 89._f, 90._f, 91._f, 92._f, &
+     93._f, 94._f, 95._f, 96._f, 97._f, 98._f, 100._f /
      
-   data dnc0/1,1.13185,1.17171,1.22164,1.3219,1.37209,1.42185,1.4705,&
-     & 1.51767,1.52731,1.56584,1.61834,1.65191,1.6752,1.68708,1.7356,   &
-     & 1.7997,1.81271,1.86696,1.89491,1.9092,1.92395,1.93904,1.95438,   &
-     & 1.98574,2.00151,2.01703,2.03234,2.04716,2.06082,2.07363,2.08461, &
-     & 2.09386,2.10143,2.10764,2.11283,2.11671,2.11938,2.12125,2.1219,  &
-     & 2.12723,2.12654,2.12621,2.12561,2.12494,2.12093/
+   data dnc0 / 1._f, 1.13185_f, 1.17171_f, 1.22164_f, 1.3219_f, 1.37209_f,       &
+     1.42185_f, 1.4705_f, 1.51767_f, 1.52731_f, 1.56584_f, 1.61834_f, 1.65191_f, &
+     1.6752_f, 1.68708_f, 1.7356_f, 1.7997_f, 1.81271_f, 1.86696_f, 1.89491_f,   &
+     1.9092_f, 1.92395_f, 1.93904_f, 1.95438_f, 1.98574_f, 2.00151_f, 2.01703_f, &
+     2.03234_f, 2.04716_f, 2.06082_f, 2.07363_f, 2.08461_f, 2.09386_f, 2.10143_f,&
+     2.10764_f, 2.11283_f, 2.11671_f, 2.11938_f, 2.12125_f, 2.1219_f, 2.12723_f, &
+     2.12654_f, 2.12621_f, 2.12561_f, 2.12494_f, 2.12093_f /
      
-   data dnc1/0,-0.000435022,-0.000479481,-0.000531558,-0.000622448,  &
-     & -0.000660866,-0.000693492,-0.000718251,-0.000732869,-0.000735755,&
-     & -0.000744294,-0.000761493,-0.000774238,-0.00078392,-0.000788939, &
-     & -0.00080946,-0.000839848,-0.000845825,-0.000874337,-0.000890074, &
-     & -0.00089873,-0.000908778,-0.000920012,-0.000932184,-0.000959514, &
-     & -0.000974043,-0.000988264,-0.00100258,-0.00101634,-0.00102762,   &
-     & -0.00103757,-0.00104337,-0.00104563,-0.00104458,-0.00104144,     &
-     & -0.00103719,-0.00103089,-0.00102262,-0.00101355,-0.00100249,     &
-     & -0.00100934,-0.000998299,-0.000990961,-0.000985845,-0.000984529, &
-     & -0.000989315/  
+   data dnc1 / 0._f,  -0.000435022_f, -0.000479481_f, -0.000531558_f, -0.000622448_f,&
+     -0.000660866_f, -0.000693492_f, -0.000718251_f, -0.000732869_f, -0.000735755_f, &
+     -0.000744294_f, -0.000761493_f, -0.000774238_f, -0.00078392_f, -0.000788939_f,  &
+     -0.00080946_f, -0.000839848_f, -0.000845825_f, -0.000874337_f, -0.000890074_f,  &
+     -0.00089873_f, -0.000908778_f, -0.000920012_f, -0.000932184_f, -0.000959514_f,  &
+     -0.000974043_f, -0.000988264_f, -0.00100258_f, -0.00101634_f, -0.00102762_f,    &
+     -0.00103757_f, -0.00104337_f, -0.00104563_f, -0.00104458_f, -0.00104144_f,      &
+     -0.00103719_f, -0.00103089_f, -0.00102262_f, -0.00101355_f, -0.00100249_f,      &
+     -0.00100934_f, -0.000998299_f, -0.000990961_f, -0.000985845_f, -0.000984529_f,  &
+     -0.000989315_f /  
 contains
 
   !!  This function calculates the weight % H2SO4 composition of 
@@ -82,45 +85,45 @@ contains
     p_h2o=h2o_num*bk*temp
 
     !  Convert from dynes/cm2 to mb (hPa)
-    p_h2o=p_h2o/1000.0     ! partial pressure
-    vp_h2o=h2o_vp/1000.0   ! eq. vp
+    p_h2o=p_h2o/1000.0_f     ! partial pressure
+    vp_h2o=h2o_vp/1000.0_f   ! eq. vp
 
     !  Prevent a NaN calculation  
     !  In the upper thermosphere p_h2o can be very low and vp_h2o can be very high
-    if (p_h2o.lt.1.e-10 .and. vp_h2o.gt.0.) p_h2o=1.e-10   
+    if (p_h2o.lt.1.e-10_f .and. vp_h2o.gt.0._f) p_h2o=1.e-10_f   
    
     !  Activity = water pp in mb / water eq. vp over pure water in mb
     activ = p_h2o/vp_h2o
  
     if (activ.lt.0.05) then
-      activ = max(activ,1.e-6)    ! restrict minimum activity
-      atab1 	= 12.37208932	
-      btab1 	= -0.16125516114
-      ctab1 	= -30.490657554
-      dtab1 	= -2.1133114241	
-      atab2 	= 13.455394705	
-      btab2 	= -0.1921312255	
-      ctab2 	= -34.285174607	
-      dtab2 	= -1.7620073078
-    elseif (activ.ge.0.05.and.activ.le.0.85) then
-      atab1 	= 11.820654354	
-      btab1 	= -0.20786404244
-      ctab1 	= -4.807306373
-      dtab1 	= -5.1727540348	
-      atab2 	= 12.891938068	
-      btab2 	= -0.23233847708
-      ctab2 	= -6.4261237757	
-      dtab2 	= -4.9005471319	
+      activ = max(activ,1.e-6_f)    ! restrict minimum activity
+      atab1 	= 12.37208932_f	
+      btab1 	= -0.16125516114_f
+      ctab1 	= -30.490657554_f
+      dtab1 	= -2.1133114241_f
+      atab2 	= 13.455394705_f	
+      btab2 	= -0.1921312255_f
+      ctab2 	= -34.285174607_f
+      dtab2 	= -1.7620073078_f
+    elseif (activ.ge.0.05_f.and.activ.le.0.85_f) then
+      atab1 	= 11.820654354_f
+      btab1 	= -0.20786404244_f
+      ctab1 	= -4.807306373_f
+      dtab1 	= -5.1727540348_f
+      atab2 	= 12.891938068_f	
+      btab2 	= -0.23233847708_f
+      ctab2 	= -6.4261237757_f
+      dtab2 	= -4.9005471319_f
     elseif (activ.gt.0.85) then
-      activ = min(activ,1.)      ! restrict maximum activity
-      atab1 	= -180.06541028	
-      btab1 	= -0.38601102592
-      ctab1 	= -93.317846778
-      dtab1 	= 273.88132245
-      atab2 	= -176.95814097	
-      btab2 	= -0.36257048154
-      ctab2 	= -90.469744201
-      dtab2 	= 267.45509988
+      activ = min(activ,1._f)      ! restrict maximum activity
+      atab1 	= -180.06541028_f
+      btab1 	= -0.38601102592_f
+      ctab1 	= -93.317846778_f
+      dtab1 	= 273.88132245_f
+      atab2 	= -176.95814097_f
+      btab2 	= -0.36257048154_f
+      ctab2 	= -90.469744201_f
+      dtab2 	= 267.45509988_f
     else
       if (do_print) write(LUNOPRT,*) 'invalid activity: activity,pp,vp=',activ, p_h2o
       rc = RC_ERROR
@@ -132,11 +135,11 @@ contains
       
 !    temp=min(max(temp,185.),260.)  ! T range 185-260
     
-    contt = contl + (conth-contl) * ((temp -190.)/70.)
-    conwtp = (contt*98.) + 1000.
+    contt = contl + (conth-contl) * ((temp -190._f)/70._f)
+    conwtp = (contt*98._f) + 1000._f
 
-    wtpct_tabaz = (100.*contt*98.)/conwtp
-    wtpct_tabaz = min(max(wtpct_tabaz,1.),100.) ! restrict between 1 and 100 %
+    wtpct_tabaz = (100._f*contt*98._f)/conwtp
+    wtpct_tabaz = min(max(wtpct_tabaz,1._f),100._f) ! restrict between 1 and 100 %
       
     !  Note: restricting activity to 1.e-6 minimum allows for a maximum of
     !  98.5 wtpct at T=650K, 95.8 wtpct at T=300K, and 90.9 wtpct at 180K.
@@ -152,35 +155,35 @@ contains
     integer, intent(inout)               :: rc      !! return code, negative indicates failure
     
     ! Local declerations
-    integer           :: I
-    real(kind=f)      :: DEN1, DEN2
-    real(kind=f)      :: FRAC
+    integer           :: i
+    real(kind=f)      :: den1, den2
+    real(kind=f)      :: frac
 
-    if (wtp .LT. 0.0 .OR. wtp .GT. 100.0) then
+    if (wtp .lt. 0.0_f .or. wtp .gt. 100.0_f) then
       if (do_print) write(LUNOPRT,*)'sulfate_density: Illegal value for wtp:',wtp
       rc = RC_ERROR
       return
     endif
 
-    I=1
+    i=1
 
-    DO WHILE (WTP .GT. DNWTP(I))
-     I=I+1
-    END DO
+    do while (wtp .gt. dnwtp(i))
+     i=i+1
+    end do
 
-    DEN2=DNC0(I)+DNC1(I)*TEMP
+    den2=dnc0(i)+dnc1(i)*temp
 
-    IF (I.EQ.1 .OR. WTP.EQ.DNWTP(I)) THEN
-      sulfate_density=DEN2
-      RETURN
-    ENDIF
+    if (i.eq.1 .or. wtp.eq.dnwtp(i)) then
+      sulfate_density=den2
+      return
+    endif
 
-    DEN1=DNC0(I-1)+DNC1(I-1)*TEMP
-    FRAC=(DNWTP(I)-WTP)/(DNWTP(I)-DNWTP(I-1))
-    sulfate_density=DEN1*FRAC+DEN2*(1.0-FRAC)
+    den1=dnc0(i-1)+dnc1(i-1)*temp
+    frac=(dnwtp(i)-wtp)/(dnwtp(i)-dnwtp(i-1))
+    sulfate_density=den1*frac+den2*(1.0_f-frac)
 
-    RETURN
-  END FUNCTION sulfate_density
+    return
+  end function sulfate_density
 
   !!  Calculates surface tension (erg/cm2) of sulfate of 
   !!  different compositions as a linear function of temperature.
@@ -211,17 +214,17 @@ contains
     real(kind=f)      :: frac
     real(kind=f)      :: stwtp(15), stc0(15), stc1(15)
     
-    data stwtp/0, 23.8141, 38.0279, 40.6856, 45.335, 52.9305, 56.2735, &
-       & 59.8557, 66.2364, 73.103, 79.432, 85.9195, 91.7444, 97.6687, 100/
+    data stwtp/0._f, 23.8141_f, 38.0279_f, 40.6856_f, 45.335_f, 52.9305_f, 56.2735_f, &
+       & 59.8557_f, 66.2364_f, 73.103_f, 79.432_f, 85.9195_f, 91.7444_f, 97.6687_f, 100._f/
     
-    data stc0/117.564, 103.303, 101.796, 100.42, 98.4993, 91.8866,     &
-       & 88.3033, 86.5546, 84.471, 81.2939, 79.3556, 75.608, 70.0777,  &
-       & 63.7412, 61.4591 /
+    data stc0/117.564_f, 103.303_f, 101.796_f, 100.42_f, 98.4993_f, 91.8866_f,     &
+       & 88.3033_f, 86.5546_f, 84.471_f, 81.2939_f, 79.3556_f, 75.608_f, 70.0777_f,  &
+       & 63.7412_f, 61.4591_f /
   
-    data stc1/-0.153641, -0.0982007, -0.0872379, -0.0818509,           &
-       & -0.0746702, -0.0522399, -0.0407773, -0.0357946, -0.0317062,   &
-       & -0.025825, -0.0267212, -0.0269204, -0.0276187, -0.0302094,    &
-       & -0.0303081 /
+    data stc1/-0.153641_f, -0.0982007_f, -0.0872379_f, -0.0818509_f,           &
+       & -0.0746702_f, -0.0522399_f, -0.0407773_f, -0.0357946_f, -0.0317062_f,   &
+       & -0.025825_f, -0.0267212_f, -0.0269204_f, -0.0276187_f, -0.0302094_f,    &
+       & -0.0303081_f /
        
     if (wtp .lt. 0.0_f .OR. wtp .gt. 100.0_f) then
       if (do_print) write(LUNOPRT,*)'sulfate_surf_tens: Illegal value for wtp:',wtp
