@@ -21,7 +21,8 @@ FFLAGS =
 
 # Add options for the Intel Fortran compiler.
 ifeq ($(FORTRAN),ifort)
-  FFLAGS += -ftz -fp-model precise
+#  FFLAGS += -ftz -fp-model precise
+  FFLAGS += -fp-model precise
   
   # Work around for an incompatibility with some versions of ifort and OSX.
 #  FFLAGS += -use-asm
@@ -41,12 +42,13 @@ ifeq ($(FORTRAN),pgf90)
 #  FFLAGS += -g -O0 -Mbounds
 
   # Open/MP
-  FFLAGS  += -mp
+#  FFLAGS  += -mp
 endif
 
 # Add options for the g95 compiler.
 ifeq ($(FORTRAN),g95)
-  FFLAGS  += -fzero -ffree-line-length-huge
+#  FFLAGS  += -fzero -ffree-line-length-huge
+  FFLAGS  += -ffree-line-length-huge
 
   # Debug options.
 #  FFLAGS += -g -fbounds-check -ftrace=full
@@ -57,7 +59,9 @@ ifeq ($(FORTRAN),g95)
   # test (carma_test) to fail to link.
 endif
 
-# Add options for the g95 compiler.
+# Add options for the IBM XL Fortran compiler.
+#
+# NOTE: It doesn't support float to zero.
 ifeq ($(FORTRAN),xlf90)
   FFLAGS  += -q64 -qarch=auto -qspillsize=2500 -g -qfullpath 
  
