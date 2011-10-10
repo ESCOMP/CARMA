@@ -350,7 +350,7 @@ subroutine test_sulfate_simple()
       
    
     ! Write output for the sulfatetest
-    write(lun,*) istep*dtime
+     write(lun,'(f12.0)') istep*dtime
 
     write(lun,'(2i6,g16.5)') nsubsteps - lastsub, int(nretries - lastret), t(1) - t_orig
     lastsub = nsubsteps

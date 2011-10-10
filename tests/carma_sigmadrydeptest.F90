@@ -303,7 +303,7 @@ subroutine test_sigmadrydep()
     if (rc /=0) stop "    *** CARMASTATE_GetState FAILED ***"
  
     ! Write output for the test
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     
     do ielem = 1, NELEM
       do i = 1, NZ

@@ -389,7 +389,7 @@ subroutine test_nuc_ttl()
     enddo
 
     ! Write output for the falltest
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     do ielem = 1, NELEM
       do ibin = 1, NBIN
         write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin))

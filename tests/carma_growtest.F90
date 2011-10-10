@@ -296,7 +296,7 @@ subroutine test_grow_simple()
     if (rc /=0) stop "    *** CARMASTATE_Get FAILED ***"
 
     ! Write output for the falltest
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     
     write(lun,'(2g16.5)') t(1) - t_orig, rlheat(1)
 

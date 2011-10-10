@@ -290,7 +290,7 @@ subroutine test_coagulation()
     enddo
 
     ! Write output for the coagtest (output in CGS)
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     rhoa(:,:,:) = p(:,:,:)/287._f/t(:,:,:)
     
     do j = 1, NELEM

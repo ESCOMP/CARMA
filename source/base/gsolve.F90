@@ -38,7 +38,7 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
               f7.2,',lon=',f7.2,',gc=',e9.3,',gasprod=',e9.3,',supsati=',e9.3, &
               ',supsatl=',e9.3,',t=',f6.2)
   2 format('gsolve::ERROR - conditions at beginning of the step : gc=',e9.3,',supsati=',e16.10, &
-              ',supsatl='e16.10,',t=',f6.2,',d_gc=',e9.3,',d_t=',f6.2)
+              ',supsatl=',e16.10,',t=',f6.2,',d_gc=',e9.3,',d_t=',f6.2)
   3 format(/,'microfast::WARNING - gas concentration change exceeds threshold: ',a,' : iz=',i4,',lat=', &
               f7.2,',lon=',f7.2, ', (gc-gcl)/gcl=', e9.3)
   

@@ -7,6 +7,7 @@ FORTRAN =	ifort
 #FORTRAN =	pathf90
 #FORTRAN =	gfortran
 #FORTRAN =	g95
+#FORTRAN =	xlf90
 
 F90DOC = ../../bin/f90doc-0.4.0/f90doc
 
@@ -54,6 +55,18 @@ ifeq ($(FORTRAN),g95)
   #
   # NOTE: g95 does not support Open/MP directives. This will cause one
   # test (carma_test) to fail to link.
+endif
+
+# Add options for the g95 compiler.
+ifeq ($(FORTRAN),xlf90)
+  FFLAGS  += -q64 -qarch=auto -qspillsize=2500 -g -qfullpath 
+ 
+  # Debug options.
+  FFLAGS += -qinitauto=7FF7FFFF -qflttrap=ov:zero:inv:en -C
+  
+  # Open/MP
+#  FFLAGS += -qsmp=omp
+#  FFLAGS += -qsmp=omp:noopt
 endif
 
 

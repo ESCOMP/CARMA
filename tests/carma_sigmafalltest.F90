@@ -481,7 +481,7 @@ subroutine test_sedimentation_sigma()
     enddo
 
     ! Write output for the falltest
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     do i = 1, NZ
       write(lun,'(i3,e10.3,e10.3)') &
         i, real(mmr(i,NY,NX,1,1)), real(mmr(i,NY,NX,1,1)*rhoa(i))

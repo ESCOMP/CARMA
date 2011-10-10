@@ -43,6 +43,7 @@ mkdir -p $rundir
 # Copy the executable to the run directory.
 cp $blddir/*TEST.exe $rundir
 
+
 # Prepare for multiple threads, assuming Intel Compiler.
 setenv OMP_NUM_THREADS $CARMA_THREADS
 setenv KMP_STACKSIZE 128M
@@ -60,6 +61,10 @@ foreach runtgt (`ls -1 *TEST.exe`)
   set idlfile="read_`echo $runtgt:r | tr '[A-Z]' '[a-z]'`.pro"
   set outfile="carma_`echo $runtgt:r | tr '[A-Z]' '[a-z]'`.txt"
   
+  if (! -f $idlfile) then
+    cp -p ../../$testdir/$idlfile .
+  endif
+
   if (-f $idlfile) then
   
     if (-f $outfile) then

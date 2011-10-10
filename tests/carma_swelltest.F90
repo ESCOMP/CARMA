@@ -309,7 +309,7 @@ subroutine test_swelling()
     enddo
 
     ! Write output for the falltest
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     do ielem = 1, NELEM
       do i = 1, NZ
         write(lun,'(2i4,e10.3,e10.3)') &

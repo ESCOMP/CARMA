@@ -16,6 +16,16 @@
 #   CARMA_BUILD [carma]
 #     The subdirectory in which the build will be performed.
 
+# Look for gmake first, but if not found then just use make.
+setenv MAKETOOL "`which gmake`"
+echo $MAKETOOL
+if ("`echo $MAKETOOL | grep 'not found'`" != "") then
+  setenv MAKETOOL "`which make`"
+endif
+
+echo "Using :  " $MAKETOOL
+echo ""
+
 # By default, build all of the targets in a directory named build.
 set bldtgt=all
 
@@ -46,7 +56,7 @@ endif
 
 # Execute the make file in the build directory.
 cd $blddir
-make $bldtgt
+$MAKETOOL $bldtgt
 
 # Create the documentation.
 if ($bldtgt != tar) then
@@ -60,6 +70,6 @@ if ($bldtgt != tar) then
   cp Makefile $docdir/Makefile
 
   cd $docdir
-  make doc
+  $MAKETOOL doc
 endif
 

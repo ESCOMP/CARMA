@@ -64,7 +64,14 @@ foreach runtgt (`ls -1 *TEST.exe`)
   
   set outfile="carma_`echo $runtgt:r | tr '[A-Z]' '[a-z]'`.txt"
   
-  if (-f $outfile) diff -sq $outfile ../../$benchdir/$outfile || exit(-1)
+  setenv FDIFF -sq
+
+  # The diff on AIX doesn't have the -q option ..."
+  if (`uname` == AIX ) then
+    setenv FDIFF -s
+  endif
+  
+  if (-f $outfile) diff $FDIFF $outfile ../../$benchdir/$outfile || exit(-1)
 end
 
 echo ""

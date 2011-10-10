@@ -262,7 +262,7 @@ subroutine test_drydep()
     if (rc /=0) stop "    *** CARMASTATE_GetState FAILED ***"
 
     ! Write output for the falltest
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     do ielem = 1, NELEM
       do i = 1, NZ
         write(lun,'(2i4,e10.3,e10.3)') ielem, i, real(mmr(i,ielem,OUTBIN)), real(mmr(i,ielem,OUTBIN)*p(i) / 287._f / t(i))

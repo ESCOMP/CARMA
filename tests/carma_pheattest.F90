@@ -331,7 +331,7 @@ subroutine test_grow_pheat()
 
 
     ! Write output for the falltest
-    write(lun,*) istep*dtime
+    write(lun,'(f12.0)') istep*dtime
     do ielem = 1, NELEM
       do ibin = 1, NBIN
         write(lun,'(2i4,2e12.3)') ielem, ibin, real(mmr(1,ielem,ibin)), real(dtpart(1,ielem,ibin))
