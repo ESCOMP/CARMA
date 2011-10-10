@@ -45,7 +45,7 @@ subroutine setupatm(carma, cstate, rescale, rc)
   rhoa(:) = p(:) / (R_AIR * t(:))
 
   ! Calculate the dimensions and the dimensional metrics.
-  dz(:) = abs(zl(2:NZ) - zl(1:NZP1))
+  dz(:) = abs(zl(2:NZP1) - zl(1:NZ))
   
   ! Horizontal Metrics
   select case(igridh)
