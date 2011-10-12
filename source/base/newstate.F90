@@ -301,9 +301,10 @@ subroutine newstate(carma, cstate, rc)
   end if
   
   ! Calculate average heating rates.
-  rlheat(:)    = rlheat(:)   / dtime
-  partheat(:)  = partheat(:) / dtime
-  
+  if (do_grow) then
+    rlheat(:)    = rlheat(:)   / dtime
+    partheat(:)  = partheat(:) / dtime
+  end if
   
   ! Convert particles, gas and temperature to gridbox average values
   !
@@ -330,9 +331,11 @@ subroutine newstate(carma, cstate, rc)
         
     t(:) = (1._f - scale_cldfrc(:)) * t_orig(:) + scale_cldfrc(:) * t(:)
     
-    rlheat(:)   = scale_cldfrc(:) * rlheat(:)
-    partheat(:) = scale_cldfrc(:) * partheat(:)
-    
+    if (do_grow) then
+      rlheat(:)   = scale_cldfrc(:) * rlheat(:)
+      partheat(:) = scale_cldfrc(:) * partheat(:)
+    end if
+
     if (do_substep) then
       t(:) = t(:) + (1._f - scale_cldfrc(:)) * d_t(:)
     end if

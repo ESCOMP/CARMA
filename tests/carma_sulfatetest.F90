@@ -34,7 +34,7 @@ subroutine test_sulfate_simple()
   integer, parameter        :: NZ           = 1
   integer, parameter        :: NZP1         = NZ+1
   integer, parameter        :: NELEM        = 1
-  integer, parameter        :: NBIN         = 20
+  integer, parameter        :: NBIN         = 38
   integer, parameter        :: NGROUP       = 1
   integer, parameter        :: NSOLUTE      = 0
   integer, parameter        :: NGAS         = 2
@@ -55,12 +55,10 @@ subroutine test_sulfate_simple()
 !  real(kind=f), parameter   :: dtime  = 5000._f
 !  real(kind=f), parameter   :: dtime  = 10000._f
 !  real(kind=f), parameter   :: dtime  = 50000._f
-  real(kind=f), parameter   :: deltax = 100._f
-  real(kind=f), parameter   :: deltay = 100._f
-  real(kind=f), parameter   :: deltaz = 100._f
-  real(kind=f), parameter   :: rhmin  = .4_f
-  real(kind=f), parameter   :: rhmax  = 1.05_f
-  real(kind=f), parameter   :: zmin   = 3000._f
+  real(kind=f), parameter   :: deltax = 100000._f
+  real(kind=f), parameter   :: deltay = 100000._f
+  real(kind=f), parameter   :: deltaz = 10000._f
+   real(kind=f), parameter   :: zmin   = 145000._f
 
   integer, parameter        :: nstep  = 180000 / int(dtime)
 
@@ -139,7 +137,7 @@ subroutine test_sulfate_simple()
 
 
   ! Define the groups
-  rmrat = 4._f
+  rmrat = 2._f
 ! rmin  = 1e-8_f
 ! rmin  = 1e-4_f
   rmin  = 2.e-8_f
@@ -159,7 +157,7 @@ subroutine test_sulfate_simple()
     I_GCOMP_H2O, rc, shortname = "Q", dgc_threshold=0.1_f, ds_threshold=0.1_f)    
   if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
 
-  call CARMAGAS_Create(carma, 2, "Sulpheric Acid", 98.07_f, I_VAPRTN_H2SO4_AYERS1980, &
+  call CARMAGAS_Create(carma, 2, "Sulpheric Acid", 98.078479_f, I_VAPRTN_H2SO4_AYERS1980, &
     I_GCOMP_H2SO4, rc, shortname = "H2SO4", dgc_threshold=0.1_f, ds_threshold=0.1_f)
   if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
     
@@ -177,7 +175,7 @@ subroutine test_sulfate_simple()
 
 
   call CARMA_Initialize(carma, rc, do_grow=.true., do_coag=.true., do_substep=.true., &
-          do_thermo=.true., maxretries= 20, maxsubsteps=128, dt_threshold=1._f)
+          do_thermo=.true., maxretries=16, maxsubsteps=32, dt_threshold=1._f)
   if (rc /=0) stop "    *** CARMA_Initialize FAILED ***"
   
   ! For simplicity of setup, do a case with Cartesian coordinates,
@@ -222,16 +220,29 @@ subroutine test_sulfate_simple()
   end do
 
 
+  ! Try WACCM model top conditions
+!  p(1)         = 5.960299999999999e-06_f * 100._f
+!  zc(1)        = 145000._f
+!  t(1)         = 872.3763285535849_f
+!  zl(1)        = zc(1) - deltaz
+!  zl(2)        = zc(1) + deltaz
+!  rho(1)       = (p(1) * 10._f) / (R_AIR * t(1)) * (1e-3_f * 1e6_f)
+!  pl(1)        = p(1) - (zl(1) - zc(1)) * rho(1) * (GRAV / 100._f)
+!  pl(2)        = p(1) - (zl(2) - zc(1)) * rho(1) * (GRAV / 100._f)
+
+  ! Initial H2O and H2SO4 concentrations
+!  mmr_gas(:,1)  = 8.588236513537504e-09_f     ! H2O
+!  mmr_gas(:,2)  = 2.435825934528716e-11_f     ! H2SO4
+  
+
+
   ! Try TTL Conditions ...
   !
   ! p, T, z, mmrgas, rmin, particle concentration
   ! 90 hPa, 190 K, 17 km, H2O mmr 3.5e-6 g/g, H2SO4 mmr 100 ppb
   p(1)         = 90._f * 100._f
   zc(1)        = 17000._f
-!  t(1)         = 871._f
   t(1)         = 250._f
-!  t(1)         = 210._f
-!  t(1)         = 190._f
   zl(1)        = zc(1) - deltaz
   zl(2)        = zc(1) + deltaz
   rho(1)       = (p(1) * 10._f) / (R_AIR * t(1)) * (1e-3_f * 1e6_f)
@@ -239,11 +250,12 @@ subroutine test_sulfate_simple()
   pl(2)        = p(1) - (zl(2) - zc(1)) * rho(1) * (GRAV / 100._f)
 
   ! Initial H2O and H2SO4 concentrations
-  mmr_gas(:,1)  = 3.5e-6_f     ! H2O
+!!  mmr_gas(:,1)  = 3.5e-6_f     ! H2O
   mmr_gas(:,1)  = 100.e-6_f     ! H2O
-!  mmr_gas(:,2)  = 100.e-9_f    ! H2SO4
-!  mmr_gas(:,2)  = 30.e-9_f    ! H2SO4
+!!  mmr_gas(:,2)  = 100.e-9_f    ! H2SO4
+!!  mmr_gas(:,2)  = 30.e-9_f    ! H2SO4
   mmr_gas(:,2)  = 0.1e-9_f * (98._f / 29._f)    ! H2SO4
+
   satliq(:,:)   = -1._f
   satice(:,:)   = -1._f
   
