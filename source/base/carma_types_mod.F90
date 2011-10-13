@@ -702,10 +702,8 @@ module carma_types_mod
     !  Coagulation kernels and bin pair mapping
     !
     !   ckernel       Coagulation kernels [cm^3/s]          {setupckern}
-    !   ckernel_scale Coagulation kernels scaling for wet radius at fixed init
     !
     real(kind=f), allocatable, dimension(:,:,:,:,:) :: f_ckernel ! (NZ,NBIN,NBIN,NGROUP,NGROUP)
-    real(kind=f), allocatable, dimension(:,:,:,:,:) :: f_ckernel_scale ! (NZ,NBIN,NBIN,NGROUP,NGROUP)
 
     !  Particle fall velocities and diffusivities
     !
@@ -714,14 +712,12 @@ module carma_types_mod
     !   re        Reynolds' number based on <vfall>                     {setupvfall}
     !   dkz       Vert Brownian diffusion coef at layer boundary [z_units^2/s] {setupbdif}
     !   vd        Particle dry deposition velocity  [z_units/s]         {setupvdry}
-    !   vf_scale  Fall velocity scaling for wet radius and fixed init
     !
     real(kind=f), allocatable, dimension(:,:,:)     :: f_bpm        ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: f_vf         ! (NZP1,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: f_re         ! (NZ,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:,:)     :: f_dkz        ! (NZP1,NBIN,NGROUP)
     real(kind=f), allocatable, dimension(:,:)       :: f_vd         ! (NBIN,NGROUP)
-    real(kind=f), allocatable, dimension(:,:,:)     :: f_vf_scale   ! (NZP1,NBIN,NGROUP)
     
     ! Atmospheric Structure
     !

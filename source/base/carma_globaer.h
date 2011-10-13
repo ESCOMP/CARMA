@@ -263,7 +263,6 @@
 #define kbin          carma%f_kbin
 
 #define ckernel       cstate%f_ckernel
-#define ckernel_scale cstate%f_ckernel_scale
 #define pkernel       carma%f_pkernel
 
 #define volx          carma%f_volx
@@ -283,7 +282,6 @@
 !  Particle fall velocities, transport rates, and coagulation kernels
 #define bpm           cstate%f_bpm
 #define vf            cstate%f_vf
-#define vf_scale      cstate%f_vf_scale
 #define re            cstate%f_re
 #define vf_const      carma%f_vf_const
 #define vd            cstate%f_vd

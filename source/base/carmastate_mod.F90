@@ -227,16 +227,6 @@ contains
       if (present(radint)) cstate%f_radint(:,:) = radint(:,:) * 1e7_f / 1e4_f
     end if
     
-    ! Scaling factors are used to adjust when using fixed initialization
-    ! with particle swelling. Set the scaling to 1 for no adjustment.
-    if (carma_ptr%f_do_vtran) then
-      cstate%f_vf_scale(:,:,:)          = 1._f
-    end if
-    
-    if (carma_ptr%f_do_coag) then
-      cstate%f_ckernel_scale(:,:,:,:,:) = 1._f
-    end if
-    
     return
   end subroutine CARMASTATE_Create
 
@@ -585,7 +575,6 @@ contains
         allocate( &
           cstate%f_bpm(NZ,NBIN,NGROUP), &
           cstate%f_vf(NZP1,NBIN,NGROUP), &
-          cstate%f_vf_scale(NZP1,NBIN,NGROUP), &
           cstate%f_re(NZ,NBIN,NGROUP), &
           cstate%f_dkz(NZP1,NBIN,NGROUP), &
           cstate%f_ftoppart(NBIN,NELEM), &
@@ -677,7 +666,6 @@ contains
           cstate%f_coaglg(NZ,NBIN,NGROUP), &
           cstate%f_coagpe(NZ,NBIN,NELEM), &
           cstate%f_ckernel(NZ,NBIN,NBIN,NGROUP,NGROUP), &
-          cstate%f_ckernel_scale(NZ,NBIN,NBIN,NGROUP,NGROUP), &
           stat = ier)
         if (ier /= 0) then
           if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Allocate::ERROR allocating coag arrays, status=", ier
@@ -787,7 +775,6 @@ contains
         deallocate( &
           cstate%f_bpm, &
           cstate%f_vf, &
-          cstate%f_vf_scale, &
           cstate%f_re, &
           cstate%f_dkz, &
           cstate%f_ftoppart, &
@@ -863,7 +850,6 @@ contains
           cstate%f_coaglg, &
           cstate%f_coagpe, &
           cstate%f_ckernel, &
-          cstate%f_ckernel_scale, &
           stat = ier)
         if (ier /= 0) then
           if (cstate%f_carma%f_do_print) write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Destroy::ERROR deallocating coag arrays, status=", ier
@@ -942,57 +928,7 @@ contains
     ! NOTE: If configured for fixed initialization, then we will lose some accuracy
     ! in the calculation of the fall velocities, growth kernels, ... and in return
     ! will gain a significant performance by not having to initialize as often.
-    ! However, adjust the coagulation and fall velocity coefficients based on scaling
-    ! arguments.
-    if (cstate%f_carma%f_do_fixedinit) then
-    
-      ! Is there any particle swelling?
-!      swelling = .false.
-      
-!      do igroup = 1, cstate%f_carma%f_NGROUP
-!        if (cstate%f_carma%f_group(igroup)%f_irhswell /= I_NO_SWELLING) then
-!          swelling = .true.
-!          exit
-!        end if
-!      end do
-      
-!      if (swelling) then
-!        if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow) then
-  
-          ! Scale vf
-!          cstate%f_vf_scale(:,:,:) = (cstate%f_rhop_wet(:,:,:) * cstate%f_r_wet(:,:,:)) / &
-!                                     (cstate%f_rhop_ref(:,:,:) * cstate%f_r_ref(:,:,:))
-!        end if
-  
-        
-!        if (cstate%f_carma%f_do_coag) then
-        
-          ! NOTE: This scaling is really based upon the gravitational term. If that is
-          ! not the dominant term for a particular CARMA model that includes particle
-          ! swelling, then it should change the scaling here or it should not use
-          ! fixed initialization.
-!          do j2 = 1, cstate%f_carma%f_NGROUP
-!            do j1 = 1, cstate%f_carma%f_NGROUP
-!              if ((cstate%f_carma%f_group(j2)%f_irhswell /= I_NO_SWELLING) .or. (cstate%f_carma%f_group(j2)%f_irhswell /= I_NO_SWELLING)) then
-!                do i2 = 1, cstate%f_carma%f_NBIN
-!                  do i1 = 1, cstate%f_carma%f_NBIN
-!                    cstate%f_ckernel_scale(:,i1,i2,j1,j2) = &
-!                                                   ((cstate%f_r_wet(:,i1,j1) + cstate%f_r_wet(:,i2,j2)) / &
-!                                                    (cstate%f_r_ref(:,i1,j1) + cstate%f_r_ref(:,i2,j2)))**2 * &
-!                                                   abs((cstate%f_vf(:,i1,j1) * cstate%f_vf_scale(:,i1,j1) - &
-!                                                        cstate%f_vf(:,i2,j2) * cstate%f_vf_scale(:,i2,j2)) / &
-!                                                       (cstate%f_vf(:,i1,j1) - cstate%f_vf(:,i2,j2)))
-!                  end do
-!                end do
-!              end if
-!            end do
-!          end do
-!        end if
-!      end if
-    
-
-    ! Perform a full initialization.
-    else
+    if (.not. cstate%f_carma%f_do_fixedinit) then
     
       ! Initialize the vertical transport.
       if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow) then

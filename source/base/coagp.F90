@@ -151,14 +151,14 @@ subroutine coagp(carma, cstate, ibin, ielem, rc)
           if( itype(ielem) .ne. I_CORE2MOM )then
             coagpe(iz,ibin,ielem) = coagpe(iz,ibin,ielem) + &
               pc(iz,i,iefrom)*pcl(iz,j,je)*rmi * &
-              ckernel(iz,i,j,ig,jg) * ckernel_scale(iz,i,j,ig,jg) * &
+              ckernel(iz,i,j,ig,jg) * &
               pkernel(i,j,ig,jg,igrp,i_pkern) 
           else
             coagpe(iz,ibin,ielem) = coagpe(iz,ibin,ielem) + &
               ( pc(iz,i,iefrom)*pcl(iz,j,je)*rmi**2 + &
               pc(iz,i,iefrom_cm)*rmi* &
               pcl(iz,j,je_cm)*rmj ) * &
-              ckernel(iz,i,j,ig,jg) * ckernel_scale(iz,i,j,ig,jg) * &
+              ckernel(iz,i,j,ig,jg) * &
               pkernel(i,j,ig,jg,igrp,i_pkern) 
           endif
         endif    ! end of ( pconmax .gt. FEW_PC )
@@ -245,14 +245,14 @@ subroutine coagp(carma, cstate, ibin, ielem, rc)
           if( itype(ielem) .ne. I_CORE2MOM )then
            coagpe(iz,ibin,ielem) = coagpe(iz,ibin,ielem) + &
                 pc(iz,i,iefrom)*pcl(iz,j,je)*rmi * &
-                ckernel(iz,i,j,ig,jg) * ckernel_scale(iz,i,j,ig,jg) * &
+                ckernel(iz,i,j,ig,jg) * &
                 pkernel(i,j,ig,jg,igrp,i_pkern)
           else
            coagpe(iz,ibin,ielem) = coagpe(iz,ibin,ielem) + &
                 ( pc(iz,i,iefrom)*pcl(iz,j,je)*rmi**2 + &
                   pc(iz,i,iefrom_cm)*rmi* &
                   pcl(iz,j,je_cm)*rmj ) * &
-                ckernel(iz,i,j,ig,jg) * ckernel_scale(iz,i,j,ig,jg) * &
+                ckernel(iz,i,j,ig,jg) * &
                 pkernel(i,j,ig,jg,igrp,i_pkern)
           endif
         endif    ! end of ( pconmax .gt. FEW_PC )

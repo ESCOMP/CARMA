@@ -244,10 +244,6 @@ subroutine growevapl(carma, cstate, iz, rc)
             endif
           endif
 
-          ! Limit growth rates to "reasonable" values
-          growlg(ibin,igroup) = min( growlg(ibin,igroup), 1e10_f )
-          evaplg(ibin+1,igroup) = min( evaplg(ibin+1,igroup), 1e10_f )
-
         enddo    ! ibin = 1,NBIN-1
       endif     ! (pconmax .gt. FEW_PC)
     endif      ! (igas = igrowgas(ielem)) .ne. 0 
