@@ -96,8 +96,7 @@ subroutine freezaerl_tabazadeh2000(carma, cstate, iz, rc)
             ! NOTE: If heterogeneous nucleation of glassy aerosols is being used
             ! as a nucleation mechanism, then both the heterogeneous nucleation and
             ! the homogeneous freezing need to be considered.
-            if ((inucproc(iepart,ienucto) == I_AERFREEZE) .or. &
-                (inucproc(iepart,ienucto) == I_GLAERFREEZE)) then
+              if ((iand(inucproc(iepart,ienucto), I_AF_TABAZADEH_2000) /= 0)) then
       
               !  Loop over particle bins.  Loop from largest to smallest for 
               !  evaluation of index of smallest bin nucleated during time step <inucstep>.

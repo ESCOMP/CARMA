@@ -162,7 +162,7 @@ subroutine nsubsteps(carma, cstate, iz, dtime_save, ntsubsteps, rc)
           do inuc = 1,nnuc2elem(iepart)
             ienucto = inuc2elem(inuc,iepart)
     
-            if (inucproc(iepart,ienucto) .eq. I_AERFREEZE) then
+            if (iand(inucproc(iepart,ienucto), I_AERFREEZE) .ne. 0) then
               if( (supsati(iz,igas) .gt. 0.4_f) .and. (t(iz) .lt. 233.16_f) ) then
                 ntsubsteps = maxsubsteps
               endif

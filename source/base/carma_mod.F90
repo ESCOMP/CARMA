@@ -1253,8 +1253,20 @@ contains
   !!   - <i>I_DROPFREEZE</i>
   !!   - <i>I_ICEMELT</i>
   !!   - <i>I_HETNUC</i>
-  !!   - <i>I_GLFREEZE</i>
-  !!   - <i>I_GLAERFREEZE</i>
+  !!   - <i>I_HOMNUC</i>
+  !! 
+  !! There are multiple parameterizations for I_AERFREEZE, so when that is selected the
+  !! particular parameterization needs to be indicated by adding it to I_AERFREEZE. The
+  !! specific routines are:
+  !!
+  !!   - <i>I_AF_TABAZADEH_2000</i>
+  !!   - <i>I_AF_KOOP_2000</i>
+  !!   - <i>I_AF_MOHLER_2010</i>
+  !!   - <i>I_AF_MURRAY_2010</i>
+  !!
+  !! One or more of these routines may be selected, but in general one of the first
+  !! three should be selected and then it can optionally be combined with the glassy
+  !! aerosols (I_AF_MURRAY_2010).
   !! 
   !! Total evaporation transfers particle mass from the destination element back to the
   !! element indicated by <i>ievp2elem</i>. This relationship is not automatically generated,
@@ -1271,8 +1283,11 @@ contains
   !! @see I_DROPFREEZE
   !! @see I_ICEMELT
   !! @see I_HETNUC
-  !! @see I_GLFREEZE
-  !! @see I_GLAERFREEZE
+  !! @see I_HOMNUC
+  !! @see I_AF_TABAZADEH_2000
+  !! @see I_AF_KOOP_2000
+  !! @see I_AF_MOHLER_2010
+  !! @see I_AF_MURRAY_2010
   !! @see CARMA_AddElement
   !! @see CARMA_AddGas
   subroutine CARMA_AddNucleation(carma, ielemfrom, ielemto, inucproc, &
@@ -1283,7 +1298,7 @@ contains
     type(carma_type), intent(inout)    :: carma       !! the carma object
     integer, intent(in)                :: ielemfrom   !! the source element
     integer, intent(in)                :: ielemto     !! the destination element
-    integer, intent(in)                :: inucproc    !! the nucleation process [I_DROPACT | I_AERFREEZE | I_ICEMELT | I_HETNUC | I_GLFREEZE | I_GLAERFREEZE]
+    integer, intent(in)                :: inucproc    !! the nucleation process [I_DROPACT | I_AERFREEZE | I_ICEMELT | I_HETNUC | I_HOMNUC]
     real(kind=f), intent(in)           :: rlh_nuc     !! the latent heat of nucleation [cm<sup>2</sup>/s<sup>2</sup>]
     integer, intent(out)               :: rc          !! return code, negative indicated failure
     integer, optional, intent(in)      :: igas        !! the gas
@@ -1322,11 +1337,18 @@ contains
     ! Make sure there are enough gases allocated.
     if (present(igas)) then
       if (igas > carma%f_NGAS) then
-        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_AddGrowth:: ERROR - The specifed gas (", &
+        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_AddNucleation:: ERROR - The specifed gas (", &
           igas, ") is larger than the number of gases (", carma%f_NGAS, ")."
         rc = RC_ERROR
         return
       end if
+    end if
+    
+    
+    ! If aerosol freezing is selected, but no I_AF_xxx sub-method is selected, then indicate an error.
+    if (inucproc == I_AERFREEZE) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_AddNucleation:: ERROR - I_AERFREEZE was specified without an I_AF_xxx value."
+      return
     end if
     
     

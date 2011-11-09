@@ -13,9 +13,7 @@
 !! aerosol population and not just the fraction of aerosols that are glassy. To
 !! account for homogenous freezing of the aerosol population, the routine freezaerl
 !! also needs to be called and the overall nucleation rate is the sum of
-!! the rates for homogeneous freezing and for heterogenous nucleation. Using I_GLFREEZE
-!! will just compute a nucleation rate for the glassy aerosols, while using I_GLAERFREEZE
-!! will do both.
+!! the rates for homogeneous freezing and for heterogenous nucleation.
 !!
 !! The parameter fglass is the fraction of the total aerosol population that will be
 !! in a glassy state for T <= 212K.
@@ -81,8 +79,7 @@ subroutine freezglaerl_murray2010(carma, cstate, iz, rc)
           ignucto = igelem(ienucto)
   
           ! Only compute nucleation rate for glassy aerosol freezing.
-              if ((inucproc(iepart,ienucto) == I_GLFREEZE) .or. &
-                  (inucproc(iepart,ienucto) == I_GLAERFREEZE)) then
+              if ((iand(inucproc(iepart,ienucto), I_AF_MURRAY_2010) /= 0)) then
           
             ! Is it cold enough for aerosols to be in a glassy state.
             if (t(iz) <= tglass) then

@@ -106,8 +106,7 @@ subroutine freezaerl_mohler2010(carma, cstate, iz, rc)
               ! NOTE: If heterogeneous nucleation of glassy aerosols is being used
               ! as a nucleation mechanism, then both the heterogeneous nucleation and
               ! the homogeneous freezing need to be considered.
-              if ((inucproc(iepart,ienucto) == I_AERFREEZE) .or. &
-                  (inucproc(iepart,ienucto) == I_GLAERFREEZE)) then
+              if (iand(inucproc(iepart,ienucto), I_AF_MOHLER_2010) /= 0) then
                   
                 !  Loop over particle bins.
                 do ibin = 1, NBIN

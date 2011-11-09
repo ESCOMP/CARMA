@@ -80,7 +80,9 @@ subroutine tsolve(carma, cstate, iz, rc)
   ! Don't let the temperature go negative.
   if (t(iz) < 0._f) then
     if (do_substep) then
+      if (nretries == maxretries) then 
       if (do_print) write(LUNOPRT,1) iz, lat, lon, t(iz), dt, told(iz), d_gc(iz, 1), d_t(iz)
+      end if
     else
       if (do_print) write(LUNOPRT,4) iz, lat, lon, t(iz), dt, told(iz)
     end if

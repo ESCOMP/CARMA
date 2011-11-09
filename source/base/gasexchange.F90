@@ -75,9 +75,7 @@ subroutine gasexchange(carma, cstate, iz, rc)
 !             ( inucproc(ielem,ienuc2) .eq. I_HOMNUC  )) then
 !            rlh = rlhe(iz,igas)
 !          elseif(( inucproc(ielem,ienuc2) .eq. I_AERFREEZE ) .or. &
-!                 ( inucproc(ielem,ienuc2) .eq. I_GLFREEZE ) .or. &
-!                 ( inucproc(ielem,ienuc2) .eq. I_HETNUC ) .or. &
-!                 ( inucproc(ielem,ienuc2) .eq. I_GLAERFREEZE ))then
+!                 ( inucproc(ielem,ienuc2) .eq. I_HETNUC ))then
 !            rlh = rlhe(iz,igas) + rlhm(iz,igas)
 !          endif
 

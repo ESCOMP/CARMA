@@ -114,6 +114,8 @@ MIETEST.exe : $(CARMA_OBJ) carma_mietest.o carma_testutils.o
 	$(FORTRAN) $(FFLAGS) -o MIETEST.exe carma_mietest.o carma_testutils.o  $(CARMA_OBJ)
 NUCTEST.exe : $(CARMA_OBJ) carma_nuctest.o carma_testutils.o 
 	$(FORTRAN) $(FFLAGS) -o NUCTEST.exe carma_nuctest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+NUC2TEST.exe : $(CARMA_OBJ) carma_nuc2test.o carma_testutils.o 
+	$(FORTRAN) $(FFLAGS) -o NUC2TEST.exe carma_nuc2test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 PHEATTEST.exe : $(CARMA_OBJ) carma_pheattest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(FFLAGS) -o PHEATTEST.exe carma_pheattest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o carma_testutils.o 
@@ -133,7 +135,7 @@ SULFATETEST.exe : $(CARMA_OBJ) carma_sulfatetest.o carma_testutils.o atmosphere_
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
 SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
-SULFATETEST.exe
+SULFATETEST.exe NUC2TEST.exe 
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)
@@ -145,5 +147,5 @@ clean:
 # exclude them.
 tar:
 	tar --directory ../.. -cvf $(TGZ) --exclude .DS_Store --exclude .svn \
-	  Makefile make-carma.csh run-carma.csh README \
+	  Makefile make-carma.csh run-carma.csh README run-regress.csh view-bench.csh run-all.csh \
 	  source tests bin doc/ChangeLog doc/ChangeLog_template doc/index.html

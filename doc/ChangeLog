@@ -1,5 +1,24 @@
 ===============================================================
 Tag name: 
+Originator(s): Charles Bardeen
+Date: November 8, 2011
+
+One-line Summary:
+
+Allow configurable selection of aerosol freezing method and cleanup
+error messages.
+
+Purpose of changes:
+
+Made nucproc a bit field, so that the aerosol freezing method can
+be specified without needing to modify the code, and so that it can
+be combined with nucleation of glassy aerosols. Also surpress an
+error message from negative temperature unless it is the last
+retry. Added a test case (NUC2TEST.exe) to see at what supersaturation
+aerosol freezing begins.
+
+===============================================================
+Tag name: 
 Originator(s): Charles Bardeen, Mike Mills
 Date: October 9, 2011
 

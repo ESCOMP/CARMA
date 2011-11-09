@@ -30,14 +30,20 @@ module carma_enums_mod
     
   !!  Define values of flag used for nucleation process
   !!  specification (inucproc).
-  integer, public, parameter :: I_DROPACT     = 1   !! Droplet Activation
-  integer, public, parameter :: I_AERFREEZE   = 2   !! Aerosol Freezing
-  integer, public, parameter :: I_DROPFREEZE  = 3   !! Droplet Freezing
-  integer, public, parameter :: I_ICEMELT     = 4   !! Ice Melting
-  integer, public, parameter :: I_HETNUC      = 5   !! Heterogeneous Nucleation
-  integer, public, parameter :: I_GLFREEZE    = 6   !! Glassy Aerosol Freezing
-  integer, public, parameter :: I_GLAERFREEZE = 7   !! Glassy & Aerosol Freezing (both I_AERFREEZE and I_GLFREEZE)
-  integer, public, parameter :: I_HOMNUC      = 8   !! Binary homogeneous gas-to-particle nucleation
+  !!
+  !!  NOTE: Some of these can be used in combination, so for aerosol freezing this is treated
+  !!  as a bit mask. When setting for one (or more) of the Aerosol freezing methods, use:
+  !!    IAERFREEZE + I_AF_xxx + I_AF_yyy + ...
+  integer, public, parameter :: I_AF_TABAZADEH_2000 = 1     !! Aerosol Freezing, Tabazadeh[2000]
+  integer, public, parameter :: I_AF_KOOP_2000      = 2     !! Aerosol Freezing, Koop[2000]
+  integer, public, parameter :: I_AF_MOHLER_2010    = 4     !! Aerosol Freezing, Mohler[2010]
+  integer, public, parameter :: I_AF_MURRAY_2010    = 8     !! Glassy Aerosol Freezing, Murray[2010]
+  integer, public, parameter :: I_DROPACT           = 256   !! Droplet Activation
+  integer, public, parameter :: I_AERFREEZE         = 512   !! Aerosol Freezing
+  integer, public, parameter :: I_DROPFREEZE        = 1024  !! Droplet Freezing
+  integer, public, parameter :: I_ICEMELT           = 2048  !! Ice Melting
+  integer, public, parameter :: I_HETNUC            = 4096  !! Heterogeneous Nucleation
+  integer, public, parameter :: I_HOMNUC            = 8192  !! Binary homogeneous gas-to-particle nucleation
   
   !  Define values of flag used for collection process (icollec)
   integer, public, parameter :: I_COLLEC_CONST = 1   !! Constant Collection Efficiency
