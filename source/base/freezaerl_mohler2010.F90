@@ -127,7 +127,7 @@ subroutine freezaerl_mohler2010(carma, cstate, iz, rc)
                   if (ssi > sifreeze) then
   
                     ! Mohler et al. 2010? nucleation rate parameterization
-                    rlogj = 97.973292_f - 154.67476 * (ssi + 1._f) - 0.84952712_f * t(iz) + 1.0049467_f * (ssi + 1._f) * t(iz)
+                    rlogj = 97.973292_f - 154.67476_f * (ssi + 1._f) - 0.84952712_f * t(iz) + 1.0049467_f * (ssi + 1._f) * t(iz)
                     rjj   = 10._f**(rlogj)              ! [cm-3 s-1]
 
                     ! NOTE: The weight percent can become negative from this parameterization,

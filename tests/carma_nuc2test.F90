@@ -44,13 +44,13 @@ subroutine test_nuc_ttl()
   integer, parameter        :: NGAS         = 1
   integer, parameter        :: NWAVE        = 0
   integer, parameter        :: LUNOPRT      = 6
-  integer, parameter        :: nstep        = 200
+  integer, parameter        :: nstep        = 1000
   
 
 
-!  real(kind=f), parameter   :: dtime  = 1._f
+  real(kind=f), parameter   :: dtime  = 1._f
 !  real(kind=f), parameter   :: dtime  = 5._f
-  real(kind=f), parameter   :: dtime  = 10._f
+!  real(kind=f), parameter   :: dtime  = 10._f
 !  real(kind=f), parameter   :: dtime  = 20._f
 !  real(kind=f), parameter   :: dtime  = 100._f
 !  real(kind=f), parameter   :: dtime  = 1000._f
@@ -178,7 +178,11 @@ subroutine test_nuc_ttl()
   call CARMA_AddGrowth(carma, 2, 1, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
-  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE + I_AF_KOOP_2000, 0._f, rc, igas=1, ievp2elem=1)
+!  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE + I_AF_KOOP_2000, 0._f, rc, igas=1, ievp2elem=1)
+!  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE + I_AF_TABAZADEH_2000, 0._f, rc, igas=1, ievp2elem=1)
+  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE + I_AF_MOHLER_2010, 0._f, rc, igas=1, ievp2elem=1)
+!  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE + I_AF_MURRAY_2010, 0._f, rc, igas=1, ievp2elem=1)
+
 !  call CARMA_AddNucleation(carma, 1, 3, I_AERFREEZE + I_AF_KOOP_2000 + I_AF_MURRAY_2010, 0._f, rc, igas=1, ievp2elem=1)
   if (rc /=0) stop "    *** FAILED ***"
 
@@ -327,21 +331,24 @@ subroutine test_nuc_ttl()
     call CARMASTATE_GetState(cstate, rc, t=t(:))
     if (rc /=0) stop "    *** FAILED ***"
     
-    ! Cool down slowly to 205 K
-    if (t(1) > 205.) t(1) = t(1) - 1.
+    ! Cool it down ...
+    t(1) = t(1) - .05_f
 
-
-    ! Write output for the falltest
-    write(lun,'(f12.0)') istep*dtime
-    do ielem = 1, NELEM
-      do ibin = 1, NBIN
-        write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,ielem,ibin))
+    if (mod(istep, 10) .eq. 0) then
+    
+      ! Write output for the falltest
+      write(lun,'(f12.0)') istep*dtime
+      do ielem = 1, NELEM
+        do ibin = 1, NBIN
+          write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,ielem,ibin))
+        end do
       end do
-    end do
-  
-    do igas = 1, NGAS
-      write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,igas)), satliq(1,igas), satice(1,igas)
-    end do
+    
+      do igas = 1, NGAS
+        write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,igas)), satliq(1,igas), satice(1,igas)
+      end do
+      
+    end if
   end do   ! time loop
 	
   ! Cleanup the carma state objects
