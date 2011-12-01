@@ -95,7 +95,7 @@ contains
     !  Activity = water pp in mb / water eq. vp over pure water in mb
     activ = p_h2o/vp_h2o
  
-    if (activ.lt.0.05) then
+    if (activ.lt.0.05_f) then
       activ = max(activ,1.e-6_f)    ! restrict minimum activity
       atab1 	= 12.37208932_f	
       btab1 	= -0.16125516114_f
@@ -114,7 +114,7 @@ contains
       btab2 	= -0.23233847708_f
       ctab2 	= -6.4261237757_f
       dtab2 	= -4.9005471319_f
-    elseif (activ.gt.0.85) then
+    elseif (activ.gt.0.85_f) then
       activ = min(activ,1._f)      ! restrict maximum activity
       atab1 	= -180.06541028_f
       btab1 	= -0.38601102592_f

@@ -38,7 +38,7 @@ subroutine vaporp_H2SO4_Ayers1980(carma, cstate, iz, rc, pvap_liq, pvap_ice)
   real(kind=f)            :: gc_cgs                          ! water vapor mass concentration [g/cm3]
   real(kind=f)            :: fk1, fk4, fk4_1, fk4_2 
   real(kind=f)            :: factor_kulm                     ! Kulmala correction terms
-  real(kind=f)            :: en
+  real(kind=f)            :: en, temp
   real(kind=f)            :: sulfeq
   real(kind=f), parameter :: t0_kulm     = 340._f            !  T0 set in the low end of the Ayers measurement range (338-445K)
   real(kind=f), parameter :: t_crit_kulm = 905._f            !  Critical temperature = 1.5 * Boiling point
@@ -49,24 +49,28 @@ subroutine vaporp_H2SO4_Ayers1980(carma, cstate, iz, rc, pvap_liq, pvap_ice)
 
   ! Saturation vapor pressure of sulfuric acid
   !  
+  ! Don't allow saturation vapor pressure to underflow at very low temperatures
+  temp=max(t(iz),140._f)
+  
   ! Convert water vapor concentration to g/cm3:
   gc_cgs = gc(iz, igash2o) / (xmet(iz) * ymet(iz) * zmet(iz))
   
   ! Compute the sulfate composition based on Hanson parameterization
   ! to temperature and water vapor concentration.
-  wtpct(iz) = wtpct_tabaz(carma, t(iz), gc_cgs, pvapl(iz, igash2o), rc)
+  wtpct(iz) = wtpct_tabaz(carma, temp, gc_cgs, pvapl(iz, igash2o), rc)
 
   ! Parameterized fit to Giauque's (1959) enthalpies v. wt %:
   en = 4.184_f * (23624.8_f - 1.14208e8_f / ((wtpct(iz) - 105.318_f)**2 + 4798.69_f))
+  en = max(en, 0.0_f)
  
   ! Ayers' (1980) fit to sulfuric acid equilibrium vapor pressure:
   ! (Remember this is the log)
   ! SULFEQ=-10156/Temp+16.259-En/(8.3143*Temp)
   !
   ! Kulmala correction (J. CHEM. PHYS. V.93, No.1, 1 July 1990)
-  fk1   = -1._f / t(iz)
-  fk4_1 = log(t0_kulm / t(iz))
-  fk4_2 = t0_kulm / t(iz)
+  fk1   = -1._f / temp
+  fk4_1 = log(t0_kulm / temp)
+  fk4_2 = t0_kulm / temp
   fk4   = 1.0_f + fk4_1 - fk4_2
   factor_kulm = fk1 + fk2 + fk3 * fk4
 
@@ -74,14 +78,14 @@ subroutine vaporp_H2SO4_Ayers1980(carma, cstate, iz, rc, pvap_liq, pvap_ice)
   sulfeq = fk0 + 10156._f * factor_kulm
            
   ! Adjust for WTPCT composition:
-  sulfeq = sulfeq - en / (8.3143_f * t(iz))
+  sulfeq = sulfeq - en / (8.3143_f * temp)
       
   ! REMEMBER TO TAKE THE EXPONENTIAL!	
   sulfeq = exp(sulfeq)
 
   ! BUT this is in Atmospheres.  Convert ==> dynes/cm2
   pvap_liq = sulfeq * 1.01325e6_f  
-  pvap_ice = sulfeq * 1.01325e6_f  
-
+  pvap_ice = sulfeq * 1.01325e6_f 
+  
   return
 end

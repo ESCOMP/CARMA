@@ -1260,13 +1260,16 @@ contains
   !! @see CARMA_GetGas
   !! @see CARMA_Step 
   !! @see CARMASTATE_SetGas
-  subroutine CARMASTATE_GetGas(cstate, igas, mmr, rc, satice, satliq)
+  subroutine CARMASTATE_GetGas(cstate, igas, mmr, rc, satice, satliq, eqice, eqliq, wtpct)
     type(carmastate_type), intent(in)     :: cstate            !! the carma state object
     integer, intent(in)                   :: igas              !! the gas index
     real(kind=f), intent(out)             :: mmr(cstate%f_NZ)    !! the gas mass mixing ratio [kg/kg]
     integer, intent(out)                  :: rc                !! return code, negative indicates failure
     real(kind=f), optional, intent(out)   :: satice(cstate%f_NZ) !! the gas saturation wrt ice
     real(kind=f), optional, intent(out)   :: satliq(cstate%f_NZ) !! the gas saturation wrt liquid
+    real(kind=f), optional, intent(out)   :: eqice(cstate%f_NZ)  !! the gas vapor pressure wrt ice
+    real(kind=f), optional, intent(out)   :: eqliq(cstate%f_NZ)  !! the gas vapor pressure wrt liquid
+    real(kind=f), optional, intent(out)   :: wtpct(cstate%f_NZ)  !! weight percent aerosol composition
 
     ! Assume success.
     rc = RC_OK
@@ -1284,7 +1287,10 @@ contains
     mmr(:) = cstate%f_gc(:, igas) / cstate%f_rhoa_wet(:)
 
     if (present(satice)) satice(:) = cstate%f_supsati(:, igas) + 1._f
-    if (present(satice)) satliq(:) = cstate%f_supsatl(:, igas) + 1._f
+    if (present(satliq)) satliq(:) = cstate%f_supsatl(:, igas) + 1._f
+    if (present(eqice))  eqice(:)  = cstate%f_pvapi(:, igas) / cstate%f_p(:)
+    if (present(eqliq))  eqliq(:)  = cstate%f_pvapl(:, igas) / cstate%f_p(:)
+    if (present(wtpct))  wtpct(:)  = cstate%f_wtpct(:)
     
     return
   end subroutine CARMASTATE_GetGas

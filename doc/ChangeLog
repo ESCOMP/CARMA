@@ -1,5 +1,22 @@
 ===============================================================
 Tag name: 
+Originator(s): Charles Bardeen, Mike Mills
+Date: December 1, 2011
+
+One-line Summary:
+
+Bug fixes for sulfate aerosols and some additional diagnostic
+information.
+
+Purpose of changes:
+
+Fixes problems found while trying to test sulfates aerosols in
+WACCM/CARMA, where every cold temperatures are possible. Also
+Also producing some additional diagnostics to help diagnose the
+sulfate physics.
+
+===============================================================
+Tag name: 
 Originator(s): Charles Bardeen
 Date: November 8, 2011
 
