@@ -88,7 +88,7 @@ subroutine sulfnucrate(carma,cstate, iz, igroup, nucbin, nucrate, rc)
   real(kind=f)      :: rho_H2SO4_wet
 
  5 format(/,'microfast::WARNING - nucleation rate exceeds 5.e1: ie=', i2,', iz=',i4,',lat=', &
-              f7.2,',lon=',f7.2, ', rhompe=', e9.3)	      
+              f7.2,',lon=',f7.2, ', rhompe=', e10.3)	      
   
   !  Parameterized fit developed by Mike Mills in 1994 to the partial molal
   !  Gibbs energies (F2|o-F2) vs. weight percent H2SO4 table in Giauque et al.,

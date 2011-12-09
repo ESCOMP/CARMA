@@ -47,7 +47,7 @@ subroutine rhopart(carma, cstate, rc)
   real(kind=f)    :: gc_cgs
 
   1 format(/,'rhopart::WARNING - core mass > total mass, truncating : iz=',i4,',igroup=',&
-              i4,',ibin=',i4,',total mass=',e9.3,',core mass=',e9.3,',using rhop=',f9.4)
+              i4,',ibin=',i4,',total mass=',e10.3,',core mass=',e10.3,',using rhop=',f9.4)
 
   ! Calculate average particle mass density for each group
   do igroup = 1,NGROUP

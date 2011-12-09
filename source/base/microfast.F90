@@ -39,13 +39,13 @@ subroutine microfast(carma, cstate, iz, rc)
   real(kind=f)                         :: s_threshold
 
   1 format(/,'microfast::ERROR - excessive change in supersaturation for ',a,' : iz=',i4,',lat=', &
-              f7.2,',lon=',f7.2,',srat=',e9.3,',supsatiold=',e9.3,',supsatlold=',e9.3,',supsati=',e9.3, &
-              ',supsatl=',e9.3,',t=',f6.2)
-  2 format('microfast::ERROR - conditions at beginning of the step : gc=',e9.3,',supsati=',e16.10, &
-              ',supsatl=',e16.10,',t=',f6.2,',d_gc=',e9.3,',d_t=',f6.2)
+              f7.2,',lon=',f7.2,',srat=',e10.3,',supsatiold=',e10.3,',supsatlold=',e10.3,',supsati=',e10.3, &
+              ',supsatl=',e10.3,',t=',f6.2)
+  2 format('microfast::ERROR - conditions at beginning of the step : gc=',e10.3,',supsati=',e17.10, &
+              ',supsatl=',e17.10,',t=',f6.2,',d_gc=',e10.3,',d_t=',f6.2)
   3 format(/,'microfast::ERROR - excessive change in supersaturation for ',a,' : iz=',i4,',lat=', &
-              f7.2,',lon=',f7.2,',supsatiold=',e9.3,',supsatlold=',e9.3,',supsati=',e9.3, &
-              ',supsatl=',e9.3,',t=',f6.2)
+              f7.2,',lon=',f7.2,',supsatiold=',e10.3,',supsatlold=',e10.3,',supsati=',e10.3, &
+              ',supsatl=',e10.3,',t=',f6.2)
   
    ! Set production and loss rates to zero.
   call zeromicro(carma, cstate, iz, rc)
@@ -142,8 +142,10 @@ subroutine microfast(carma, cstate, iz, rc)
     call downgxfer(carma, cstate, iz, rc)
     if (rc < RC_OK) return
 
-    call gasexchange(carma, cstate, iz, rc)
-    if (rc < RC_OK) return
+! NOTE: Not needed because changes in gas concentrations and latent
+! heats are now calculated later in gsolve using total condensate.  
+!    call gasexchange(carma, cstate, iz, rc)
+!    if (rc < RC_OK) return
 
     call downgevapply(carma, cstate, iz, rc)
     if (rc < RC_OK) return

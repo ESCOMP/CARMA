@@ -41,13 +41,13 @@ subroutine tsolve(carma, cstate, iz, rc)
   integer, intent(inout)               :: rc      !! return code, negative indicates failure
   
   1 format(/,'tsolve::ERROR - negative temperature for : iz=',i4,',lat=',&
-              f7.2,',lon=',f7.2,',T=',e9.3,',dT=',e9.3,',t_old=',e9.3,',d_gc=',e9.3,',dT_adv=',e9.3)
+              f7.2,',lon=',f7.2,',T=',e10.3,',dT=',e10.3,',t_old=',e10.3,',d_gc=',e10.3,',dT_adv=',e10.3)
   2 format(/,'tsolve::ERROR - temperature change to large for : iz=',i4,',lat=',&
-              f7.2,',lon=',f7.2,',T=',e9.3,',dT_rlh=',e9.3,',dT_pth=',e9.3,',t_old=',e9.3,',d_gc=',e9.3,',dT_adv=',e9.3)
+              f7.2,',lon=',f7.2,',T=',e10.3,',dT_rlh=',e10.3,',dT_pth=',e10.3,',t_old=',e10.3,',d_gc=',e10.3,',dT_adv=',e10.3)
   3 format(/,'tsolve::ERROR - temperature change to large for : iz=',i4,',lat=',&
-              f7.2,',lon=',f7.2,',T=',e9.3,',dT_rlh=',e9.3,',dT_pth=',e9.3,',t_old=',e9.3)
+              f7.2,',lon=',f7.2,',T=',e10.3,',dT_rlh=',e10.3,',dT_pth=',e10.3,',t_old=',e10.3)
   4 format(/,'tsolve::ERROR - negative temperature for : iz=',i4,',lat=',&
-              f7.2,',lon=',f7.2,',T=',e9.3,',dT=',e9.3,',t_old=',e9.3)
+              f7.2,',lon=',f7.2,',T=',e10.3,',dT=',e10.3,',t_old=',e10.3)
       
   real(kind=f)      :: dt           ! delta temperature
   real(kind=f)      :: t_threshold  ! temperature change threshold
