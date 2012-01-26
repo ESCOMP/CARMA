@@ -124,6 +124,7 @@
 #define do_wave_emit  carma%f_do_wave_emit
 
 !  Model option & control variables
+#define do_clearsky   carma%f_do_clearsky
 #define do_cnst_rlh   carma%f_do_cnst_rlh
 #define do_coag       carma%f_do_coag
 #define do_detrain    carma%f_do_detrain

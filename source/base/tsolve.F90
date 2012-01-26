@@ -50,7 +50,6 @@ subroutine tsolve(carma, cstate, iz, rc)
               f7.2,',lon=',f7.2,',T=',e10.3,',dT=',e10.3,',t_old=',e10.3)
       
   real(kind=f)      :: dt           ! delta temperature
-  real(kind=f)      :: t_threshold  ! temperature change threshold
   
       
   ! Solve for the new <t> due to latent heat exchange and radiative heating.
@@ -81,7 +80,7 @@ subroutine tsolve(carma, cstate, iz, rc)
   if (t(iz) < 0._f) then
     if (do_substep) then
       if (nretries == maxretries) then 
-      if (do_print) write(LUNOPRT,1) iz, lat, lon, t(iz), dt, told(iz), d_gc(iz, 1), d_t(iz)
+        if (do_print) write(LUNOPRT,1) iz, lat, lon, t(iz), dt, told(iz), d_gc(iz, 1), d_t(iz)
       end if
     else
       if (do_print) write(LUNOPRT,4) iz, lat, lon, t(iz), dt, told(iz)
@@ -93,14 +92,9 @@ subroutine tsolve(carma, cstate, iz, rc)
   ! Don't let the temperature change by more than the threshold in any given substep,
   ! to prevent overshooting that doesn't result in negative gas concentrations, but
   ! does result in excessive temperature swings.
-  !
-  ! NOTE: If doing incloud calculations, then the threshold needs to be scaled by the
-  ! cloud fraction since the cloud mass has been scaled by the cloud fraction.
-  t_threshold = dt_threshold
-  if (do_incloud) t_threshold = t_threshold / cldfrc(iz)
   
-  if (t_threshold /= 0._f) then
-    if (abs(abs(dt)) > t_threshold) then
+  if (dt_threshold /= 0._f) then
+    if (abs(abs(dt)) > dt_threshold) then
       if (do_substep) then
         if (nretries == maxretries) then 
           if (do_print) write(LUNOPRT,2) iz, lat, lon, t(iz), rlprod*dtime, dtime*partheat(iz), told(iz), d_gc(iz, 1), d_t(iz)

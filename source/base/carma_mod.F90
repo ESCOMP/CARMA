@@ -335,7 +335,7 @@ contains
   subroutine CARMA_Initialize(carma, rc, do_cnst_rlh, do_coag, do_detrain, do_fixedinit, &
       do_grow, do_incloud, do_explised, do_print_init, do_substep, do_thermo, do_vdiff, &
       do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax, &
-      do_pheat, do_pheatatm, dt_threshold, cstick, gsticki, gstickl, tstick)
+      do_pheat, do_pheatatm, dt_threshold, cstick, gsticki, gstickl, tstick, do_clearsky)
     type(carma_type), intent(inout)     :: carma         !! the carma object
     integer, intent(out)                :: rc            !! return code, negative indicates failure
     logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats (instead of varying with temperature)?
@@ -363,6 +363,7 @@ contains
     real(kind=f), intent(in), optional  :: gsticki       !! accommodation coefficient - growth (ice), default = 0.93
     real(kind=f), intent(in), optional  :: gstickl       !! accommodation coefficient - growth (liquid), default = 1.0
     real(kind=f), intent(in), optional  :: tstick        !! accommodation coefficient - temperature, default = 1.0
+    logical, intent(in), optional       :: do_clearsky   !! do clear sky growth and coagulation?
     
     ! Assume success.
     rc = RC_OK
@@ -388,6 +389,7 @@ contains
     carma%f_gsticki       = 0.93_f
     carma%f_gstickl       = 1._f
     carma%f_tstick        = 1._f
+    carma%f_do_clearsky   = .FALSE.
 
     ! Store off any control flag values that have been supplied.
     if (present(do_cnst_rlh))   carma%f_do_cnst_rlh   = do_cnst_rlh
@@ -395,7 +397,7 @@ contains
     if (present(do_detrain))    carma%f_do_detrain    = do_detrain
     if (present(do_fixedinit))  carma%f_do_fixedinit  = do_fixedinit
     if (present(do_grow))       carma%f_do_grow       = do_grow
-    if (present(do_incloud))     carma%f_do_incloud   = do_incloud
+    if (present(do_incloud))    carma%f_do_incloud    = do_incloud
     if (present(do_explised))   carma%f_do_explised   = do_explised
     if (present(do_pheat))      carma%f_do_pheat      = do_pheat
     if (present(do_pheatatm))   carma%f_do_pheatatm   = do_pheatatm
@@ -410,6 +412,7 @@ contains
     if (present(gsticki))       carma%f_gsticki       = gsticki
     if (present(gstickl))       carma%f_gstickl       = gstickl
     if (present(tstick))        carma%f_tstick        = tstick
+    if (present(do_clearsky))   carma%f_do_clearsky   = do_clearsky
     
     
     ! Setup the bin structure.

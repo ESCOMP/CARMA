@@ -31,6 +31,12 @@ subroutine microslow(carma, cstate, rc)
   integer   :: ielem
 
 
+  
+  !  Set production terms and loss rates due to slow microphysics
+  !  processes (coagulation) to zero.
+  coagpe(:,:,:) = 0._f
+  coaglg(:,:,:) = 0._f
+
   ! Calculate (implicit) particle loss rates for coagulation.
   call coagl(carma, cstate, rc)
 

@@ -330,6 +330,7 @@ module carma_types_mod
     !   do_drydep   If .true. then do dry deposition                      {init}
     !   do_fixedinitIf .true. then do initialize from reference atm       {init}
     !   do_grow     If .true. then do condensational growth and evap.     {init}
+    !   do_clearsky If .true. then do clear sky growth and coagulation    {init}
     !   do_incloud  If .true. then do incloud growth and coagulation      {init}
     !   do_explised If .true. then do sedimentation with substepping      {init}
     !   do_pheat    If .true. then do particle heating for growth rates   {init}
@@ -368,6 +369,7 @@ module carma_types_mod
     logical                                       :: f_do_detrain
     logical                                       :: f_do_fixedinit
     logical                                       :: f_do_grow
+    logical                                       :: f_do_clearsky
     logical                                       :: f_do_incloud
     logical                                       :: f_do_vtran
     logical                                       :: f_do_explised

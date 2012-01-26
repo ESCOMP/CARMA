@@ -31,10 +31,9 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
   real(kind=f)                         :: rvap
   real(kind=f)                         :: total_ice(NGAS)      ! total ice
   real(kind=f)                         :: total_liquid(NGAS)   ! total liquid
-  real(kind=f)                         :: gc_threshold         ! threshold for changes to gc
   
   
-  1 format(/,'gsolve::ERROR - negtive gas concentration for ',a,' : iz=',i4,',lat=', &
+  1 format(/,'gsolve::ERROR - negative gas concentration for ',a,' : iz=',i4,',lat=', &
               f7.2,',lon=',f7.2,',gc=',e10.3,',gasprod=',e10.3,',supsati=',e10.3, &
               ',supsatl=',e10.3,',t=',f6.2)
   2 format('gsolve::ERROR - conditions at beginning of the step : gc=',e10.3,',supsati=',e17.10, &
@@ -77,14 +76,9 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
     end if
     
     ! If gas changes by too much, then retry the calculation.
-    gc_threshold = dgc_threshold(igas)
-    if (do_incloud) gc_threshold = gc_threshold / cldfrc(iz)
-    !
-    ! NOTE: If doing incloud calculations, then the threshold needs to be scaled by the
-    ! cloud fraction since the cloud mass has been scaled by the cloud fraction.
     
-    if (gc_threshold /= 0._f) then
-      if ((dtime * gasprod(igas) / gc(iz,igas)) > gc_threshold) then
+    if (dgc_threshold(igas) /= 0._f) then
+      if ((dtime * gasprod(igas) / gc(iz,igas)) > dgc_threshold(igas)) then
         if (do_substep) then
           if (nretries == maxretries) then 
             if (do_print) write(LUNOPRT,3) trim(gasname(igas)), iz, lat, lon, dtime * gasprod(igas) / gc(iz,igas)

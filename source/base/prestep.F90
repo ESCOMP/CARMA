@@ -98,13 +98,6 @@ subroutine prestep(carma, cstate, rc)
   do iz = 1, NZ
     call maxconc(carma, cstate, iz, rc)
   end do
-  
-  !  Set production terms and loss rates due to slow microphysics
-  !  processes (coagulation) to zero.
-  if (do_coag) then
-    coagpe(:,:,:) = 0._f
-    coaglg(:,:,:) = 0._f
-  endif
 
   ! Return to caller with preliminary timestep things completed.
   return

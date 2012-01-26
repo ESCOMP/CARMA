@@ -1,5 +1,32 @@
 ===============================================================
 Tag name: 
+Originator(s): Charles Bardeen
+Date: January 26, 2011
+
+One-line Summary:
+
+Add capability for clear sky processing when using in-cloud
+and gridbox average particles.
+
+Purpose of changes:
+
+Allows two sets of microphysical calculations to be done in one
+Step call. One is for the fraction of the grid box that is
+in-cloud and the other is for the remaining clear sky portion.
+The entire mass of particle groups that are "cloud" are only
+processed in the in-cloud portion. Other groups can also
+condense liquid, but be over the entire gridbox. These would
+have "is cloud" as false and will be processed in both the
+in-cloud and clear sky portions of the grid box. Sedimentation
+is only done once on the gridbox average values, but coagulation
+and growth are done twice.
+
+Two tests have been added for this :
+  - GROWINTEST  = in-cloud test
+  - GROWCLRTEST = in-cloud & clear sky test
+
+===============================================================
+Tag name: 
 Originator(s): Charles Bardeen, Mike Mills
 Date: December 1, 2011
 

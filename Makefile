@@ -115,6 +115,10 @@ BC2GTEST.exe : $(CARMA_OBJ) carma_bc2gtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o BC2GTEST.exe carma_bc2gtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 GROWTEST.exe : $(CARMA_OBJ) carma_growtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o GROWTEST.exe carma_growtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+GROWCLRTEST.exe : $(CARMA_OBJ) carma_growclrtest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(LDFLAGS) -o GROWCLRTEST.exe carma_growclrtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+GROWINTEST.exe : $(CARMA_OBJ) carma_growintest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(LDFLAGS) -o GROWINTEST.exe carma_growintest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 GROWSUBTEST.exe : $(CARMA_OBJ) carma_growsubtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o GROWSUBTEST.exe carma_growsubtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 INITTEST.exe : $(CARMA_OBJ) carma_inittest.o carma_testutils.o atmosphere_mod.o
@@ -144,7 +148,7 @@ SULFATETEST.exe : $(CARMA_OBJ) carma_sulfatetest.o carma_testutils.o atmosphere_
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
 SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
-SULFATETEST.exe NUC2TEST.exe 
+SULFATETEST.exe NUC2TEST.exe GROWINTEST.exe GROWCLRTEST.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)

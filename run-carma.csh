@@ -2,14 +2,14 @@
 # An entry point for running the CARMA code, which creates a run directory
 # copies in the executable and the then runs the executable.
 #
-# NOTE: This scripts could be easily enhanced to manage mutliple executables and
+# NOTE: This script could be easily enhanced to manage mutliple executables and
 # multiple run directories, which my be useful as part of an automated test
 # suite.
 #
 # Usage
-#  make-carma.csh [build target]
+#  run-carma.csh [test]
 #
-#   build target - target label for the make
+#   test - the name of an executable test case
 #
 
 # Environment Variables
