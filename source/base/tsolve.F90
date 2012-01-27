@@ -23,7 +23,7 @@
 !!
 !! @author Andy Ackerman
 !! @version Oct-1997
-subroutine tsolve(carma, cstate, iz, rc)
+subroutine tsolve(carma, cstate, iz, scale_threshold, rc)
 
   ! types
   use carma_precision_mod
@@ -38,6 +38,7 @@ subroutine tsolve(carma, cstate, iz, rc)
   type(carma_type), intent(in)         :: carma   !! the carma object
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
   integer, intent(in)                  :: iz      !! z index
+  real(kind=f)                         :: scale_threshold !! Scaling factor for convergence thresholds
   integer, intent(inout)               :: rc      !! return code, negative indicates failure
   
   1 format(/,'tsolve::ERROR - negative temperature for : iz=',i4,',lat=',&
@@ -50,6 +51,7 @@ subroutine tsolve(carma, cstate, iz, rc)
               f7.2,',lon=',f7.2,',T=',e10.3,',dT=',e10.3,',t_old=',e10.3)
       
   real(kind=f)      :: dt           ! delta temperature
+  real(kind=f)      :: threshold    ! convergence threshold
   
       
   ! Solve for the new <t> due to latent heat exchange and radiative heating.
@@ -92,9 +94,10 @@ subroutine tsolve(carma, cstate, iz, rc)
   ! Don't let the temperature change by more than the threshold in any given substep,
   ! to prevent overshooting that doesn't result in negative gas concentrations, but
   ! does result in excessive temperature swings.
+  threshold = dt_threshold / scale_threshold
   
-  if (dt_threshold /= 0._f) then
-    if (abs(abs(dt)) > dt_threshold) then
+  if (threshold /= 0._f) then
+    if (abs(abs(dt)) > threshold) then
       if (do_substep) then
         if (nretries == maxretries) then 
           if (do_print) write(LUNOPRT,2) iz, lat, lon, t(iz), rlprod*dtime, dtime*partheat(iz), told(iz), d_gc(iz, 1), d_t(iz)

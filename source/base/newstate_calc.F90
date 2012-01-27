@@ -117,9 +117,6 @@ subroutine newstate_calc(carma, cstate, scale_threshold, rc)
       nretries = 0._f
       takeSteps = .true.
       
-      dgc_threshold(:) = dgc_threshold(:) / scale_threshold(iz)
-      dt_threshold     = dt_threshold     / scale_threshold(iz)
-      
       do while (takeSteps)
       
         ! Compute sub-timestep time interval for current spatial grid point
@@ -178,7 +175,7 @@ subroutine newstate_calc(carma, cstate, scale_threshold, rc)
           
           ! Calculate changes in particle concentrations for current spatial point
           ! due to microphysical processes, part 2.  (faster microphysical calcs)
-          call microfast(carma, cstate, iz, rc)
+          call microfast(carma, cstate, iz, scale_threshold(iz), rc)
           if (rc < RC_OK) return
 
   
@@ -232,8 +229,6 @@ subroutine newstate_calc(carma, cstate, scale_threshold, rc)
         end do
       end do
 
-      dgc_threshold(:) = dgc_threshold(:) * scale_threshold(iz)
-      dt_threshold     = dt_threshold     * scale_threshold(iz)
       
       ! Keep track of substepping and retry statistics for performance tuning.
       max_nsubstep = max(max_nsubstep, ntsubsteps)

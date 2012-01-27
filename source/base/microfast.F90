@@ -6,7 +6,7 @@
 !!
 !! @author Eric Jensen, Bill McKie
 !! @version Sep-1997
-subroutine microfast(carma, cstate, iz, rc)
+subroutine microfast(carma, cstate, iz, scale_threshold, rc)
 
   ! types
   use carma_precision_mod
@@ -21,6 +21,7 @@ subroutine microfast(carma, cstate, iz, rc)
   type(carma_type), intent(inout)      :: carma       !! the carma object
   type(carmastate_type), intent(inout) :: cstate      !! the carma state object
   integer, intent(in)                  :: iz          !! z index
+  real(kind=f)                         :: scale_threshold !! Scaling factor for convergence thresholds
   integer, intent(inout)               :: rc          !! return code, negative indicates failure
 
   ! Local Variables
@@ -150,13 +151,13 @@ subroutine microfast(carma, cstate, iz, rc)
     call downgevapply(carma, cstate, iz, rc)
     if (rc < RC_OK) return
 
-    call gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
+    call gsolve(carma, cstate, iz, previous_ice, previous_liquid, scale_threshold, rc)
     if (rc /=RC_OK) return
   endif
 
   ! Update temperature if thermal processes requested
   if (do_thermo) then
-    call tsolve(carma, cstate, iz, rc)
+    call tsolve(carma, cstate, iz, scale_threshold, rc)
     if (rc /= RC_OK) return
   endif
 

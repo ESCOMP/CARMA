@@ -6,7 +6,7 @@
 !!
 !! @author Andy Ackerman, Bill McKie, Chuck Bardeen
 !! @version Dec-1995, Sep-1997, Nov-2009
-subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
+subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, scale_threshold, rc)
 
   ! types
   use carma_precision_mod
@@ -23,6 +23,7 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
   integer, intent(in)                  :: iz      !! z index
   real(kind=f), intent(in)             :: previous_ice(NGAS)      !! total ice at the start of substep
   real(kind=f), intent(in)             :: previous_liquid(NGAS)   !! total liquid at the start of substep
+  real(kind=f)                         :: scale_threshold !! Scaling factor for convergence thresholds
   integer, intent(inout)               :: rc      !! return code, negative indicates failure
 
   ! Local Variables
@@ -31,6 +32,7 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
   real(kind=f)                         :: rvap
   real(kind=f)                         :: total_ice(NGAS)      ! total ice
   real(kind=f)                         :: total_liquid(NGAS)   ! total liquid
+  real(kind=f)                         :: threshold            ! convergence threshold
   
   
   1 format(/,'gsolve::ERROR - negative gas concentration for ',a,' : iz=',i4,',lat=', &
@@ -76,9 +78,10 @@ subroutine gsolve(carma, cstate, iz, previous_ice, previous_liquid, rc)
     end if
     
     ! If gas changes by too much, then retry the calculation.
+    threshold = dgc_threshold(igas) / scale_threshold
     
-    if (dgc_threshold(igas) /= 0._f) then
-      if ((dtime * gasprod(igas) / gc(iz,igas)) > dgc_threshold(igas)) then
+    if (threshold /= 0._f) then
+      if ((dtime * gasprod(igas) / gc(iz,igas)) > threshold) then
         if (do_substep) then
           if (nretries == maxretries) then 
             if (do_print) write(LUNOPRT,3) trim(gasname(igas)), iz, lat, lon, dtime * gasprod(igas) / gc(iz,igas)
