@@ -40,6 +40,7 @@ subroutine newstate(carma, cstate, rc)
   real(kind=f)                    :: rlheat_clear(NZ)
   real(kind=f)                    :: partheat_clear(NZ)
   real(kind=f)                    :: zsubsteps_clear(NZ)
+  real(kind=f)                    :: scale_threshold(NZ)
   integer                         :: igroup
   integer                         :: igas
   integer                         :: ielem
@@ -234,7 +235,8 @@ subroutine newstate(carma, cstate, rc)
   
   ! No special in-cloud/clear sky processing, everything is gridbox average.
   else
-    call newstate_calc(carma, cstate, 1._f, rc)
+    scale_threshold(:) = 1._f
+    call newstate_calc(carma, cstate, scale_threshold, rc)
     if (rc < RC_OK) return
   end if
     
