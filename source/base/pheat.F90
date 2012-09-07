@@ -134,7 +134,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
           isol = isolelem(ieother(jother))
           
           ! Some elements aren't soluble, so skip them.
-          if(isol .ge. 0 ) argsol = argsol + sol_ions(isol)*otherm(jother)/solwtmol(isol)
+          if(isol .gt. 0 ) argsol = argsol + sol_ions(isol)*otherm(jother)/solwtmol(isol)
         enddo 
        
         argsol = argsol*gwtmol(igas)/condm

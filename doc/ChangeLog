@@ -1,6 +1,22 @@
 ===============================================================
 Tag name: 
 Originator(s): Charles Bardeen
+Date: Se[tember 7, 2012
+
+One-line Summary:
+
+Fix bug in pheat.F90 when no solute is specified.
+
+Purpose of changes:
+
+A check to exclude a calculation in the particle growth code when
+no solutes are present was coded incorrectly causing the model
+to crash when growth is enabled, core elements exist in the group
+and no solutes are defined for the cores.
+
+===============================================================
+Tag name: 
+Originator(s): Charles Bardeen
 Date: January 26, 2011
 
 One-line Summary:
