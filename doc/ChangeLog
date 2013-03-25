@@ -1,7 +1,34 @@
 ===============================================================
 Tag name: 
+Originator(s): Charles Bardeen, Mike Mills
+Date: March 18, 2013
+
+One-line Summary:
+
+Some bug fixes related to sulfates, to evaporation, mie code
+and coagulation kernels.
+
+Purpose of changes:
+
+The wet radius for sulfates was not being calculated properly, since
+it was missing a dry particle density term. The new wet radius will be
+roughly twice what it was before. Also made some changes to allow specification
+of sulfuric acid in CARMASTATE_CreateFromReference, so that initialization
+from a reference profile can be used with sulfate models. Put some limits
+on calculations in sulfate utilities for practical temperature ranges.
+
+Fixed a problem with total evaporation that affected some models.
+
+Fixed a problem with types in the optical properties calculation when
+using Bohren and Huffman.
+
+Fixed a problem with the way the coagulation due to convection was
+being calculated that caused asymmetric coagulation kernels.
+
+===============================================================
+Tag name: 
 Originator(s): Charles Bardeen
-Date: Se[tember 7, 2012
+Date: September 7, 2012
 
 One-line Summary:
 

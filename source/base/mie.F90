@@ -36,7 +36,6 @@ subroutine mie(carma, miertn, radius, wavelength, m, lqext, lqsca, lasym, rc)
   
 
   integer, parameter                 :: nang     = 10   ! Number of angles
-  integer, parameter                 :: mieRoutine = I_MIERTN_BOHREN1983  !! Note: This should move to a carma field.
     
   real(kind=f)                       :: theta(IT)
   real(kind=f)                       :: wvno 
@@ -45,8 +44,8 @@ subroutine mie(carma, miertn, radius, wavelength, m, lqext, lqsca, lasym, rc)
   real(kind=f)                       :: x 
   real(kind=f)                       :: qback 
   real(kind=f)                       :: ctbrqs 
-  real(kind=f)                       :: s1(2*nang-1)
-  real(kind=f)                       :: s2(2*nang-1)
+  complex(kind=f)                    :: s1(2*nang-1)
+  complex(kind=f)                    :: s2(2*nang-1)
       
 
   ! Calculate the wave number.

@@ -204,7 +204,7 @@ contains
     ! Sulfate Aerosol, using weight percent.
     if (irhswell(igroup) == I_WTPCT_H2SO4) then
       rhopwet   = sulfate_density(carma, wgtpct, temp, rc)
-      rwet      = rdry * (100._f / wgtpct / rhopwet)**(1._f / 3._f)   
+      rwet      = rdry * (100._f * rhopdry / wgtpct / rhopwet)**(1._f / 3._f)   
     end if
   
     ! Return to caller with wet radius evaluated.

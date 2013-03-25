@@ -83,6 +83,7 @@ subroutine setupckern(carma, cstate, rc)
   integer :: i_smal
   integer :: ig_larg
   integer :: ig_smal
+  real(kind=f) :: d_larg
 
   real(kind=f) :: re_larg
   real(kind=f) :: pe 
@@ -292,6 +293,7 @@ subroutine setupckern(carma, cstate, rc)
                   i_smal = i1
                   ig_larg = j2
                   ig_smal = j1
+                  d_larg  = dj
                 else
                   r_larg = r1
                   r_smal = r2
@@ -299,20 +301,21 @@ subroutine setupckern(carma, cstate, rc)
                   i_smal = i2
                   ig_larg = j1
                   ig_smal = j2
+                  d_larg  = di
                 endif
                 
                 ! Calculate enhancement of coagulation due to convective diffusion 
-                ! as described in Pruppacher and Klett.
+                ! as described in Pruppacher and Klett (Eqs. 17-12 and 17-14).
   
                 ! Enhancement applies to larger particle.
                 re_larg = re(k,i_larg,ig_larg)
   
                 ! <pe> is Peclet number.
-                pe  = re_larg*rmu(k) / (rhoa_cgs*di)
+                pe  = re_larg*rmu(k) / (rhoa_cgs*d_larg)
                 pe3 = pe**(1._f/3._f)
                 
                 ! <ccd> is convective diffusion coagulation coefficient
-                if( re_larg .lt. 1. )then
+                if( re_larg .lt. 1._f )then
                   ccd = 0.45_f*cbr*pe3
                 else 
                   ccd = 0.45_f*cbr*pe3*re_larg**(ONE/6._f)
@@ -336,7 +339,7 @@ subroutine setupckern(carma, cstate, rc)
                   sk = vfc_smal * (vfc_larg - vfc_smal) / (r_larg*GRAV)
      
                   if( sk .lt. 0.08333334_f )then
-                    e1 = 0.
+                    e1 = 0._f
                   else 
                     e1 = (sk/(sk + 0.25_f))**2
                   endif
@@ -347,7 +350,7 @@ subroutine setupckern(carma, cstate, rc)
                     e3  = 1._f/(1._f+.75_f*log(2._f*sk)/(sk-1.214_f))**2
                   endif
      
-                  if( re_larg .lt. 1. )then
+                  if( re_larg .lt. 1._f )then
                     e_langmuir = e3
                   else if( re_larg .gt. 1000._f )then
                     e_langmuir = e1
@@ -486,10 +489,10 @@ subroutine setupckern(carma, cstate, rc)
                 cgr = e_coal * e_coll *  PI * rp**2 * abs( vfc_1 - vfc_2 )
   
                 ! Long's (1974) kernel that only depends on size of larger droplet
-  !                 if( r_larg .le. 50.e-4 )then
-  !                   cgr = 1.1e10 * vol(i_larg,ig_larg)**2
+  !                 if( r_larg .le. 50.e-4_f )then
+  !                   cgr = 1.1e10_f * vol(i_larg,ig_larg)**2
   !                 else
-  !                   cgr = 6.33e3 * vol(i_larg,ig_larg)
+  !                   cgr = 6.33e3_f * vol(i_larg,ig_larg)
   !                 endif
   
                 ! Now combine all the coagulation and collection kernels into the
@@ -498,9 +501,9 @@ subroutine setupckern(carma, cstate, rc)
                 
                 ! To avoid generation of large, non-physical hydrometeors by
                 ! coagulation, cut down ckernel for large radii
-  !                 if( ( r1 .gt. 0.18 .and. r2 .gt. 10.e-4 ) .or. &
-  !                     ( r2 .gt. 0.18 .and. r1 .gt. 10.e-4 ) ) then
-  !                   ckernel(k,i1,i2,j1,j2) = ckernel(k,i1,i2,j1,j2) / 1.e6
+  !                 if( ( r1 .gt. 0.18_f .and. r2 .gt. 10.e-4_f ) .or. &
+  !                     ( r2 .gt. 0.18_f .and. r1 .gt. 10.e-4_f ) ) then
+  !                   ckernel(k,i1,i2,j1,j2) = ckernel(k,i1,i2,j1,j2) / 1.e6_f
   !                 endif
   
               enddo    ! second particle bin

@@ -110,25 +110,34 @@ subroutine evapp(carma, cstate, iz, rc)
                 ! and evaluate logical flags regarding position on CN bin and index of
                 ! target CN bin
                 ieto = ievp2elem(ic1)
-                igto = igelem(ieto)
-  
-                too_small = coreavg .lt. rmass(1,igto)
-                nbin = NBIN
-                too_big   = coreavg .gt. rmass(nbin,igto)
-  
-                if( .not. (too_small .or. too_big) )then
-                  iavg = log( coreavg / rmassmin(igto) ) / &
-                         log( rmrat(igto) ) + 2
-                  iavg = min( iavg, NBIN )
-                endif
-  
-                ! Only consider size of evaporating cores relative to nuc_small
-                ! when treating core second moment for this particle group
-                if( if_sec_mom(ig) )then
-                  nuc_small = coreavg .lt. rmass(1,igto)
-                else
+                
+                ! To treat internal mixtures, it is possible for the condensate to
+                ! totally evaporate and have core mass, but for there not to be another
+                ! group to which the core mass should go. So allow no evp2elem, but
+                ! always use the in group evaporation.
+                if (ieto == 0) then
                   nuc_small = .false.
-                endif
+                else
+                  igto = igelem(ieto)
+    
+                  too_small = coreavg .lt. rmass(1,igto)
+                  nbin = NBIN
+                  too_big   = coreavg .gt. rmass(nbin,igto)
+    
+                  if( .not. (too_small .or. too_big) )then
+                    iavg = log( coreavg / rmassmin(igto) ) / &
+                           log( rmrat(igto) ) + 2
+                    iavg = min( iavg, NBIN )
+                  endif
+    
+                  ! Only consider size of evaporating cores relative to nuc_small
+                  ! when treating core second moment for this particle group
+                  if( if_sec_mom(ig) )then
+                    nuc_small = coreavg .lt. rmass(1,igto)
+                  else
+                    nuc_small = .false.
+                  endif
+                end if
   
                 ! Want total evaporation when 
                 !  cores smaller than smallest nucleated 
@@ -140,7 +149,7 @@ subroutine evapp(carma, cstate, iz, rc)
                 ! No core second moment: evaporate to monodisperse CN cores or within group.!
                 if( .not. if_sec_mom(ig) )then
   
-                  if( evap_total )then
+                  if( evap_total .and. (ieto /= 0) )then
                     call evap_mono(carma,cstate,iz,ibin,ig,iavg,ieto,igto,rc)
                   else
                     call evap_ingrp(carma,cstate,iz,ibin,ig,ip,rc)
@@ -160,7 +169,7 @@ subroutine evapp(carma, cstate, iz, rc)
                   !  OR droplets will be created with core moment fraction > 1
                   evap_total = evap_total .or.  rmrat(ig)**2*smf .gt. ONE 
   
-                  if( evap_total )then
+                  if( evap_total  .and. (ieto /= 0) )then
                 
                     ! Want monodisperse total evaporation when
                     !  cores smaller than smallest nucleated 

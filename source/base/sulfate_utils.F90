@@ -2,7 +2,6 @@
 ! reference the CARMA structure.
 #include "carma_globaer.h"
 
-
 module sulfate_utils
   use carma_precision_mod
   use carma_enums_mod
@@ -12,7 +11,8 @@ module sulfate_utils
   use carma_mod
  
   implicit none
- ! Declare the public methods.
+  
+  ! Declare the public methods.
   public wtpct_tabaz
   public sulfate_density
   public sulfate_surf_tens
@@ -50,12 +50,12 @@ contains
   !!  Rated for T=185-260K, activity=0.01-1.0
   !!
   !!  Argument list input:   
-  !!    temp = Temperature (K)
+  !!    temp = temperature (K)
   !!    h2o_mass = water vapor mass concentration (g/cm3)
   !!    h2o_vp = water eq. vaper pressure (dynes/cm2)
   !!
   !!  Output:
-  !!    Weight % H2SO4 in H2O/H2SO4 particle
+  !!    wtpct_tabaz = weight % H2SO4 in H2O/H2SO4 particle (0-100)
   !!
   !!  Include global constants and variables (BK=Boltzman constant,
   !!   AVG=Avogadro's constant)
@@ -133,8 +133,6 @@ contains
     contl = atab1*(activ**btab1)+ctab1*activ+dtab1
     conth = atab2*(activ**btab2)+ctab2*activ+dtab2
       
-!    temp=min(max(temp,185.),260.)  ! T range 185-260
-    
     contt = contl + (conth-contl) * ((temp -190._f)/70._f)
     conwtp = (contt*98._f) + 1000._f
 
@@ -147,17 +145,42 @@ contains
     return
   end function wtpct_tabaz
            
-  function sulfate_density(carma, WTP,TEMP, rc)
+  !! Calculates specific gravity (g/cm3) of sulfate of 
+  !! different compositions as a linear function of temperature,
+  !! based of measurements of H2SO4/H2O solution densities made 
+  !! at 0 to 100C tabulated in the International Critical Tables 
+  !! (Washburn, ed., NRC, 1928). Measurements have confirmed that 
+  !! this data may be linearly extrapolated to stratospheric 
+  !! temperatures (180-380K) with excellent accuracy 
+  !! (Beyer, Ravishankara, & Lovejoy, JGR, 1996).
+  !!
+  !! Argument list input:
+  !!    wtp = aerosol composition in weight % H2SO4 (0-100)
+  !!    temp = temperature in Kelvin
+  !!
+  !! Output:
+  !!    sulfate_density (g/cm3) [function name]
+  !!
+  !! This function requires setup_sulfate_density to be run
+  !! first to read in the density coefficients DNC0 and DNC1
+  !! and the tabulated weight percents DNWTP.
+  !!
+  !! @author Mike Mills
+  !! @version Mar-2013
+  function sulfate_density(carma, wtp, temp, rc)
+
+  !! Include global constants and variables
+
     real(kind=f)                         :: sulfate_density
     type(carma_type), intent(in)         :: carma   !! the carma object
-    real(kind=f), intent(in)             :: WTP     !! weight percent
-    real(kind=f), intent(in)             :: TEMP    !! temperature 
+    real(kind=f), intent(in)             :: wtp     !! weight percent
+    real(kind=f), intent(in)             :: temp    !! temperature 
     integer, intent(inout)               :: rc      !! return code, negative indicates failure
     
-    ! Local declerations
+    ! Local declarations
     integer           :: i
     real(kind=f)      :: den1, den2
-    real(kind=f)      :: frac
+    real(kind=f)      :: frac, temp_loc
 
     if (wtp .lt. 0.0_f .or. wtp .gt. 100.0_f) then
       if (do_print) write(LUNOPRT,*)'sulfate_density: Illegal value for wtp:',wtp
@@ -165,53 +188,60 @@ contains
       return
     endif
 
+    ! limit temperature to bounds of extrapolation
+    temp_loc=min(temp, 380.0_f)
+    temp_loc=max(temp_loc, 180.0_f)
+
     i=1
 
     do while (wtp .gt. dnwtp(i))
      i=i+1
     end do
 
-    den2=dnc0(i)+dnc1(i)*temp
+    den2=dnc0(i)+dnc1(i)*temp_loc
 
     if (i.eq.1 .or. wtp.eq.dnwtp(i)) then
       sulfate_density=den2
       return
     endif
 
-    den1=dnc0(i-1)+dnc1(i-1)*temp
+    den1=dnc0(i-1)+dnc1(i-1)*temp_loc
     frac=(dnwtp(i)-wtp)/(dnwtp(i)-dnwtp(i-1))
     sulfate_density=den1*frac+den2*(1.0_f-frac)
 
     return
   end function sulfate_density
 
-  !!  Calculates surface tension (erg/cm2) of sulfate of 
-  !!  different compositions as a linear function of temperature.
+  !!  Calculates surface tension (erg/cm2 = dyne/cm) of sulfate of 
+  !!  different compositions as a linear function of temperature,
+  !!  as described in Mills (Ph.D. Thesis, 1996), derived from
+  !!  the measurements of Sabinina and Terpugow (1935).
   !!
   !!  Argument list input:
   !!     WTP = aerosol composition in weight % H2SO4 (0-100)
   !!     TEMP = temperature in Kelvin
   !!
   !!  Output:
-  !!     sulfate_density (g/cm3) [function name]
+  !!     sulfate_surf_tens (erg/cm2) [function name]
   !!
   !!  This function requires setup_sulfate_density to be run
   !!  first to read in the density coefficients DNC0 and DNC1
   !!  and the tabulated weight percents DNWTP.
   !!
   !! @author Mike Mills
-  !! @version Jul-2001
-  function sulfate_surf_tens(carma, wtp,temp, rc)
+  !! @version Mar-2013
+  function sulfate_surf_tens(carma, wtp, temp, rc)  
+  
     real(kind=f)                         :: sulfate_surf_tens
     type(carma_type), intent(in)         :: carma   !! the carma object
     real(kind=f), intent(in)             :: wtp     !! weight percent
     real(kind=f), intent(in)             :: temp    !! temperature 
     integer, intent(inout)               :: rc      !! return code, negative indicates failure
     
-    ! Local declerations
+    ! Local declarations
     integer           :: i  
     real(kind=f)      :: sig1, sig2
-    real(kind=f)      :: frac
+    real(kind=f)      :: frac, temp_loc
     real(kind=f)      :: stwtp(15), stc0(15), stc1(15)
     
     data stwtp/0._f, 23.8141_f, 38.0279_f, 40.6856_f, 45.335_f, 52.9305_f, 56.2735_f, &
@@ -225,6 +255,10 @@ contains
        & -0.0746702_f, -0.0522399_f, -0.0407773_f, -0.0357946_f, -0.0317062_f,   &
        & -0.025825_f, -0.0267212_f, -0.0269204_f, -0.0276187_f, -0.0302094_f,    &
        & -0.0303081_f /
+
+    ! limit temperature to reasonable bounds of extrapolation
+    temp_loc=min(temp, 380.0_f)
+    temp_loc=max(temp_loc, 180.0_f)
        
     if (wtp .lt. 0.0_f .OR. wtp .gt. 100.0_f) then
       if (do_print) write(LUNOPRT,*)'sulfate_surf_tens: Illegal value for wtp:',wtp
@@ -236,17 +270,17 @@ contains
     i=1
   
     do while (wtp.gt.stwtp(i))
-     i=i+1
+      i=i+1
     end do
   
-    sig2=stc0(i)+stc1(i)*temp
+    sig2=stc0(i)+stc1(i)*temp_loc
   
-    if (I.eq.1 .or. wtp.eq.stwtp(i)) then
+    if (i.eq.1 .or. wtp.eq.stwtp(i)) then
       sulfate_surf_tens=sig2
       return
     end if
   
-    sig1=stc0(i-1)+stc1(i-1)*temp
+    sig1=stc0(i-1)+stc1(i-1)*temp_loc
     frac=(stwtp(i)-wtp)/(stwtp(i)-stwtp(i-1))
     sulfate_surf_tens=sig1*frac+sig2*(1.0_f-frac)
   

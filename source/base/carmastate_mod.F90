@@ -261,7 +261,7 @@ contains
   !! @see CARMA_Initialize
   !! @see CARMASTATE_Destroy
   subroutine CARMASTATE_CreateFromReference(cstate, carma_ptr, time, dtime, NZ, igridv, igridh,  &
-      lat, lon, xc, dx, yc, dy, zc, zl, p, pl, t, rc, qh2o, relhum)
+      lat, lon, xc, dx, yc, dy, zc, zl, p, pl, t, rc, qh2o, relhum, qh2so4)
     type(carmastate_type), intent(inout)    :: cstate      !! the carma state object
     type(carma_type), pointer, intent(in)   :: carma_ptr   !! (in) the carma object
     real(kind=f), intent(in)                :: time        !! the model time [s]
@@ -283,6 +283,7 @@ contains
     integer, intent(out)                    :: rc          !! return code, negative indicates failure
     real(kind=f), intent(in) , optional     :: qh2o(NZ)    !! specific humidity at center [mmr]
     real(kind=f), intent(in) , optional     :: relhum(NZ)  !! relative humidity at center [fraction]
+    real(kind=f), intent(in) , optional     :: qh2so4(NZ)  !! H2SO4 mass mixing ratio at center [mmr]
     
     integer                                 :: iz
     integer                                 :: igas
@@ -355,6 +356,7 @@ contains
     ! If the model uses a gas, then set the relative and
     ! specific humidities.
     if (carma_ptr%f_igash2o /= 0) then
+    
       if (present(qh2o)) then
         cstate%f_gc(:, carma_ptr%f_igash2o) = qh2o(:) * cstate%f_rhoa_wet(:)
       
@@ -373,6 +375,9 @@ contains
       else if (present(relhum)) then
         cstate%f_relhum(:) = relhum
         
+        ! Define gas constant for this gas
+        rvap = RGAS/WTMOL_H2O
+
         ! Calculate specific humidity
         do iz = 1, NZ
           call vaporp_h2o_murphy2005(carma_ptr, cstate, iz, rc, pvap_liq, pvap_ice)
@@ -381,6 +386,13 @@ contains
           gc_cgs = (rvap * t(iz)) / (pvap_liq * relhum(iz))
           cstate%f_gc(iz, carma_ptr%f_igash2o) = gc_cgs * (cstate%f_zmet(iz)*cstate%f_xmet(iz)*cstate%f_ymet(iz)) / cstate%f_rhoa_wet(iz) 
         enddo
+      end if      
+    end if
+
+    ! If the model uses sulfuric acid, then set that gas concentration.
+    if (carma_ptr%f_igash2so4 /= 0) then
+      if (present(qh2so4)) then
+        cstate%f_gc(:, carma_ptr%f_igash2so4) = qh2so4(:) * cstate%f_rhoa_wet(:)
       end if
     end if
 
