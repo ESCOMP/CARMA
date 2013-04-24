@@ -18,7 +18,7 @@ subroutine microfast(carma, cstate, iz, scale_threshold, rc)
   
   implicit none
 
-  type(carma_type), intent(inout)      :: carma       !! the carma object
+  type(carma_type), intent(in)         :: carma       !! the carma object
   type(carmastate_type), intent(inout) :: cstate      !! the carma state object
   integer, intent(in)                  :: iz          !! z index
   real(kind=f)                         :: scale_threshold !! Scaling factor for convergence thresholds

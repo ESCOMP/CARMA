@@ -26,7 +26,7 @@ subroutine newstate_calc(carma, cstate, scale_threshold, rc)
 
   implicit none
 
-  type(carma_type), intent(inout)      :: carma   !! the carma object
+  type(carma_type), intent(in)         :: carma   !! the carma object
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
   real(kind=f), intent(in)             :: scale_threshold(NZ)  !! Scaling factor for convergence thresholds
   integer, intent(inout)               :: rc      !! return code, negative indicates failure

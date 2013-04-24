@@ -1,5 +1,25 @@
 ===============================================================
 Tag name: 
+Originator(s): Sean Santos
+Date: April 24, 2013
+
+One-line Summary: Fix problems with different compilers and debug flags.
+
+Purpose of changes:
+
+Some cases where the carma_type object had "intent(inout)" were changed to
+"intent(in)". This would have been required if those routines had had
+explicit interfaces, because intent(in) arguments can only be passed as
+arguments that are also intent(in), or as arguments with no explicitly
+specified intent.
+
+Since Fortran 90, imag and aimag are identical generic intrinsics on most
+compilers. However, aimag is the name in the Fortran standards, while imag
+is a compiler extension. Therefore "imag" has been changed to "aimag" and
+comments that are no longer relevant have been removed.
+
+===============================================================
+Tag name: 
 Originator(s): Charles Bardeen, Mike Mills
 Date: March 18, 2013
 

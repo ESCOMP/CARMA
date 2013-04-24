@@ -107,20 +107,6 @@ SUBROUTINE miess(carma,RO,RFR,RFI,THETD,JX,QEXT,QSCAT,QBS,CTBRQS,R,RE2,TMAG2,WVN
   !!   THE ANGLE THETD(J).. ELTRMX(I,J,2) REPRESENTS THE ITH ELEMENT
   !!   OF THE MATRIX FOR THE ANGLE 180.0 - THETD(J) ..
   real(kind=f)                         :: ELTRMX(4,IT,2)
-  
-!  Some compilers (e.g. absoft) don't the support imag(z) generic intrinsic function.
-!  In that situation, uncomment the following 2 lines to define stmt function to
-!  redefine imag() function to the alternative function.  I.e. change "alt_function"
-!  in following stmt function to the appropriate function that will return the
-!  imaginary part of a double complex for the compiler being used.
-!  For compilers that support imag(z), simply leave following 2 statments commented.
-!  The "c--alt_imag" comment prefix is designed to be recognized by the
-!  automated editing script create_dmiess, so please do not modify this prefix
-!  in the dmiess.f.template file.
-!  -bm  Nov-1999
-!
-!--alt_imag      double complex z_dum_arg
-!--alt_imag      imag(z_dum_arg) = dimag(z_dum_arg)
 
 
   ! IF THE CORE IS SMALL SCATTERING IS COMPUTED FOR THE SHELL ONLY
@@ -145,8 +131,8 @@ SUBROUTINE miess(carma,RO,RFR,RFI,THETD,JX,QEXT,QSCAT,QBS,CTBRQS,R,RE2,TMAG2,WVN
   Z(4) =  K2 * R
   X1   =  REAL( Z(1) )
   X4   =  REAL( Z(4) )
-  Y1   =  imag( Z(1) )
-  Y4   =  imag( Z(4) )
+  Y1   =  aimag( Z(1) )
+  Y4   =  aimag( Z(4) )
   RRF  =  1.0_f / RF
   RX   =  1.0_f / X
   RRFX =  RRF * RX
@@ -225,7 +211,7 @@ SUBROUTINE miess(carma,RO,RFR,RFI,THETD,JX,QEXT,QSCAT,QBS,CTBRQS,R,RE2,TMAG2,WVN
   TA(2)  =  T(1)
   WFN(2) =  RX * WFN(1) - WM1
   TA(3)  =  REAL(WFN(2))
-  TA(4)  =  imag(WFN(2))
+  TA(4)  =  aimag(WFN(2))
 
   if ( IFLAG .ne. 2 ) then
     N = 1
@@ -352,8 +338,8 @@ SUBROUTINE miess(carma,RO,RFR,RFI,THETD,JX,QEXT,QSCAT,QBS,CTBRQS,R,RE2,TMAG2,WVN
     WM1    =  WFN(1)
     WFN(1) =  WFN(2)
     TA(1)  =  REAL(WFN(1))
-    TA(2)  =  imag(WFN(1))
-    TA(4)  =  imag(WFN(2))
+    TA(2)  =  aimag(WFN(1))
+    TA(4)  =  aimag(WFN(2))
     WFN(2) =  T(1) * RX * WFN(1)  -  WM1
     TA(3)  =  REAL(WFN(2))
   

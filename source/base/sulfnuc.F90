@@ -19,7 +19,7 @@ subroutine sulfnuc(carma,cstate, iz, rc)
   
   implicit none
   
-  type(carma_type), intent(inout)      :: carma       !! the carma object
+  type(carma_type), intent(in)         :: carma       !! the carma object
   type(carmastate_type), intent(inout) :: cstate      !! the carma state object
   integer, intent(in)                  :: iz          !! level index
   integer, intent(inout)               :: rc          !! return code, negative indicates failure

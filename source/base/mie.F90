@@ -58,7 +58,7 @@ subroutine mie(carma, miertn, radius, wavelength, m, lqext, lqsca, lasym, rc)
     theta(:) = 0.0_f
     
     rfr = real(m)
-    rfi = imag(m)
+    rfi = aimag(m)
     
     call miess(carma, &
                radius, &
