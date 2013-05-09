@@ -34,9 +34,9 @@ module carmagroup_mod
 
 contains
 
-  subroutine CARMAGROUP_Create(carma, igroup, name, rmin, rmrat, ishape, eshape, is_ice, &
-      rc, irhswell, irhswcomp, refidx, do_mie, do_wetdep, do_drydep, do_vtran, solfac, scavcoef, shortname, &
-      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin, imiertn, is_sulfate, dpc_threshold)
+  subroutine CARMAGROUP_Create(carma, igroup, name, rmin, rmrat, ishape, eshape, is_ice, rc, is_fractal, &
+      irhswell, irhswcomp, refidx, do_mie, do_wetdep, do_drydep, do_vtran, solfac, scavcoef, shortname, &
+      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin, imiertn, is_sulfate, dpc_threshold, rmon, df, falpha)
     type(carma_type), intent(inout)             :: carma               !! the carma object
     integer, intent(in)                         :: igroup              !! the group index
     character(*), intent(in)                    :: name                !! the group name, maximum of 255 characters
@@ -46,6 +46,7 @@ contains
     real(kind=f), intent(in)                    :: eshape              !! the aspect ratio of the particle shape (length/diameter)
     logical, intent(in)                         :: is_ice              !! is this an ice particle?
     integer, intent(out)                        :: rc                  !! return code, negative indicates failure
+    logical, optional, intent(in)               :: is_fractal          !! is this a fractal particle?
     integer, optional, intent(in)               :: irhswell            !! the parameterization for particle swelling from relative humidity [I_FITZGERALD | I_GERBER]
     integer, optional, intent(in)               :: irhswcomp           !! the composition for particle swelling from relative humidity [I_FITZGERALD | I_GERBER]
     complex(kind=f), optional, intent(in)       :: refidx(carma%f_NWAVE) !! refractive index for the particle
@@ -61,9 +62,12 @@ contains
     integer, optional, intent(in)               :: ifallrtn            !! fall velocity routine [I_FALLRTN_STD | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010 | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
     logical, optional, intent(in)               :: is_cloud            !! is this a cloud particle?
     real(kind=f), optional, intent(in)          :: rmassmin            !! the minimum mass, when used overrides rmin[g]
-    integer, optional, intent(in)               :: imiertn             !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983]
+    integer, optional, intent(in)               :: imiertn             !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983 | I_MIERTN_BOTET1997]
     logical, optional, intent(in)               :: is_sulfate          !! is this a sulfate particle?
     real(kind=f), optional, intent(in)          :: dpc_threshold       !! convergence criteria for particle concentration [fraction]
+    real(kind=f), optional, intent(in)          :: rmon                !! monomer radius for fractal particles
+    real(kind=f), optional, intent(in)          :: df(carma%f_NBIN)    !! fractal dimension
+    real(kind=f), optional, intent(in)          :: falpha              !! fractal packing coefficient
 
     ! Local variables
     integer                               :: ier
@@ -91,6 +95,9 @@ contains
       carma%f_group(igroup)%f_icorelem(carma%f_NELEM), &
       carma%f_group(igroup)%f_arat(carma%f_NBIN), &
       carma%f_group(igroup)%f_rrat(carma%f_NBIN), &
+      carma%f_group(igroup)%f_rprat(carma%f_NBIN), &
+      carma%f_group(igroup)%f_df(carma%f_NBIN), &
+      carma%f_group(igroup)%f_nmon(carma%f_NBIN), &
       stat=ier) 
     if(ier /= 0) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Add: ERROR allocating, status=", ier
@@ -110,10 +117,14 @@ contains
     carma%f_group(igroup)%f_icorelem(:) = 0
     carma%f_group(igroup)%f_ifallrtn    = I_FALLRTN_STD
     carma%f_group(igroup)%f_imiertn     = I_MIERTN_TOON1981
+    carma%f_group(igroup)%f_is_fractal  = .false.
     carma%f_group(igroup)%f_is_cloud    = .false.
     carma%f_group(igroup)%f_is_sulfate  = .false.
     carma%f_group(igroup)%f_dpc_threshold = 0._f
-    
+    carma%f_group(igroup)%f_rmon        = 0._f
+    carma%f_group(igroup)%f_df(:)       = 3.0_f
+    carma%f_group(igroup)%f_nmon(:)     = 1.0_f
+    carma%f_group(igroup)%f_falpha      = 1.0_f
 
     ! Any optical properties?
     if (carma%f_NWAVE > 0) then
@@ -174,11 +185,14 @@ contains
     if (present(maxbin))     carma%f_group(igroup)%f_maxbin       = maxbin
     if (present(ifallrtn))   carma%f_group(igroup)%f_ifallrtn     = ifallrtn
     if (present(is_cloud))   carma%f_group(igroup)%f_is_cloud     = is_cloud
+    if (present(is_fractal)) carma%f_group(igroup)%f_is_fractal   = is_fractal
     if (present(rmassmin))   carma%f_group(igroup)%f_rmassmin     = rmassmin
     if (present(imiertn))    carma%f_group(igroup)%f_imiertn      = imiertn
     if (present(is_sulfate)) carma%f_group(igroup)%f_is_sulfate   = is_sulfate
     if (present(dpc_threshold)) carma%f_group(igroup)%f_dpc_threshold = dpc_threshold
-
+    if (present(rmon))       carma%f_group(igroup)%f_rmon         = rmon
+    if (present(df))         carma%f_group(igroup)%f_df(:)        = df(:)
+    if (present(falpha))     carma%f_group(igroup)%f_falpha       = falpha
     
     ! Initialize other properties.
     carma%f_group(igroup)%f_nelem         = 0
@@ -204,8 +218,41 @@ contains
       ! NOTE: Should add code here to handle oblate and prolate spheroids.
       carma%f_group(igroup)%f_arat(:) = 1.0_f
       carma%f_group(igroup)%f_rrat(:) = 1.0_f
+      carma%f_group(igroup)%f_rprat(:) = 1.0_f
     end if
     
+
+    !! Dry fractal aggregate aerosols composed of nmon identical spheres of radius rmon 
+    !! can be treated by enabling the switch is_fractal = .true. Optical properties of dry 
+    !! fractal aggregates can be computed using option imiertn = I_MIERTN_FRACTAL.
+    !! To use either of these options, the user must define the fractal dimension, df(NBIN), 
+    !! monomer size (rmon), and packing coefficient (falpha) when creating the CARMA group.
+    !!
+    !! For aerosol particles fractal dimensions (df) are typically near 2.0, but can vary as a function 
+    !! of size/number of monomers contained withing. The packing coefficient (falpha) is expected to be near
+    !! unity. falpha > 1 implies a more tightly packed fractal aggregate and vice-versa. 
+    !!
+    !! If the user desires to use fractal optical properties calculation (I_MIERTN_BOTET1997), then
+    !! the user must also have fractal microphysics enabled (is_fractal = .true.).  However, note that 
+    !! if fractal microphysics are enabled, the user is free to select a standard Mie optical property calculation.
+    !! 
+    !
+    ! Check consistency for fractal optical property calculation
+    if ((carma%f_group(igroup)%f_imiertn .eq. I_MIERTN_BOTET1997) .and. (carma%f_group(igroup)%f_is_fractal .eq. .FALSE.)) then        
+        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Create: ERROR, fractal optics selected without fractal microphysics enabled"
+        rc = RC_ERROR
+        return
+    end if
+
+    ! Check input consistency for fractal physics
+    if (carma%f_group(igroup)%f_is_fractal .eq. .TRUE. .or. carma%f_group(igroup)%f_imiertn .eq. I_MIERTN_BOTET1997) then
+      if ((present(rmon) .ne. .TRUE.) .or. (present(df) .ne. .TRUE.) .or. (present(falpha) .ne. .TRUE.)) then
+        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Create: ERROR, for fractal physics must set rmon,df,falpha"
+        rc = RC_ERROR
+        return 
+      end if
+    end if
+
     return
   end subroutine CARMAGROUP_Create
     
@@ -263,6 +310,9 @@ contains
         carma%f_group(igroup)%f_icorelem, &
         carma%f_group(igroup)%f_arat, &
         carma%f_group(igroup)%f_rrat, &
+        carma%f_group(igroup)%f_rprat, &
+        carma%f_group(igroup)%f_df, &
+        carma%f_group(igroup)%f_nmon, &
         stat=ier) 
       if(ier /= 0) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Destroy: ERROR deallocating, status=", ier
@@ -287,10 +337,10 @@ contains
   !! @see CARMAGROUP_Create
   !! @see CARMA_GetGroup
   !! @see CARMA_Initialize 
-  subroutine CARMAGROUP_Get(carma, igroup, rc, name, shortname, rmin, rmrat, ishape, eshape, is_ice, &
+  subroutine CARMAGROUP_Get(carma, igroup, rc, name, shortname, rmin, rmrat, ishape, eshape, is_ice, is_fractal, &
       irhswell, irhswcomp, cnsttype, r, rlow, rup, dr, rmass, dm, vol, qext, ssa, asym, do_mie, &
       do_wetdep, do_drydep, do_vtran, solfac, scavcoef, ienconc, refidx, ncore, icorelem, maxbin, &
-      ifallrtn, is_cloud, rmassmin, arat, rrat, imiertn, is_sulfate, dpc_threshold)
+      ifallrtn, is_cloud, rmassmin, arat, rrat, rprat, imiertn, is_sulfate, dpc_threshold, rmon, df, nmon, falpha)
       
     type(carma_type), intent(in)              :: carma                        !! the carma object
     integer, intent(in)                       :: igroup                       !! the group index
@@ -302,6 +352,7 @@ contains
     integer, optional, intent(out)            :: ishape                       !! the type of the particle shape
     real(kind=f), optional, intent(out)       :: eshape                       !! the aspect ratio of the particle shape
     logical, optional, intent(out)            :: is_ice                       !! is this an ice particle?
+    logical, optional, intent(out)            :: is_fractal                   !! is this a fractal?
     integer, optional, intent(out)            :: irhswell                     !! the parameterization for particle swelling from relative humidity
     integer, optional, intent(out)            :: irhswcomp                    !! the composition for particle swelling from relative humidity
     integer, optional, intent(out)            :: cnsttype                     !! constituent type in the parent model
@@ -312,8 +363,9 @@ contains
     real(kind=f), intent(out), optional       :: rmass(carma%f_NBIN)            !! the bin mass [g]
     real(kind=f), intent(out), optional       :: dm(carma%f_NBIN)               !! the bin width in mass space [g]
     real(kind=f), intent(out), optional       :: vol(carma%f_NBIN)              !! the bin volume [cm<sup>3</sup>]
-    real(kind=f), intent(out), optional       :: rrat(carma%f_NBIN)             !! the radius ratio (maximum dimension / radius of enclosing sphere)
     real(kind=f), intent(out), optional       :: arat(carma%f_NBIN)             !! the projected area ratio (area / area enclosing sphere)
+    real(kind=f), intent(out), optional       :: rrat(carma%f_NBIN)             !! the radius ratio (maximum dimension / radius of enclosing sphere)
+    real(kind=f), intent(out), optional       :: rprat(carma%f_NBIN)             !! the porusity radius ratio (scaled porosity radius / equiv. sphere)
     complex(kind=f), intent(out), optional    :: refidx(carma%f_NWAVE)          !! the refractive index at each wavelength
     real(kind=f), intent(out), optional       :: qext(carma%f_NWAVE,carma%f_NBIN) !! extinction efficiency
     real(kind=f), intent(out), optional       :: ssa(carma%f_NWAVE,carma%f_NBIN)  !! single scattering albedo
@@ -331,9 +383,13 @@ contains
     integer, optional, intent(out)            :: ifallrtn                     !! fall velocity routine [I_FALLRTN_STD | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010 | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
     logical, optional, intent(out)            :: is_cloud                     !! is this a cloud particle?
     real(kind=f), optional, intent(out)       :: rmassmin                     !! the minimum mass [g]
-    integer, optional, intent(out)            :: imiertn                      !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983]
+    integer, optional, intent(out)            :: imiertn                      !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983 | I_MIERTN_BOTET1997]
     logical, optional, intent(out)            :: is_sulfate                   !! is this a sulfate particle?
     real(kind=f), optional, intent(out)       :: dpc_threshold                !! convergence criteria for particle concentration [fraction]
+    real(kind=f), optional, intent(out)       :: rmon                         !! monomer radius for fractal particles
+    real(kind=f), optional, intent(out)       :: df(carma%f_NBIN)             !! fractal dimension
+    real(kind=f), optional, intent(out)       :: nmon(carma%f_NBIN)           !! number of monomers per
+    real(kind=f), optional, intent(out)       :: falpha                       !! fractal packing coefficient
 
     ! Assume success.
     rc = RC_OK
@@ -354,6 +410,7 @@ contains
     if (present(ishape))       ishape       = carma%f_group(igroup)%f_ishape
     if (present(eshape))       eshape       = carma%f_group(igroup)%f_eshape
     if (present(is_ice))       is_ice       = carma%f_group(igroup)%f_is_ice
+    if (present(is_fractal))   is_fractal   = carma%f_group(igroup)%f_is_fractal
     if (present(irhswell))     irhswell     = carma%f_group(igroup)%f_irhswell
     if (present(irhswcomp))    irhswcomp    = carma%f_group(igroup)%f_irhswcomp
     if (present(cnsttype))     cnsttype     = carma%f_group(igroup)%f_cnsttype
@@ -364,6 +421,7 @@ contains
     if (present(rmass))        rmass(:)     = carma%f_group(igroup)%f_rmass(:)
     if (present(rrat))         rrat(:)      = carma%f_group(igroup)%f_rrat(:)
     if (present(arat))         arat(:)      = carma%f_group(igroup)%f_arat(:)
+    if (present(rprat))        rprat(:)     = carma%f_group(igroup)%f_rprat(:)
     if (present(dm))           dm(:)        = carma%f_group(igroup)%f_dm(:)
     if (present(vol))          vol(:)       = carma%f_group(igroup)%f_vol(:)
     if (present(do_mie))       do_mie       = carma%f_group(igroup)%f_do_mie
@@ -382,6 +440,10 @@ contains
     if (present(imiertn))      imiertn      = carma%f_group(igroup)%f_imiertn
     if (present(is_sulfate))   is_sulfate   = carma%f_group(igroup)%f_is_sulfate
     if (present(dpc_threshold)) dpc_threshold = carma%f_group(igroup)%f_dpc_threshold
+    if (present(rmon))         rmon         = carma%f_group(igroup)%f_rmon
+    if (present(df))           df(:)        = carma%f_group(igroup)%f_df(:)
+    if (present(nmon))         nmon(:)      = carma%f_group(igroup)%f_nmon(:)
+    if (present(falpha))       falpha       = carma%f_group(igroup)%f_falpha
     
     if (carma%f_NWAVE == 0) then
       if (present(refidx) .or. present(qext) .or. present(ssa) .or. present(asym)) then
@@ -421,6 +483,7 @@ contains
     integer                                   :: ishape             ! the type of the particle shape
     real(kind=f)                              :: eshape             ! the aspect ratio of the particle shape
     logical                                   :: is_ice             ! is this an ice particle?
+    logical                                   :: is_fractal         ! is this a fractal?
     integer                                   :: irhswell           ! the parameterization for particle swelling from relative humidity
     integer                                   :: irhswcomp          ! the composition for particle swelling from relative humidity
     integer                                   :: cnsttype           ! constituent type in the parent model
@@ -436,7 +499,7 @@ contains
     logical                                   :: do_wetdep          ! do wet deposition for this particle?
     logical                                   :: do_drydep          ! do dry deposition for this particle?
     logical                                   :: do_vtran           ! do sedimentation for this particle?
-    integer                                   :: imiertn            ! mie velocity routine
+    integer                                   :: imiertn            ! mie scattering routine
     logical                                   :: is_sulfate         ! is this a sulfate particle?
     real(kind=f)                              :: dpc_threshold      ! convergence criteria for particle concentration [fraction]
 
@@ -446,8 +509,8 @@ contains
     ! Test out the Get method.
     if (carma%f_do_print) then
       call CARMAGROUP_Get(carma, igroup, rc, name=name, shortname=shortname, rmin=rmin, rmrat=rmrat, ishape=ishape, eshape=eshape, &
-                        is_ice=is_ice, is_cloud=is_cloud, irhswell=irhswell, irhswcomp=irhswcomp, cnsttype=cnsttype, r=r, dr=dr, &
-                        rmass=rmass, dm=dm, vol=vol, ifallrtn=ifallrtn, rmassmin=rmassmin, do_mie=do_mie, do_wetdep=do_wetdep, &
+                        is_ice=is_ice, is_fractal=is_fractal, is_cloud=is_cloud, irhswell=irhswell, irhswcomp=irhswcomp, cnsttype=cnsttype, &
+                        r=r, dr=dr, rmass=rmass, dm=dm, vol=vol, ifallrtn=ifallrtn, rmassmin=rmassmin, do_mie=do_mie, do_wetdep=do_wetdep, &
                         do_drydep=do_drydep, do_vtran=do_vtran, imiertn=imiertn)
       if (rc < 0) return
 
@@ -472,6 +535,7 @@ contains
 
       write(carma%f_LUNOPRT,*) "    eshape        : ", eshape
       write(carma%f_LUNOPRT,*) "    is_ice        : ", is_ice
+      write(carma%f_LUNOPRT,*) "    is_fractal    : ", is_fractal
       write(carma%f_LUNOPRT,*) "    is_cloud      : ", is_cloud
       write(carma%f_LUNOPRT,*) "    is_sulfate    : ", is_sulfate
       
@@ -554,6 +618,8 @@ contains
           write(carma%f_LUNOPRT,*) "    imiertn       :    Toon & Ackerman, 1981"
         case (I_MIERTN_BOHREN1983)
           write(carma%f_LUNOPRT,*) "    imiertn       :    Bohren & Huffman, 1983"
+        case (I_MIERTN_BOTET1997)
+          write(carma%f_LUNOPRT,*) "    imiertn       :    Botet, Rannou & Cabane, 1997"
         case default
           write(carma%f_LUNOPRT,*) "    imiertn       :    unknown, ", imiertn
       end select

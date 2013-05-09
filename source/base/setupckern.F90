@@ -239,8 +239,8 @@ subroutine setupckern(carma, cstate, rc)
   
             ! First particle
             do i1 = 1, NBIN
-    
-              r1 = r_wet(k,i1,j1)
+                  
+              r1 = r_wet(k,i1,j1) * rrat(i1,j1)
               di = temp1*bpm(k,i1,j1)/(temp2*r1)
               gi  = sqrt( 8._f*temp1/(PI*rmass(i1,j1)) )
               rlbi = 8._f*di/(PI*gi)
@@ -251,7 +251,7 @@ subroutine setupckern(carma, cstate, rc)
   
               !  Second particle
               do i2 = 1, NBIN
-                r2  = r_wet(k,i2,j2)
+                r2  = r_wet(k,i2,j2) * rrat(i2,j2)
                 dj  = temp1*bpm(k,i2,j2)/(temp2*r2)
                 gj  = sqrt( 8._f*temp1/(PI*rmass(i2,j2)) )
                 rlbj = 8._f*dj/(PI*gj)

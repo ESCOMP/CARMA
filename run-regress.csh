@@ -71,7 +71,7 @@ foreach runtgt (`ls -1 *TEST.exe`)
     setenv FDIFF -sw
   endif
   
-  if (-f $outfile) diff $FDIFF $outfile ../../$benchdir/$outfile || exit(-1)
+  if (-f $outfile) diff $FDIFF $outfile ../../$benchdir/$outfile
 end
 
 echo ""

@@ -905,7 +905,11 @@ contains
                      carma%f_group(igroup)%f_imiertn, &
                      carma%f_group(igroup)%f_r(ibin), &
                      carma%f_wave(iwave), &
-                     carma%f_group(igroup)%f_refidx(iwave), &
+                     carma%f_group(igroup)%f_nmon(ibin), &
+                     carma%f_group(igroup)%f_df(ibin), &
+                     carma%f_group(igroup)%f_rmon, &
+                     carma%f_group(igroup)%f_falpha, &
+                     carma%f_group(igroup)%f_refidx(iwave), &                   
                      Qext, &
                      Qsca, &
                      asym, &

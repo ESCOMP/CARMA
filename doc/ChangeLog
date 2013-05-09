@@ -1,5 +1,21 @@
 ===============================================================
 Tag name: 
+Originator(s): Eric Wolf, Charles Bardeen
+Date: May 9, 2013
+
+One-line Summary:
+
+Added support for fractal particles.
+
+Purpose of changes:
+
+Allows particles to grow fractally, which means that particles are made
+up of monomers of a single size that will aggregate together in patterns
+that depend on the particles fractal dimension. This will affect growth,
+sedimentation, coagulation, deposition and optical properties.
+
+===============================================================
+Tag name: 
 Originator(s): Sean Santos
 Date: April 24, 2013
 
