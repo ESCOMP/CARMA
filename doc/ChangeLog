@@ -1,5 +1,21 @@
 ===============================================================
 Tag name: 
+Originator(s): Charles Bardeen, Pete Colarco
+Date: May 13, 2013
+
+One-line Summary:
+
+Fixed bug in nucleation rate statistic
+
+Purpose of changes:
+
+Changed how the nucleation rate statistic is calculated to work
+around two previous bugs that involved try to calculate the
+statistic after the particle count had been updated and not
+including the nucleation loss rate in the calculation.
+
+===============================================================
+Tag name: 
 Originator(s): Eric Wolf, Charles Bardeen
 Date: May 9, 2013
 
