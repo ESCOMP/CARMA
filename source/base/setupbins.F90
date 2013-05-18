@@ -220,6 +220,7 @@ subroutine setupbins(carma, rc)
     write(LUNOPRT,1) 'ienconc',(ienconc(i),i=1,NGROUP)
     write(LUNOPRT,1) 'igelem ',(igelem(i),i=1,NELEM)
     write(LUNOPRT,1) 'ncore  ',(ncore(i),i=1,NGROUP)
+    write(LUNOPRT,1) 'fractal',(is_grp_fractal(i),i=1,NGROUP)
   end if
  
   !  Return to caller with particle grid initialized

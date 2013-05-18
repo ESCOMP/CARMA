@@ -1,5 +1,23 @@
 ===============================================================
 Tag name: 
+Originator(s): Charles Bardeen
+Date: May 17, 2013
+
+One-line Summary:
+
+Changed way optical properties are handled
+
+Purpose of changes:
+
+The optical properties used to be initialized by default to be
+used by particle heating; however, the fractal code can take a
+long time to calculate the optical properties. So only do the
+internal initialization if particle heating is enabled. Added
+another interface to the Group to set the optical properties to
+allow them to come from an external source.
+
+===============================================================
+Tag name: 
 Originator(s): Charles Bardeen, Pete Colarco
 Date: May 13, 2013
 

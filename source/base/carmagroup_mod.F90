@@ -65,7 +65,7 @@ contains
     integer, optional, intent(in)               :: imiertn             !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983 | I_MIERTN_BOTET1997]
     logical, optional, intent(in)               :: is_sulfate          !! is this a sulfate particle?
     real(kind=f), optional, intent(in)          :: dpc_threshold       !! convergence criteria for particle concentration [fraction]
-    real(kind=f), optional, intent(in)          :: rmon                !! monomer radius for fractal particles
+    real(kind=f), optional, intent(in)          :: rmon                !! monomer radius for fractal particles [cm]
     real(kind=f), optional, intent(in)          :: df(carma%f_NBIN)    !! fractal dimension
     real(kind=f), optional, intent(in)          :: falpha              !! fractal packing coefficient
 
@@ -635,4 +635,52 @@ contains
     
     return
   end subroutine CARMAGROUP_Print
+  
+  !! Sets information about a group.
+  !!
+  !! Group optical properties may not be set by the CARMA initialization and
+  !! may instead be specified by an outside source (e.g. read in from a file).
+  !!
+  !! @author  Chuck Bardeen
+  !! @version May-2013
+  !!
+  !! @see CARMAGROUP_Create
+  !! @see CARMA_GetGroup
+  !! @see CARMA_Initialize 
+  subroutine CARMAGROUP_Set(carma, igroup, rc, qext, ssa, asym)
+      
+    type(carma_type), intent(inout)           :: carma                        !! the carma object
+    integer, intent(in)                       :: igroup                       !! the group index
+    integer, intent(out)                      :: rc                           !! return code, negative indicates failure
+    real(kind=f), intent(in), optional        :: qext(carma%f_NWAVE,carma%f_NBIN) !! extinction efficiency
+    real(kind=f), intent(in), optional        :: ssa(carma%f_NWAVE,carma%f_NBIN)  !! single scattering albedo
+    real(kind=f), intent(in), optional        :: asym(carma%f_NWAVE,carma%f_NBIN) !! asymmetry factor
+
+    ! Assume success.
+    rc = RC_OK
+
+    ! Make sure there are enough groups allocated.
+    if (igroup > carma%f_NGROUP) then
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Set:: ERROR - The specifed group (", &
+        igroup, ") is larger than the number of groups (", carma%f_NGROUP, ")."
+      rc = RC_ERROR
+      return
+    end if
+      
+    ! Set any requested properties of the group.
+    if (carma%f_NWAVE == 0) then
+      if (present(qext) .or. present(ssa) .or. present(asym)) then
+        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Get: ERROR no optical properties defined."
+        rc = RC_ERROR
+        return
+      end if
+    else
+      if (present(qext))  carma%f_group(igroup)%f_qext(:,:) = qext(:,:)
+      if (present(ssa))   carma%f_group(igroup)%f_ssa(:,:)  = ssa(:,:)     
+      if (present(asym))  carma%f_group(igroup)%f_asym(:,:) = asym(:,:)
+    end if
+    
+    return
+  end subroutine CARMAGROUP_Set  
+  
 end module

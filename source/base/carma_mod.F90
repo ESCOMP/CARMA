@@ -433,8 +433,13 @@ contains
     carma%f_do_step = .TRUE.
     
     ! Calculate the Optical Properties
+    !
+    ! NOTE: This is only needed by CARMA if particle heating is being used. For
+    ! fractal particle the optics can be very slow, so only do it if necessary,
+    if (carma%f_do_pheat) then
     call CARMA_InitializeOptics(carma, rc)
     if (rc < 0) return
+    end if
 
     ! If any of the processes have initialization that can be done without the state
     ! information, then perform that now. This will mostly be checking the configuration
