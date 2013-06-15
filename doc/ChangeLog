@@ -1,6 +1,24 @@
 ===============================================================
 Tag name: 
 Originator(s): Charles Bardeen
+Date: June 14, 2013
+
+One-line Summary:
+
+Added sulfate heterogeneous nucleation and allow sulfuric acid
+vapor pressure to be adjusted for neutralization
+
+Purpose of changes:
+
+Add heterogeneous nucleation of sulfate aerosols to the binary
+homogeneous nucleation. Also reduced the vapor pressure for
+"neutralized" aerosols based upon Marti et al. 1997. Neutralization
+is treated very simplistically and is either all or none and just
+affects the vapor pressure.
+
+===============================================================
+Tag name: 
+Originator(s): Charles Bardeen
 Date: May 17, 2013
 
 One-line Summary:

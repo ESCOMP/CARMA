@@ -770,14 +770,14 @@ contains
       endif
 
       ! Check that <isolute> is consistent with <inucgas>.
-      igas = carma%f_inucgas( carma%f_element(ielem)%f_igroup )
-      if( igas .ne. 0 )then
-        if( carma%f_element(ielem)%f_itype .eq. I_COREMASS .and. carma%f_element(ielem)%f_isolute .eq. 0 )then
-          if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::ERROR - inucgas ne 0 but isolute eq 0'
-          rc = RC_ERROR
-          return
-        endif
-      endif
+!      igas = carma%f_inucgas( carma%f_element(ielem)%f_igroup )
+!      if( igas .ne. 0 )then
+!        if( carma%f_element(ielem)%f_itype .eq. I_COREMASS .and. carma%f_element(ielem)%f_isolute .eq. 0 )then
+!          if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::ERROR - inucgas ne 0 but isolute eq 0'
+!          rc = RC_ERROR
+!          return
+!        endif
+!      endif
     enddo
 
     do ielem = 1, carma%f_NELEM

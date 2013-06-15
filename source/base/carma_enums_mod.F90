@@ -44,6 +44,7 @@ module carma_enums_mod
   integer, public, parameter :: I_ICEMELT           = 2048  !! Ice Melting
   integer, public, parameter :: I_HETNUC            = 4096  !! Heterogeneous Nucleation
   integer, public, parameter :: I_HOMNUC            = 8192  !! Binary homogeneous gas-to-particle nucleation
+  integer, public, parameter :: I_HETNUCSULF        = 16384 !! Binary homogeneous gas-to-particle nucleation
   
   !  Define values of flag used for collection process (icollec)
   integer, public, parameter :: I_COLLEC_CONST = 1   !! Constant Collection Efficiency
