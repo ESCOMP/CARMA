@@ -40,7 +40,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   implicit none
 
     
-  type(carma_type), intent(inout)      :: carma   !! the carma object
+  type(carma_type), intent(in)         :: carma   !! the carma object
   type(carmastate_type), intent(inout) :: cstate  !! the carma state object
   integer, intent(in)                  :: iz      !! vertical index
   integer, intent(in)                  :: igroup  !! group index

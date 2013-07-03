@@ -36,8 +36,9 @@ subroutine setupbins(carma, rc)
   2 format(a,':  ',i6)
   3 format(a,':  ',f12.2)
   4 format(a,':  ',12f12.2)
-  6 format(a,':  ',1p12e12.3)
   5 format(/,'Particle grid structure (setupbins):')
+  6 format(a,':  ',1p12e12.3)
+  7 format(a,':  ',12l6)
 
 
   !  Determine which elements are particle number concentrations
@@ -220,7 +221,7 @@ subroutine setupbins(carma, rc)
     write(LUNOPRT,1) 'ienconc',(ienconc(i),i=1,NGROUP)
     write(LUNOPRT,1) 'igelem ',(igelem(i),i=1,NELEM)
     write(LUNOPRT,1) 'ncore  ',(ncore(i),i=1,NGROUP)
-    write(LUNOPRT,1) 'fractal',(is_grp_fractal(i),i=1,NGROUP)
+    write(LUNOPRT,7) 'fractal',(is_grp_fractal(i),i=1,NGROUP)
   end if
  
   !  Return to caller with particle grid initialized

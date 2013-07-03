@@ -1,5 +1,19 @@
 ===============================================================
 Tag name: 
+Originator(s): Sean Santos
+Date: July 2, 2013
+
+One-line Summary:
+
+Fix build with debug options on and on compilers other than Intel.
+
+Purpose of changes:
+
+Fix several compatibility issues with PGI and Lahey. fractal_meanfield_mod
+in particular used Intel compiler extensions throughout.
+
+===============================================================
+Tag name: 
 Originator(s): Charles Bardeen
 Date: June 14, 2013
 

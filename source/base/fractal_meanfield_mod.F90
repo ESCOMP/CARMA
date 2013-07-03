@@ -163,9 +163,9 @@ module fractal_meanfield_mod
     rc = RC_OK
 
     ! *** Set from input arguments
-    fx_vars.nb = nb_in
-    fx_vars.df = df_in
-    fx_vars.alpha = alpha_in
+    fx_vars%nb = nb_in
+    fx_vars%df = df_in
+    fx_vars%alpha = alpha_in
     xl(1) = xl_in
     xk(1) = xk_in
     xn(1) = xn_in    
@@ -178,7 +178,7 @@ module fractal_meanfield_mod
 
     ! Other initializations
     funca(:,:,:) = 0.0_f
-    fx_vars.a = rmon *1.e-2_f           ! a = r_monomer in m
+    fx_vars%a = rmon *1.e-2_f           ! a = r_monomer in m
     beta=ang*(3.1415926_f / 180._f)     ! =0 when ang=0  
     Ap1(:,:) = zeroc
     Bp1(:,:) = zeroc
@@ -191,13 +191,13 @@ module fractal_meanfield_mod
     ! *** and storage   [ real*8   fact()   (double prec.) ] 
     ! ****************************************************************
   
-    fx_vars.fact(0)=1._f      ! factorials fact(n)=n!
+    fx_vars%fact(0)=1._f      ! factorials fact(n)=n!
     do ii=1,nf
-      fx_vars.fact(ii) = fx_vars.fact(ii-1)*ii*1._f
+      fx_vars%fact(ii) = fx_vars%fact(ii-1)*ii*1._f
     end do
 
     pi=4._f*datan(1._f)       ! 3.1415926535
-    fx_vars.coeff=anorm(carma,fx_vars,rc)
+    fx_vars%coeff=anorm(carma,fx_vars,rc)
     if (rc < 0) return
 
     ! ****************************************************************   
@@ -213,7 +213,7 @@ module fractal_meanfield_mod
                                          ! (xv := 1 ; input parameter in file "calpha")
     lbd=xl(kk)*1.e-6_f                   ! lbd := wavelength in m
                                          !        (in matrix medium / material !)
-    fx_vars.k=2._f*pi/lbd                ! k   := abs.val. of wavevector in m^-1 
+    fx_vars%k=2._f*pi/lbd                ! k   := abs.val. of wavevector in m^-1 
                                          !        (in matrix medium / material !)
   
     ! *** ******************************************************************
@@ -233,7 +233,7 @@ module fractal_meanfield_mod
                       ! lbd = wavelength in matrix medium              
 
     ! Call Mie routine
-    call cmie(lbd,rn,ri,fx_vars.a,an,bn,nstop)
+    call cmie(lbd,rn,ri,fx_vars%a,an,bn,nstop)
     
     do ii=1,nf
       if (an(ii).ne.0._f) nstop=ii
@@ -252,12 +252,12 @@ module fractal_meanfield_mod
     sigmae=0._f
 
     do nn=1,nstop
-      nc1=zabs(an(nn))**2._f+zabs(bn(nn))**2._f
+      nc1=abs(an(nn))**2._f+abs(bn(nn))**2._f
       nc1=nc1*(2._f*nn+1._f)
-      sigmas=sigmas+nc1*(2._f*3.14159265_f)/(fx_vars.k**2._f)
+      sigmas=sigmas+nc1*(2._f*3.14159265_f)/(fx_vars%k**2._f)
       nc1=real(an(nn)+bn(nn))
       nc1=nc1*(2._f*nn+1._f)
-      sigmae=sigmae+nc1*(2._f*3.14159265_f)/(fx_vars.k**2._f)
+      sigmae=sigmae+nc1*(2._f*3.14159265_f)/(fx_vars%k**2._f)
       sstest(nn)=sigmas
       setest(nn)=sigmae
       deltas=dabs(sstest(nn-1)-sstest(nn))/sstest(nn)
@@ -273,8 +273,8 @@ module fractal_meanfield_mod
     ! the monomer ext./scatt. cross sections do not change more
     ! than 1.D-3 compared to the values with one summand less.
 
-    rg=fx_vars.alpha*fx_vars.nb**(1._f/fx_vars.df)*fx_vars.a    ! rg := radius of gyration
-    krg=fx_vars.k*rg
+    rg=fx_vars%alpha*fx_vars%nb**(1._f/fx_vars%df)*fx_vars%a    ! rg := radius of gyration
+    krg=fx_vars%k*rg
     ntheta=7800                 !180-int(krg**.5*28*dlog10(dxk(kk)))               
     if (ntheta*0.5_f .eq. (ntheta/2)*1._f) ntheta=ntheta+1
 
@@ -337,7 +337,7 @@ module fractal_meanfield_mod
     ! *** If nstop>48 end calculation here instead of continuing.
 
     if (n2stop.gt.48) then
-      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "fractal_meanfield_mod::n2stop greater than 48. Size parameter (2*pi*rmon/lambda): ",2._f*3.14159265_f*fx_vars.a/lbd, "Monomer Size parameter must be less than ~17."
+      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "fractal_meanfield_mod::n2stop greater than 48. Size parameter (2*pi*rmon/lambda): ",2._f*3.14159265_f*fx_vars%a/lbd, "Monomer Size parameter must be less than ~17."
       rc = RC_ERROR
       return
     endif
@@ -380,7 +380,7 @@ module fractal_meanfield_mod
 
         ! scaling factors of eq.(13), factor (N_mon-1) from eq.(12)
         Ap1(ii,jj) = Ap1(ii,jj) * (2._f*jj+1._f)/(jj*(jj*1._f+1._f))
-        Ap1(ii,jj) = Ap1(ii,jj) * (fx_vars.nb-1._f) / (ii*(ii*1._f+1._f))
+        Ap1(ii,jj) = Ap1(ii,jj) * (fx_vars%nb-1._f) / (ii*(ii*1._f+1._f))
 
         ! *** ******************************************************************
         !        calculation of B_(1,n)^(1,nu) according to Eq.(13)
@@ -391,7 +391,7 @@ module fractal_meanfield_mod
 
         ! scaling factors of eq.(13), factor (N_mon-1) from eq.(12)
         Bp1(ii,jj) = Bp1(ii,jj) * (2._f*jj+1._f)/(jj*(jj*1._f+1._f))
-        Bp1(ii,jj) = Bp1(ii,jj) * (fx_vars.nb-1._f) * 2._f/(ii*(ii*1._f+1._f))
+        Bp1(ii,jj) = Bp1(ii,jj) * (fx_vars%nb-1._f) * 2._f/(ii*(ii*1._f+1._f))
       end do  ! loop over jj=1,n1stop (variable nu)                         
     end do ! loop over ii=1,n1stop (variable n) 
 
@@ -459,14 +459,14 @@ module fractal_meanfield_mod
         s2(iy)=s2(iy)+xfact*ajt
       end do
 
-      s11(iy)=zabs(s1(iy))**2._f+zabs(s2(iy))**2._f
-      pol(iy)=zabs(s1(iy))**2._f-zabs(s2(iy))**2._f
-      pol(iy)=pol(iy)/(zabs(s1(iy))**2_f+zabs(s2(iy))**2._f)
+      s11(iy)=abs(s1(iy))**2._f+abs(s2(iy))**2._f
+      pol(iy)=abs(s1(iy))**2._f-abs(s2(iy))**2._f
+      pol(iy)=pol(iy)/(abs(s1(iy))**2_f+abs(s2(iy))**2._f)
       ! ***    S_11(theta) = 1/2 * ( |S_1|^2 + |S_2|^2 )                             
       ! ***    above, s1(theta) = 2 * S_1(theta)                                     
       ! ***  =>S_11(theta) = 1/2 * ( |1/2*s1|^2 + |1/2*s2|^2 )                       
       !                     = 1/8 * ( |s1|^2 + |s2|^2 )                              
-      s11_n(iy)=.125_f*(zabs(s1(iy))**2._f+zabs(s2(iy))**2._f)
+      s11_n(iy)=.125_f*(abs(s1(iy))**2._f+abs(s2(iy))**2._f)
     end do
 
     s01=s1(0)
@@ -477,7 +477,7 @@ module fractal_meanfield_mod
     do ir=1,n1stop                ! loop (sum) over Mie-indices
       sigext=sigext+(2._f*ir+1._f)*REAL(d1(ir)+d2(ir))
     end do
-    sigext  = fx_vars.nb * 2._f*pi/fx_vars.k**2._f * sigext    ! Eq.(27)
+    sigext  = fx_vars%nb * 2._f*pi/fx_vars%k**2._f * sigext    ! Eq.(27)
 
     ! *** Alternatively (in a test, all values agreed with rel.acc. 1e-6),         
     ! *** Extinction cross section sigext( S(0 deg) ) (optical theorem) ***        
@@ -501,7 +501,7 @@ module fractal_meanfield_mod
       angle=q*180._f/(ntheta-1)
       if (angle .eq.   0._f) angle=0.001_f
       if (angle .eq. 180._f) angle=179.999_f
-      fx_vars.zed=dsin(angle*3.1415928353_f/180._f/2._f)
+      fx_vars%zed=dsin(angle*3.1415928353_f/180._f/2._f)
 
       bound=0._f
       interv=1
@@ -521,7 +521,7 @@ module fractal_meanfield_mod
       endif
       !======================================================================       
 
-      p1=2._f*pi * (fx_vars.nb-1._f) / (fx_vars.coeff*fx_vars.zed*krg)*p1 + 1._f
+      p1=2._f*pi * (fx_vars%nb-1._f) / (fx_vars%coeff*fx_vars%zed*krg)*p1 + 1._f
       xint(q)=p1
     end do
 
@@ -541,15 +541,15 @@ module fractal_meanfield_mod
 
     do q=1,ntheta-2,2
       angle=(q-1)*180._f/(ntheta-1)          ! angle in deg 
-      a0=fx_vars.nb*xint(q-1)*s11(q-1)*dsin(angle*3.1415926353_f/180._f)
+      a0=fx_vars%nb*xint(q-1)*s11(q-1)*dsin(angle*3.1415926353_f/180._f)
       c0=dcos(angle*3.1415926353_f/180._f)
 
       angle=q*180._f/(ntheta-1)
-      a1=fx_vars.nb*xint(q)*s11(q)*dsin(angle*3.1415926353_f/180._f)
+      a1=fx_vars%nb*xint(q)*s11(q)*dsin(angle*3.1415926353_f/180._f)
       c1=dcos(angle*3.1415926353_f/180._f)
 
       angle=(q+1)*180._f/(ntheta-1)
-      a2=fx_vars.nb*xint(q+1)*s11(q+1)*dsin(angle*3.1415926353_f/180._f)
+      a2=fx_vars%nb*xint(q+1)*s11(q+1)*dsin(angle*3.1415926353_f/180._f)
       c2=dcos(angle*3.1415926353_f/180._f)
 
       total=total+2._f/6._f*3.1415926353_f/(ntheta-1)*(a0+4._f*a1+a2)
@@ -589,14 +589,14 @@ module fractal_meanfield_mod
     
     sumsca = dsin(.5_f*dthetar) * sumsca  ! interval width factor            
     ! *** Scattering cross section                                                 
-    sigsca = 2._f * pi / fx_vars.k**2._f * DBLE(fx_vars.nb) * sumsca
+    sigsca = 2._f * pi / fx_vars%k**2._f * DBLE(fx_vars%nb) * sumsca
     ! Warning! sigabs is well computed using this approximation                    
-    sigabs=fx_vars.nb*(sigmae-sigmas)
+    sigabs=fx_vars%nb*(sigmae-sigmas)
     ! sigext=sigabs+sigsca is better than the mean-field value
     ! previously defined. This is used hereafter. (P.Rannou)
 
     ! *** Radius of equivalent mass sphere
-    rems = fx_vars.a * fx_vars.nb**(1._f/3._f)
+    rems = fx_vars%a * fx_vars%nb**(1._f/3._f)
 
     ! *** reference area in definition of efficiencies is the geometrical
     ! *** cross section of equivalent mass sphere
@@ -671,7 +671,7 @@ module fractal_meanfield_mod
 
     xstop=x+4._f*x**.3333_f+2._f
     nstop=xstop
-    ymod=zabs(y)
+    ymod=abs(y)
     nmx=dmax1(xstop,ymod)+15
     dang=1.570796327_f/dfloat(nang-1)
 
@@ -786,12 +786,12 @@ module fractal_meanfield_mod
     
     ! Initializations
     funa=0._f
-    fx_vars.u1=n
-    fx_vars.u2=1
-    fx_vars.u3=nu
-    fx_vars.u4=1
-    fx_vars.u5=p
-    fx_vars.u6=0
+    fx_vars%u1=n
+    fx_vars%u2=1
+    fx_vars%u3=nu
+    fx_vars%u4=1
+    fx_vars%u5=p
+    fx_vars%u6=0
     xa=-1._f
     xb=1._f
     bound=0._f
@@ -844,9 +844,9 @@ module fractal_meanfield_mod
     integer :: m,n,mu,nu,p,pmu
     real(kind=f) :: c1,c2,c3
 
-    c1=plgndr(fx_vars.u1,fx_vars.u2,x,fx_vars)
-    c2=plgndr(fx_vars.u3,fx_vars.u4,x,fx_vars)
-    c3=plgndr(fx_vars.u5,fx_vars.u6,x,fx_vars)
+    c1=plgndr(fx_vars%u1,fx_vars%u2,x,fx_vars)
+    c2=plgndr(fx_vars%u3,fx_vars%u4,x,fx_vars)
+    c3=plgndr(fx_vars%u5,fx_vars%u6,x,fx_vars)
 
     fpl=c1*c2*c3+1._f        !this is a trick!
 
@@ -922,7 +922,7 @@ module fractal_meanfield_mod
     endif
 
     if (lbl.eq.1) then
-      plgndr=(-1)**mstar*(fx_vars.fact(l-mstar)/fx_vars.fact(l+mstar))*plgndr
+      plgndr=(-1)**mstar*(fx_vars%fact(l-mstar)/fx_vars%fact(l+mstar))*plgndr
       mstar=-m         !restitution du parametre m!!!!!
     endif
 
@@ -1003,13 +1003,13 @@ module fractal_meanfield_mod
     
     rc = RC_OK
 
-    rg=fx_vars.alpha*fx_vars.nb**(1._f/fx_vars.df)*fx_vars.a
+    rg=fx_vars%alpha*fx_vars%nb**(1._f/fx_vars%df)*fx_vars%a
 
-    afun=(2._f*3.1415926_f)/(fx_vars.k**3._f)
+    afun=(2._f*3.1415926_f)/(fx_vars%k**3._f)
 
 
-    fx_vars.pbes=pp
-    fx_vars.kbes=fx_vars.k
+    fx_vars%pbes=pp
+    fx_vars%kbes=fx_vars%k
 
     bound=0._f
     interv=1
@@ -1022,7 +1022,7 @@ module fractal_meanfield_mod
     rerr=0._f
     !trerr=0._f
     xa=0._f
-    xb=5._f*fx_vars.k*rg
+    xb=5._f*fx_vars%k*rg
 
     !======================================================================
     !--- Version using the QUADPACK - routine :
@@ -1041,7 +1041,7 @@ module fractal_meanfield_mod
     ires=0._f
     ierr=0._f
     xa=0._f
-    xb=5._f*fx_vars.k*rg
+    xb=5._f*fx_vars%k*rg
 
     !======================================================================
     !--- Version using the QUADPACK - routine :
@@ -1083,19 +1083,19 @@ module fractal_meanfield_mod
     real(kind=f) :: rg
 
     ifail = 0
-    rg = fx_vars.alpha*fx_vars.nb**(1._f/fx_vars.df)*fx_vars.a
+    rg = fx_vars%alpha*fx_vars%nb**(1._f/fx_vars%df)*fx_vars%a
     x = xx
     if (x.GT.3000._f)  x=3000._f
     z = x*DCMPLX(1._f,0._f)
 
-    pc = fx_vars.pbes
-    if( fx_vars.pbes .eq. 0 ) pc = fx_vars.pbes + 1
+    pc = fx_vars%pbes
+    if( fx_vars%pbes .eq. 0 ) pc = fx_vars%pbes + 1
 
     CALL BESSELJY(z,pc,xj,xjp,xy,xyp,ifail)
 
-    r=x/fx_vars.kbes
+    r=x/fx_vars%kbes
 
-    xfreal_n = real( z*z*xj(fx_vars.pbes)*xj(fx_vars.pbes) * phi(r,fx_vars) )
+    xfreal_n = real( z*z*xj(fx_vars%pbes)*xj(fx_vars%pbes) * phi(r,fx_vars) )
 
     return
   END FUNCTION xfreal_n
@@ -1118,20 +1118,20 @@ module fractal_meanfield_mod
     integer :: ifail,p,pc
     real(kind=f) :: rg
 
-    rg = fx_vars.alpha*fx_vars.nb**(1._f/fx_vars.df)*fx_vars.a
+    rg = fx_vars%alpha*fx_vars%nb**(1._f/fx_vars%df)*fx_vars%a
     x = xx
     if (x.gt.3000._f)  x=3000._f
     ifail = 0
     z = x*DCMPLX(1._f,0._f)
 
-    pc = fx_vars.pbes
-    if( fx_vars.pbes .eq. 0 ) pc = fx_vars.pbes + 1
+    pc = fx_vars%pbes
+    if( fx_vars%pbes .eq. 0 ) pc = fx_vars%pbes + 1
 
     CALL BESSELJY(z,pc,xj,xjp,xy,xyp,ifail)
 
-    r=x/fx_vars.kbes
+    r=x/fx_vars%kbes
 
-    xfimag_n = real( z*z*xj(fx_vars.pbes)*xy(fx_vars.pbes) * phi(r,fx_vars) )
+    xfimag_n = real( z*z*xj(fx_vars%pbes)*xy(fx_vars%pbes) * phi(r,fx_vars) )
 
     return
   END FUNCTION xfimag_n
@@ -1188,7 +1188,7 @@ module fractal_meanfield_mod
     REAL(kind=f),parameter :: ACCUR = 1e-12_f
     REAL(kind=f),parameter :: TM30  = 1e-30_f
     COMPLEX(kind=f), parameter :: CI = (0._f, 1._f)
-    complex(kind=f) :: XI, W, PL, B, D, F, DEL, C, XJ0, XH1, XH1P, XTEMP
+    complex(kind=f) :: XI, W, PL, B, D, FF, DEL, C, XJ0, XH1, XH1P, XTEMP
     integer :: L
 
     IF (CDABS(X).LT.ACCUR .OR. IMAG(X) .LT. -3.d0) THEN
@@ -1200,10 +1200,10 @@ module fractal_meanfield_mod
     XI = ONE/X
     W = XI + XI
     PL = LMAX * XI
-    F = PL + XI
-    B = F + F + XI
+    FF = PL + XI
+    B = FF + FF + XI
     D = ZERO
-    C = F
+    C = FF
     DO 1 L=1,LIMIT
       D = B - D
       C = B - ONE/C
@@ -1211,14 +1211,14 @@ module fractal_meanfield_mod
       IF(CDABS(C).LT. TM30) C = TM30
       D = ONE / D
       DEL = D * C
-      F = F * DEL
+      FF = FF * DEL
       B = B + W
 1     IF(CDABS(DEL-ONE).LT.ACCUR) GOTO 2
     IFAIL = -2
     GOTO 5
 
 2   XJ(LMAX) = TM30
-    XJP(LMAX) = F * XJ(LMAX)
+    XJP(LMAX) = FF * XJ(LMAX)
 
     ! *** Abwaertsrekursion
     DO 3 L = LMAX-1,0,-1
@@ -1333,10 +1333,10 @@ module fractal_meanfield_mod
     ! Local Declarations
     real(kind=f) :: krg,s1,s2,s3,rg
    
-    rg=fx_vars.alpha*fx_vars.a*fx_vars.nb**(1._f/fx_vars.df)
-    krg=fx_vars.k*rg
-    s1=dsin(2._f*krg*fx_vars.zed*u)
-    s2=u**(fx_vars.df-2._f)
+    rg=fx_vars%alpha*fx_vars%a*fx_vars%nb**(1._f/fx_vars%df)
+    krg=fx_vars%k*rg
+    s1=dsin(2._f*krg*fx_vars%zed*u)
+    s2=u**(fx_vars%df-2._f)
     s3=fco(u, fx_vars)
     fp1=s1*s2*s3
     
@@ -1406,10 +1406,10 @@ module fractal_meanfield_mod
     ! Local Declarations
     real(kind=f) :: fval,pref,phi, rg, z
 
-    rg=fx_vars.alpha*fx_vars.nb**(1._f/fx_vars.df)*fx_vars.a
+    rg=fx_vars%alpha*fx_vars%nb**(1._f/fx_vars%df)*fx_vars%a
     z=x/rg
-    pref=(x/rg)**(fx_vars.df-3._f)/(fx_vars.coeff*rg**3._f)
-    fval=z**(1._f-fx_vars.df)*fdval(z, fx_vars)
+    pref=(x/rg)**(fx_vars%df-3._f)/(fx_vars%coeff*rg**3._f)
+    fval=z**(1._f-fx_vars%df)*fdval(z, fx_vars)
     phi=pref*fval
     continue
     return
@@ -1431,7 +1431,7 @@ module fractal_meanfield_mod
     real(kind=f) :: fco
     real(kind=f) :: fval
 
-    fval=z**(1._f-fx_vars.df)*fdval(z, fx_vars)
+    fval=z**(1._f-fx_vars%df)*fdval(z, fx_vars)
     fco=fval
     continue
     return
@@ -1450,7 +1450,7 @@ module fractal_meanfield_mod
     ! Local Declarations
     real(kind=f) :: fdval
 
-    fdval=x**(fx_vars.df-1._f)*dexp(-x**fx_vars.df/2._f)
+    fdval=x**(fx_vars%df-1._f)*dexp(-x**fx_vars%df/2._f)
     return
   END FUNCTION fdval
 
