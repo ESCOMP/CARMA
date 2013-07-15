@@ -218,9 +218,9 @@ contains
       ! NOTE: Should add code here to handle oblate and prolate spheroids.
       carma%f_group(igroup)%f_arat(:) = 1.0_f
       carma%f_group(igroup)%f_rrat(:) = 1.0_f
-      carma%f_group(igroup)%f_rprat(:) = 1.0_f
     end if
-    
+
+    carma%f_group(igroup)%f_rprat(:) = 1.0_f
 
     !! Dry fractal aggregate aerosols composed of nmon identical spheres of radius rmon 
     !! can be treated by enabling the switch is_fractal = .true. Optical properties of dry 

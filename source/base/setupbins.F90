@@ -193,6 +193,11 @@ subroutine setupbins(carma, rc)
           rp = rf * omega
           rprat(j,igrp) = rp/r(j,igrp)
         endif
+      else
+         ! Not a fractal.
+         nmon(j,igrp) = 1.0_f
+         rprat(j,igrp) = 1.0_f
+         df(j,igrp) = 3.0_f
       endif
    enddo
   enddo

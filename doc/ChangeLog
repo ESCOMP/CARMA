@@ -1,6 +1,20 @@
 ===============================================================
 Tag name: 
 Originator(s): Sean Santos
+Date: July 15, 2013
+
+One-line Summary:
+
+Set rprat to 1 for all non-fractals.
+
+Purpose of changes:
+
+Setting rprat to 1._r8 for I_HEXAGON and I_CYLINDER shapes will prevent
+errors due to uninitialized data for the cirrus/dust model.
+
+===============================================================
+Tag name: 
+Originator(s): Sean Santos
 Date: July 2, 2013
 
 One-line Summary:
