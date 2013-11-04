@@ -190,26 +190,15 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
     ! Is neutralization set up for the group?
     if (neutral_volfrc(igroup) > 0._f) then
     
-      ! The particle is assumed to be neutralize if the volume fraction is
-      ! greater than the threshold volume fraction.
-      if (volfrc >= neutral_volfrc(igroup)) then
-      
-        ! Don't allow the particle to shrink, since there is enough core
-        ! mass to fully neutralize the particle
-        dmdt = max(0._f, dmdt)
-      else
-  
-        ! You can only lose mass until the volume fraction for neutralization
-        ! is reached. At that point the particle is fully neutralized and the
-        ! vapor pressure drops to 0. The volume of condensed gas in excess of
-        ! neutralization is:
-        !
-        !  condv - othervtot * ((1 - neutral_volfrc) / neutral_volfrc)
-        dmdt = max(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
-                    * rhoelem(ibin,iepart) / pc(iz,ibin,iepart) / dtime, dmdt)
-      end if
+      ! You can only lose (gain) mass until the volume fraction for neutralization
+      ! is reached. At that point the particle is fully neutralized and the
+      ! vapor pressure is to 0. The volume of condensed gas in excess of
+      ! (needed for) full neutralization is:
+      !
+      !  condv - othervtot * ((1 - neutral_volfrc) / neutral_volfrc)
+      dmdt = max(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
+                  * rhoelem(ibin,iepart) / pc(iz,ibin,iepart) / dtime, dmdt)
     end if
-                     
   else
   
     ! Latent heat of condensing gas 
