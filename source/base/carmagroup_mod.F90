@@ -36,7 +36,8 @@ contains
 
   subroutine CARMAGROUP_Create(carma, igroup, name, rmin, rmrat, ishape, eshape, is_ice, rc, is_fractal, &
       irhswell, irhswcomp, refidx, do_mie, do_wetdep, do_drydep, do_vtran, solfac, scavcoef, shortname, &
-      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin, imiertn, is_sulfate, dpc_threshold, rmon, df, falpha)
+      cnsttype, maxbin, ifallrtn, is_cloud, rmassmin, imiertn, is_sulfate, dpc_threshold, rmon, df, falpha, &
+      neutral_volfrc)
     type(carma_type), intent(inout)             :: carma               !! the carma object
     integer, intent(in)                         :: igroup              !! the group index
     character(*), intent(in)                    :: name                !! the group name, maximum of 255 characters
@@ -68,6 +69,7 @@ contains
     real(kind=f), optional, intent(in)          :: rmon                !! monomer radius for fractal particles [cm]
     real(kind=f), optional, intent(in)          :: df(carma%f_NBIN)    !! fractal dimension
     real(kind=f), optional, intent(in)          :: falpha              !! fractal packing coefficient
+    real(kind=f), optional, intent(in)          :: neutral_volfrc      !! volume fraction of core mass for neutralization
 
     ! Local variables
     integer                               :: ier
@@ -125,6 +127,7 @@ contains
     carma%f_group(igroup)%f_df(:)       = 3.0_f
     carma%f_group(igroup)%f_nmon(:)     = 1.0_f
     carma%f_group(igroup)%f_falpha      = 1.0_f
+    carma%f_group(igroup)%f_neutral_volfrc = 0.0_f
 
     ! Any optical properties?
     if (carma%f_NWAVE > 0) then
@@ -193,6 +196,7 @@ contains
     if (present(rmon))       carma%f_group(igroup)%f_rmon         = rmon
     if (present(df))         carma%f_group(igroup)%f_df(:)        = df(:)
     if (present(falpha))     carma%f_group(igroup)%f_falpha       = falpha
+    if (present(neutral_volfrc)) carma%f_group(igroup)%f_neutral_volfrc = neutral_volfrc
     
     ! Initialize other properties.
     carma%f_group(igroup)%f_nelem         = 0
@@ -340,7 +344,8 @@ contains
   subroutine CARMAGROUP_Get(carma, igroup, rc, name, shortname, rmin, rmrat, ishape, eshape, is_ice, is_fractal, &
       irhswell, irhswcomp, cnsttype, r, rlow, rup, dr, rmass, dm, vol, qext, ssa, asym, do_mie, &
       do_wetdep, do_drydep, do_vtran, solfac, scavcoef, ienconc, refidx, ncore, icorelem, maxbin, &
-      ifallrtn, is_cloud, rmassmin, arat, rrat, rprat, imiertn, is_sulfate, dpc_threshold, rmon, df, nmon, falpha)
+      ifallrtn, is_cloud, rmassmin, arat, rrat, rprat, imiertn, is_sulfate, dpc_threshold, rmon, df, &
+      nmon, falpha, neutral_volfrc)
       
     type(carma_type), intent(in)              :: carma                        !! the carma object
     integer, intent(in)                       :: igroup                       !! the group index
@@ -390,6 +395,7 @@ contains
     real(kind=f), optional, intent(out)       :: df(carma%f_NBIN)             !! fractal dimension
     real(kind=f), optional, intent(out)       :: nmon(carma%f_NBIN)           !! number of monomers per
     real(kind=f), optional, intent(out)       :: falpha                       !! fractal packing coefficient
+    real(kind=f), optional, intent(out)       :: neutral_volfrc               !! volume fraction of core mass for neutralization
 
     ! Assume success.
     rc = RC_OK
@@ -444,6 +450,7 @@ contains
     if (present(df))           df(:)        = carma%f_group(igroup)%f_df(:)
     if (present(nmon))         nmon(:)      = carma%f_group(igroup)%f_nmon(:)
     if (present(falpha))       falpha       = carma%f_group(igroup)%f_falpha
+    if (present(neutral_volfrc)) neutral_volfrc = carma%f_group(igroup)%f_neutral_volfrc
     
     if (carma%f_NWAVE == 0) then
       if (present(refidx) .or. present(qext) .or. present(ssa) .or. present(asym)) then
@@ -502,6 +509,7 @@ contains
     integer                                   :: imiertn            ! mie scattering routine
     logical                                   :: is_sulfate         ! is this a sulfate particle?
     real(kind=f)                              :: dpc_threshold      ! convergence criteria for particle concentration [fraction]
+    real(kind=f)                              :: neutral_volfrc     ! volume fraction of core mass for neutralization
 
     ! Assume success.
     rc = RC_OK
@@ -511,7 +519,7 @@ contains
       call CARMAGROUP_Get(carma, igroup, rc, name=name, shortname=shortname, rmin=rmin, rmrat=rmrat, ishape=ishape, eshape=eshape, &
                         is_ice=is_ice, is_fractal=is_fractal, is_cloud=is_cloud, irhswell=irhswell, irhswcomp=irhswcomp, cnsttype=cnsttype, &
                         r=r, dr=dr, rmass=rmass, dm=dm, vol=vol, ifallrtn=ifallrtn, rmassmin=rmassmin, do_mie=do_mie, do_wetdep=do_wetdep, &
-                        do_drydep=do_drydep, do_vtran=do_vtran, imiertn=imiertn)
+                        do_drydep=do_drydep, do_vtran=do_vtran, imiertn=imiertn, neutral_volfrc=neutral_volfrc)
       if (rc < 0) return
 
     
@@ -543,6 +551,7 @@ contains
       write(carma%f_LUNOPRT,*) "    do_mie        : ", do_mie
       write(carma%f_LUNOPRT,*) "    do_vtran      : ", do_vtran
       write(carma%f_LUNOPRT,*) "    do_wetdep     : ", do_wetdep
+      write(carma%f_LUNOPRT,*) "    neutral_volfrc: ", neutral_volfrc
       
       select case(irhswell)
         case (0)

@@ -65,7 +65,10 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   real(kind=f)                         :: otherm(NELEM)
   real(kind=f)                         :: argsol
   real(kind=f)                         :: othermtot
+  real(kind=f)                         :: othervtot
   real(kind=f)                         :: condm
+  real(kind=f)                         :: condv
+  real(kind=f)                         :: volfrc
   real(kind=f)                         :: akas
   real(kind=f)                         :: expon
   real(kind=f)                         :: g0
@@ -87,6 +90,9 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
   ! Ignore solute factor for ice particles.
   if( is_grp_ice(igroup) )then
     expon = akelvini(iz,igas) / rup_wet(iz,ibin,igroup)
+    
+    ! Ice can't be neutralized, so set the volume fraction to 0.
+    volfrc = 0._f
   else
   
     argsol = 0._f
@@ -104,6 +110,7 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       ! <othermtot> is total mass concentrations of other elements in particle.
       nother = 0
       othermtot = 0._f
+      othervtot = 0._f
   
       ! <ieoth_rel> is relative element number of other element in group.
       do ieoth_rel  = 2,nelemg(igroup)       
@@ -116,17 +123,20 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
           ieother(nother) = ieoth_abs
           otherm(nother) = pc(iz,ibin,ieoth_abs)
           othermtot = othermtot + otherm(nother)
+          othervtot = othervtot + otherm(nother) / rhoelem(ibin,ieoth_abs)
         endif
-  
       enddo
   
       condm = rmass(ibin,igroup) * pc(iz,ibin,iepart) - othermtot
+      condv = condm / rhoelem(ibin,iepart)
   
       if( condm .le. 0._f )then
   
         ! Zero mass for the condensate -- <asol> is a small value << 1
         argsol = 1e6_f     
   
+        ! If there is no condensed mass, then the volume fraction of core is 1.
+        volfrc = 1._f
       else
   
         ! Sum over masses of other elements in group for argument of solute factor.
@@ -138,9 +148,10 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
         enddo 
        
         argsol = argsol*gwtmol(igas)/condm
+        
+        volfrc = othervtot / (othervtot + condv)
       endif 
     endif    ! nelemg(igroup) > 1
-
     expon = akelvin(iz,igas)  / rup_wet(iz,ibin,igroup) - argsol 
   endif
   
@@ -175,6 +186,29 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
 
     ! Ignore the qrad term.
     dmdt = pvap * ( ss + 1._f - akas ) * g0 / ( 1._f + g0 * g1 * pvap )
+                     
+    ! Is neutralization set up for the group?
+    if (neutral_volfrc(igroup) > 0._f) then
+    
+      ! The particle is assumed to be neutralize if the volume fraction is
+      ! greater than the threshold volume fraction.
+      if (volfrc >= neutral_volfrc(igroup)) then
+      
+        ! Don't allow the particle to shrink, since there is enough core
+        ! mass to fully neutralize the particle
+        dmdt = max(0._f, dmdt)
+      else
+  
+        ! You can only lose mass until the volume fraction for neutralization
+        ! is reached. At that point the particle is fully neutralized and the
+        ! vapor pressure drops to 0. The volume of condensed gas in excess of
+        ! neutralization is:
+        !
+        !  condv - othervtot * ((1 - neutral_volfrc) / neutral_volfrc)
+        dmdt = max(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
+                    * rhoelem(ibin,iepart) / pc(iz,ibin,iepart) / dtime, dmdt)
+      end if
+    end if
                      
   else
   

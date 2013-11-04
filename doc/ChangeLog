@@ -1,5 +1,22 @@
 ===============================================================
 Tag name: 
+Originator(s): Chuck Bardeen
+Date: Nov 3, 2013
+
+One-line Summary:
+
+Neutralized sulfates as a function of volume fraction of core mass.
+
+Purpose of changes:
+
+Changes to allow for neutralization of sulfates where the neutralization
+is a function of the volume fraction of the core mass. This replaces
+neutralization by scaling the saturation vapor pressure. NOTE: This
+solution is currently not used for ice particles or when particle
+heating is being used.
+
+===============================================================
+Tag name: 
 Originator(s): Sean Santos
 Date: July 15, 2013
 

@@ -81,7 +81,6 @@ module carma_types_mod
     !   ivaprtn       vapor pressure routine for the gas
     !   dgc_threshold convergence criteria for gas concentration [fraction]
     !   ds_threshold  convergence criteria for gas saturation [fraction]
-    !   is_neutral    If .true. then assume solution has been neutralized for vapor pressure
     !
     character(len=CARMA_NAME_LEN)               :: f_name
     character(len=CARMA_SHORT_NAME_LEN)         :: f_shortname
@@ -90,7 +89,6 @@ module carma_types_mod
     integer                                     :: f_icomposition
     real(kind=f)                                :: f_dgc_threshold
     real(kind=f)                                :: f_ds_threshold
-    logical                                     :: f_is_neutral
   end type carmagas_type
 
 
@@ -163,6 +161,7 @@ module carma_types_mod
     !   df          fractal dimension for fractal particles
     !   nmon        number of monomers per particle
     !   falpha      fractal packing coefficient
+    !   neutral_volfrc volume fraction of core mass to neutralize the particle
 
     character(len=CARMA_NAME_LEN)               :: f_name
     character(len=CARMA_SHORT_NAME_LEN)         :: f_shortname
@@ -213,6 +212,7 @@ module carma_types_mod
     real(kind=f), allocatable, dimension(:)     :: f_df         ! (NBIN)
     real(kind=f), allocatable, dimension(:)     :: f_nmon       ! (NBIN)
     real(kind=f)                                :: f_falpha
+    real(kind=f)                                :: f_neutral_volfrc
   end type carmagroup_type
   
   

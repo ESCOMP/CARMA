@@ -31,7 +31,7 @@ contains
   !!
   !! @see CARMA_AddGas
   !! @see CARMAGAS_Destroy
-  subroutine CARMAGAS_Create(carma, igas, name, wtmol, ivaprtn, icomposition, rc, shortname, dgc_threshold, ds_threshold, is_neutral)
+  subroutine CARMAGAS_Create(carma, igas, name, wtmol, ivaprtn, icomposition, rc, shortname, dgc_threshold, ds_threshold)
     type(carma_type), intent(inout)       :: carma           !! the carma object
     integer, intent(in)                   :: igas            !! the gas index
     character(*), intent(in)              :: name            !! the gas name, maximum of 255 characters
@@ -42,7 +42,6 @@ contains
     character(*), optional, intent(in)    :: shortname       !! the gas shortname, maximum of 6 characters
     real(kind=f), optional, intent(in)    :: dgc_threshold   !! convergence criteria for gas concentration [0 : off; > 0 : percentage change]
     real(kind=f), optional, intent(in)    :: ds_threshold    !! convergence criteria for gas saturation [0 : off; > 0 : percentage change; < 0 : amount past 0 crossing]
-    logical, optional, intent(in)         :: is_neutral      !! is this solution neutralized?
 
     ! Assume success.
     rc = RC_OK
@@ -60,7 +59,6 @@ contains
     carma%f_gas(igas)%f_wtmol        = wtmol
     carma%f_gas(igas)%f_ivaprtn      = ivaprtn
     carma%f_gas(igas)%f_icomposition = icomposition
-    carma%f_gas(igas)%f_is_neutral   = .false.
     
     
     ! Defaults for optional parameters
@@ -72,7 +70,6 @@ contains
     if (present(shortname))     carma%f_gas(igas)%f_shortname      = shortname
     if (present(dgc_threshold)) carma%f_gas(igas)%f_dgc_threshold  = dgc_threshold
     if (present(ds_threshold))  carma%f_gas(igas)%f_ds_threshold   = ds_threshold
-    if (present(is_neutral))    carma%f_gas(igas)%f_is_neutral     = is_neutral
 
     return
   end subroutine CARMAGAS_Create
@@ -114,7 +111,7 @@ contains
   !!
   !! @see CARMAGAS_Create
   !! @see CARMA_GetGas
-  subroutine CARMAGAS_Get(carma, igas, rc, name, shortname, wtmol, ivaprtn, icomposition, dgc_threshold, ds_threshold, is_neutral)
+  subroutine CARMAGAS_Get(carma, igas, rc, name, shortname, wtmol, ivaprtn, icomposition, dgc_threshold, ds_threshold)
     type(carma_type), intent(in)                :: carma         !! the carma object
     integer, intent(in)                         :: igas          !! the gas index
     integer, intent(out)                        :: rc            !! return code, negative indicates failure
@@ -125,7 +122,6 @@ contains
     integer, optional, intent(out)              :: icomposition  !! gas compound specification
     real(kind=f), optional, intent(out)         :: dgc_threshold !! convergence criteria for gas concentration [fraction]
     real(kind=f), optional, intent(out)         :: ds_threshold  !! convergence criteria for gas saturation [fraction]
-    logical, optional, intent(out)              :: is_neutral    !! has the solution been neutralized?
 
     ! Assume success.
     rc = RC_OK
@@ -146,7 +142,6 @@ contains
     if (present(icomposition)) icomposition = carma%f_gas(igas)%f_icomposition
     if (present(dgc_threshold)) dgc_threshold = carma%f_gas(igas)%f_dgc_threshold
     if (present(ds_threshold)) ds_threshold = carma%f_gas(igas)%f_ds_threshold
-    if (present(is_neutral))   is_neutral   = carma%f_gas(igas)%f_is_neutral
         
     return
   end subroutine CARMAGAS_Get
@@ -171,7 +166,6 @@ contains
     integer                                   :: icomposition  !! gas compound specification
     real(kind=f)                              :: dgc_threshold !! convergence criteria for gas concentration [fraction]
     real(kind=f)                              :: ds_threshold  !! convergence criteria for gas saturation [fraction]
-    logical                                   :: is_neutral    !! has the solution been neutralized?
 
     ! Assume success.
     rc = RC_OK
@@ -179,7 +173,7 @@ contains
     ! Test out the Get method.
     if (carma%f_do_print) then
       call CARMAGAS_Get(carma, igas, rc, name=name, shortname=shortname, wtmol=wtmol, &
-                        ivaprtn=ivaprtn, icomposition=icomposition, is_neutral=is_neutral)
+                        ivaprtn=ivaprtn, icomposition=icomposition)
       if (rc < RC_OK) return
 
     
@@ -188,7 +182,6 @@ contains
       write(carma%f_LUNOPRT,*) "    wtmol         : ", wtmol, " (g/mol)"
       write(carma%f_LUNOPRT,*) "    dgc_threshold : ", dgc_threshold
       write(carma%f_LUNOPRT,*) "    ds_threshold  : ", ds_threshold
-      write(carma%f_LUNOPRT,*) "    is_neutral    : ", is_neutral
 
       select case(ivaprtn)
         case (I_VAPRTN_H2O_BUCK1981)

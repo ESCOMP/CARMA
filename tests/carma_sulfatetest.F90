@@ -158,7 +158,7 @@ subroutine test_sulfate_simple()
   if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
 
   call CARMAGAS_Create(carma, 2, "Sulpheric Acid", 98.078479_f, I_VAPRTN_H2SO4_AYERS1980, &
-    I_GCOMP_H2SO4, rc, shortname = "H2SO4", dgc_threshold=0.1_f, ds_threshold=0.1_f, is_neutral=.false.)
+    I_GCOMP_H2SO4, rc, shortname = "H2SO4", dgc_threshold=0.1_f, ds_threshold=0.1_f)
   if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
     
 

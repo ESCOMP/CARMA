@@ -176,7 +176,6 @@ subroutine setupbins(carma, rc)
           nmon(j,igrp) = falpha(igrp)*(rf/rmon(igrp))**df(j,igrp)
 
           rrat(j,igrp) = rf/r(j,igrp)           
-          arat(j,igrp) = rf**2.0_f/r(j,igrp)**2.0_f
                                                                                          
           ! Calculate mobility radius for permeable aggregates
           ! using Vainshtein (2003) formulation     
@@ -192,6 +191,8 @@ subroutine setupbins(carma, rc)
           omega = 2.0_f/3.0_f*epsil/(2.0_f/3.0_f+epsil/brinkman**2.0_f)     ! drag coefficient (eq. 2.7)
           rp = rf * omega
           rprat(j,igrp) = rp/r(j,igrp)
+
+          arat(j,igrp) = (rprat(j,igrp) / rrat(j, igrp))**2.0_f
         endif
       else
          ! Not a fractal.

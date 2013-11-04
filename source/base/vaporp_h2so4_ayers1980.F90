@@ -83,12 +83,6 @@ subroutine vaporp_H2SO4_Ayers1980(carma, cstate, iz, rc, pvap_liq, pvap_ice)
   ! REMEMBER TO TAKE THE EXPONENTIAL!	
   sulfeq = exp(sulfeq)
   
-  ! If the sulfate is assumed to have been neutralized, then reduce the
-  ! vapor pressure by a factor of ~10^5 (Marti et al., JGR, 1997)
-  if (is_gas_neutral(igash2so4)) then
-    sulfeq = sulfeq / 1e5_f
-  end if
-
   ! BUT this is in Atmospheres.  Convert ==> dynes/cm2
   pvap_liq = sulfeq * 1.01325e6_f  
   pvap_ice = sulfeq * 1.01325e6_f 

@@ -72,7 +72,6 @@
 #define igcomp(igas)          carma%f_gas(igas)%f_icomposition
 #define dgc_threshold(igas)   carma%f_gas(igas)%f_dgc_threshold
 #define ds_threshold(igas)    carma%f_gas(igas)%f_ds_threshold
-#define is_gas_neutral(igas)  carma%f_gas(igas)%f_is_neutral
 
 ! Group object
 #define groupname(igroup)       carma%f_group(igroup)%f_name
@@ -118,6 +117,7 @@
 #define df(ibin,igroup)         carma%f_group(igroup)%f_df(ibin)
 #define nmon(ibin,igroup)       carma%f_group(igroup)%f_nmon(ibin)
 #define falpha(igroup)          carma%f_group(igroup)%f_falpha
+#define neutral_volfrc(igroup)  carma%f_group(igroup)%f_neutral_volfrc
 
 ! Solute object
 #define solname(isolute)      carma%f_solute(isolute)%f_name
