@@ -818,9 +818,10 @@ contains
     enddo
 
     if( bad_grid )then
-      if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::ERROR - incompatible grids for nucleation'
-      rc = RC_ERROR
-      return
+      if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::Warning - incompatible grids for nucleation'
+!      if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::ERROR - incompatible grids for nucleation'
+!      rc = RC_ERROR
+!      return
     endif
       
     if (carma%f_do_print_init) then

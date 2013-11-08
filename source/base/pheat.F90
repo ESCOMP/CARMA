@@ -123,12 +123,12 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
           ieother(nother) = ieoth_abs
           otherm(nother) = pc(iz,ibin,ieoth_abs)
           othermtot = othermtot + otherm(nother)
-          othervtot = othervtot + otherm(nother) / rhoelem(ibin,ieoth_abs)
+          othervtot = othervtot + otherm(nother) / pc(iz,ibin,iepart) / rhoelem(ibin,ieoth_abs)
         endif
       enddo
   
       condm = rmass(ibin,igroup) * pc(iz,ibin,iepart) - othermtot
-      condv = condm / rhoelem(ibin,iepart)
+      condv = min(0._f, (rmass(ibin,igroup) / rhoelem(ibin,iepart)) - othervtot)
   
       if( condm .le. 0._f )then
   
@@ -190,14 +190,30 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
     ! Is neutralization set up for the group?
     if (neutral_volfrc(igroup) > 0._f) then
     
+      ! When the particle is less than fully neutralized, calculate a new
+      ! dmdt based upon assuming that the saturation vapor pressure (pvap)
+      ! is 0.
+      if (volfrc > neutral_volfrc(igroup)) then
+        dmdt = (pvap * ss) * g0
+      end if
+    
       ! You can only lose (gain) mass until the volume fraction for neutralization
       ! is reached. At that point the particle is fully neutralized and the
-      ! vapor pressure is to 0. The volume of condensed gas in excess of
+      ! vapor pressure goes to 0. The volume of condensed gas in excess of
       ! (needed for) full neutralization is:
       !
       !  condv - othervtot * ((1 - neutral_volfrc) / neutral_volfrc)
+      !
+      ! Limit the growth rate so that the neutralized volume fraction is not overshot.
+      if (volfrc > neutral_volfrc(igroup)) then
+        dmdt = min(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
+                    * rhoelem(ibin,iepart) / dtime, &
+                   dmdt)
+      else
       dmdt = max(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
-                  * rhoelem(ibin,iepart) / pc(iz,ibin,iepart) / dtime, dmdt)
+                  * rhoelem(ibin,iepart) / dtime, &
+                 dmdt)
+      end if
     end if
   else
   

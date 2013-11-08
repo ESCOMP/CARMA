@@ -32,7 +32,6 @@ subroutine sulfnuc(carma,cstate, iz, rc)
   integer           :: nucbin     ! bin in which nucleation takes place
   integer           :: ignucto    ! index of target nucleation group
   integer           :: ienucto    ! index of target nucleation element
-  integer           :: inucto     ! index of target nucleation bin
   integer           :: inuc
   real(kind=f)      :: nucrate    ! nucleation rate (#/x/y/z/s)
   real(kind=f)      :: h2o        ! H2O concentrations in molec/cm3 
@@ -109,22 +108,8 @@ subroutine sulfnuc(carma,cstate, iz, rc)
     
             do ibin = NBIN, 1, -1
 
-              !  <inucto> is index of target nucleation bin.
-              if (ignucto .ne. 0) then
-                inucto = inuc2bin(ibin, igroup, ignucto)
-              else
-                inucto = 0
-              endif
-
               ! Bypass calculation if few particles are present
               if (pconmax(iz,igroup) .gt. FEW_PC) then
-
-                ! Set <evapfrom_nucto> to .true. when target droplets are evaporating
-  !              if (inucto .ne. 0) then
-  !                evapfrom_nucto = evaplg(inucto,ignucto) .gt. 0._f
-  !              else
-  !                evapfrom_nucto = .false.
-  !              endif
 
                 ! This is where all of the pre calculation needs to go, so that it isn't
                 ! done when the model is not configured for homogeneous nucleation of
