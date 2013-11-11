@@ -193,26 +193,23 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
       ! When the particle is less than fully neutralized, calculate a new
       ! dmdt based upon assuming that the saturation vapor pressure (pvap)
       ! is 0.
-      if (volfrc > neutral_volfrc(igroup)) then
-        dmdt = (pvap * ss) * g0
-      end if
-    
-      ! You can only lose (gain) mass until the volume fraction for neutralization
-      ! is reached. At that point the particle is fully neutralized and the
-      ! vapor pressure goes to 0. The volume of condensed gas in excess of
-      ! (needed for) full neutralization is:
-      !
-      !  condv - othervtot * ((1 - neutral_volfrc) / neutral_volfrc)
-      !
-      ! Limit the growth rate so that the neutralized volume fraction is not overshot.
-      if (volfrc > neutral_volfrc(igroup)) then
-        dmdt = min(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
-                    * rhoelem(ibin,iepart) / dtime, &
-                   dmdt)
+      if (volfrc >= neutral_volfrc(igroup)) then
+        dmdt = max((pvap * (ss + 1._f)) * g0, dmdt)
       else
-      dmdt = max(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
-                  * rhoelem(ibin,iepart) / dtime, &
-                 dmdt)
+
+        ! You can only lose sulfuric acid (condensed) mass until the volume fraction
+        ! for neutralization is reached. At that point the particle is fully
+        ! neutralized and the vapor pressure goes to 0. The volume of condensed gas
+        ! in excess of full neutralization is:
+        !
+        !  condv - othervtot * ((1 - neutral_volfrc) / neutral_volfrc)
+        !
+        ! NOTE: Limit the growth rate so that the neutralized volume fraction is
+        ! not overshot. Test have shown that this requires reducing the rate by a
+        ! factor of 2; although, other values probably work too.
+        dmdt = max(-(condv - othervtot * ((1._f - neutral_volfrc(igroup)) / neutral_volfrc(igroup))) &
+                    * rhoelem(ibin,iepart) / 2._f / dtime, &
+                   dmdt)
       end if
     end if
   else
