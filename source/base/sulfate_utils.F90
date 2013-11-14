@@ -88,15 +88,10 @@ contains
     p_h2o=p_h2o/1000.0_f     ! partial pressure
     vp_h2o=h2o_vp/1000.0_f   ! eq. vp
 
-    !  Prevent a NaN calculation  
-    !  In the upper thermosphere p_h2o can be very low and vp_h2o can be very high
-    if (p_h2o.lt.1.e-10_f .and. vp_h2o.gt.0._f) p_h2o=1.e-10_f   
-   
     !  Activity = water pp in mb / water eq. vp over pure water in mb
     activ = p_h2o/vp_h2o
  
     if (activ.lt.0.05_f) then
-!      activ = max(activ,1.e-6_f)    ! restrict minimum activity
       activ = max(activ,1.e-8_f)    ! restrict minimum activity
       atab1 	= 12.37208932_f	
       btab1 	= -0.16125516114_f
