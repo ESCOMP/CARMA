@@ -243,6 +243,7 @@ subroutine test_sulfate_simple()
   p(1)         = 90._f * 100._f
   zc(1)        = 17000._f
   t(1)         = 250._f
+!!  t(1)         = 180._f
   zl(1)        = zc(1) - deltaz
   zl(2)        = zc(1) + deltaz
   rho(1)       = (p(1) * 10._f) / (R_AIR * t(1)) * (1e-3_f * 1e6_f)
@@ -250,6 +251,7 @@ subroutine test_sulfate_simple()
   pl(2)        = p(1) - (zl(2) - zc(1)) * rho(1) * (GRAV / 100._f)
 
   ! Initial H2O and H2SO4 concentrations
+!!  mmr_gas(:,1)  = 3.5e-7_f     ! H2O
 !!  mmr_gas(:,1)  = 3.5e-6_f     ! H2O
   mmr_gas(:,1)  = 100.e-6_f     ! H2O
 !!  mmr_gas(:,2)  = 100.e-9_f    ! H2SO4
@@ -296,7 +298,8 @@ subroutine test_sulfate_simple()
                         zc(:), zl(:), &
                         p(:),  pl(:), &
                         t(:), rc, &
-                        told=t(:))
+                        told=t(:), &
+                        qh2o=mmr_gas(1,:))
     if (rc /=0) stop "    *** CARMASTATE_Create FAILED ***"
 
     ! Send the bin mmrs to CARMA

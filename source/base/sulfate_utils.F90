@@ -96,7 +96,8 @@ contains
     activ = p_h2o/vp_h2o
  
     if (activ.lt.0.05_f) then
-      activ = max(activ,1.e-6_f)    ! restrict minimum activity
+!      activ = max(activ,1.e-6_f)    ! restrict minimum activity
+      activ = max(activ,1.e-8_f)    ! restrict minimum activity
       atab1 	= 12.37208932_f	
       btab1 	= -0.16125516114_f
       ctab1 	= -30.490657554_f

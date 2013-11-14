@@ -809,7 +809,7 @@ contains
 
           do ifrom = 1,carma%f_NBIN   ! source bin
             if( carma%f_inuc2bin(ifrom,igfrom,igto) .eq. 0 )then
-              if (carma%f_do_print) write(carma%f_LUNOPRT,7) igfrom,ifrom,igto
+              if ((carma%f_do_print) .and. (carma%f_do_print_init)) write(carma%f_LUNOPRT,7) igfrom,ifrom,igto
               bad_grid = .true.
             endif
           enddo
@@ -817,15 +817,12 @@ contains
       endif
     enddo
 
-    if( bad_grid )then
-      if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::Warning - incompatible grids for nucleation'
-!      if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::ERROR - incompatible grids for nucleation'
-!      rc = RC_ERROR
-!      return
-    endif
-      
     if (carma%f_do_print_init) then
     
+      if( bad_grid )then
+        if (carma%f_do_print) write(carma%f_LUNOPRT,*) 'CARMA_InitializeGrowth::Warning - incompatible grids for nucleation'
+      endif
+      
       ! Report some initialization values!
       write(carma%f_LUNOPRT,5)
       write(carma%f_LUNOPRT,1) 'inucgas  ',(carma%f_inucgas(i),i=1,carma%f_NGROUP)

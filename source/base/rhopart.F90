@@ -44,7 +44,7 @@ subroutine rhopart(carma, cstate, rc)
   real(kind=f)    :: vcore(NBIN)
   real(kind=f)    :: mcore(NBIN)
   real(kind=f)    :: r_ratio
-  real(kind=f)    :: gc_cgs
+  real(kind=f)    :: h2o_mass
 
   1 format(/,'rhopart::WARNING - core mass > total mass, truncating : iz=',i4,',igroup=',&
               i4,',ibin=',i4,',total mass=',e10.3,',core mass=',e10.3,',using rhop=',f9.4)
@@ -119,9 +119,7 @@ subroutine rhopart(carma, cstate, rc)
     
       ! Determine the weight percent of sulfate, and store it for later use.
       if (irhswell(igroup) == I_WTPCT_H2SO4) then
-        gc_cgs     = gc(iz, igash2so4) / (xmet(iz) * ymet(iz) * zmet(iz))
-        wtpct(iz)  = wtpct_tabaz(carma, t(iz), gc_cgs, pvapl(iz, igash2o), rc)
-        if (rc < 0) return
+        h2o_mass     = gc(iz, igash2o) / (xmet(iz) * ymet(iz) * zmet(iz))
       end if
           
       ! Loop over particle size bins.
@@ -133,17 +131,20 @@ subroutine rhopart(carma, cstate, rc)
         
           ! rlow
           call getwetr(carma, igroup, relhum(iz), rlow(ibin,igroup), rlow_wet(iz,ibin,igroup), &
-            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, wgtpct=wtpct(iz), temp=t(iz))
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, h2o_mass=h2o_mass, &
+            h2o_vp=pvapl(iz, igash2o), temp=t(iz))
           if (rc < 0) return
 
           ! rup
           call getwetr(carma, igroup, relhum(iz), rup(ibin,igroup), rup_wet(iz,ibin,igroup), &
-            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, wgtpct=wtpct(iz), temp=t(iz))
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, h2o_mass=h2o_mass, &
+            h2o_vp=pvapl(iz, igash2o), temp=t(iz))
           if (rc < 0) return
 
           ! r
           call getwetr(carma, igroup, relhum(iz), r(ibin,igroup), r_wet(iz,ibin,igroup), &
-            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, wgtpct=wtpct(iz), temp=t(iz))
+            rhop(iz,ibin,igroup), rhop_wet(iz,ibin,igroup), rc, h2o_mass=h2o_mass, &
+            h2o_vp=pvapl(iz, igash2o), temp=t(iz))
           if (rc < 0) return
 
         else
