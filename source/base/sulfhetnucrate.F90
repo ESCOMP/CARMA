@@ -53,7 +53,7 @@ subroutine sulfhetnucrate(carma, cstate, iz, igroup, nucbin, h2o, h2so4, beta1, 
   real(kind=f)                         :: gg
   real(kind=f)                         :: FM = cos(50._f * DEG2RAD)  ! cos(contact angle)
 
-  ! Heterogeneous nucleation which depends on r(i)
+  ! Heterogeneous nucleation which depends on r
   cnucl = 4._f * PI * rstar**(2._f)
   chom  = h2so4 * h2o * beta1 * cnucl
   expc  = 2.4e-16_f * exp(4.51872e+11_f / RGAS / t(iz))

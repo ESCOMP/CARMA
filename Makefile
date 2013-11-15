@@ -66,6 +66,20 @@ ifeq ($(FORTRAN),g95)
   LDFLAGS = $(FFLAGS)
 endif
 
+# Add options for the gfortran compiler.
+ifeq ($(FORTRAN),gfortran)
+  FFLAGS  += -ffree-line-length-none
+
+  # Debug options.
+  FFLAGS += -g -fbounds-check -ffpe-trap=zero,invalid,overflow -fbacktrace
+  
+  # Open/MP
+  # Open/MP
+  FFLAGS  += -fopenmp
+
+  LDFLAGS = $(FFLAGS)
+endif
+
 # Add options for the IBM XL Fortran compiler.
 #
 # NOTE: It doesn't support float to zero.
@@ -104,7 +118,7 @@ include ../../tests/Makefile
 CARMA.exe : $(CARMA_OBJ) carma_test.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o CARMA.exe carma_test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 FALLTEST.exe : $(CARMA_OBJ) carma_falltest.o carma_testutils.o atmosphere_mod.o
-	$(FORTRAN) $(LDFLAGS) -no_pie -o FALLTEST.exe carma_falltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+	$(FORTRAN) $(LDFLAGS) -o FALLTEST.exe carma_falltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 FRACTALMICROTEST.exe : $(CARMA_OBJ) carma_fractalmicrotest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o FRACTALMICROTEST.exe carma_fractalmicrotest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 FRACTALOPTICSTEST.exe : $(CARMA_OBJ) carma_fractalopticstest.o carma_testutils.o atmosphere_mod.o

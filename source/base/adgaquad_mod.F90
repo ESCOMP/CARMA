@@ -216,8 +216,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -428,8 +428,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -826,8 +826,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -1039,8 +1039,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                :: centr
+        type(adgaquad_vars_type), intent(inout) :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -1442,8 +1442,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -1654,8 +1654,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -1872,8 +1872,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -2103,8 +2103,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -2345,8 +2345,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -2601,8 +2601,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                 :: centr
+        type(adgaquad_vars_type), intent(inout)  :: vars
         real(kind=f)              :: fx
       end function fx
     end interface
@@ -3026,8 +3026,8 @@ module adgaquad_mod
       function fx(centr, vars)
         use carma_precision_mod, only : f
         use adgaquad_types_mod
-        real(kind=f)              :: centr
-        type(adgaquad_vars_type)  :: vars
+        real(kind=f), intent(in)                :: centr
+        type(adgaquad_vars_type), intent(inout) :: vars
         real(kind=f)              :: fx
       end function fx
     end interface

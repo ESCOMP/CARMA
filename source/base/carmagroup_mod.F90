@@ -242,15 +242,15 @@ contains
     !! 
     !
     ! Check consistency for fractal optical property calculation
-    if ((carma%f_group(igroup)%f_imiertn .eq. I_MIERTN_BOTET1997) .and. (carma%f_group(igroup)%f_is_fractal .eq. .FALSE.)) then        
+    if ((carma%f_group(igroup)%f_imiertn == I_MIERTN_BOTET1997) .and. (.not. carma%f_group(igroup)%f_is_fractal)) then        
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Create: ERROR, fractal optics selected without fractal microphysics enabled"
         rc = RC_ERROR
         return
     end if
 
     ! Check input consistency for fractal physics
-    if (carma%f_group(igroup)%f_is_fractal .eq. .TRUE. .or. carma%f_group(igroup)%f_imiertn .eq. I_MIERTN_BOTET1997) then
-      if ((present(rmon) .ne. .TRUE.) .or. (present(df) .ne. .TRUE.) .or. (present(falpha) .ne. .TRUE.)) then
+    if ((carma%f_group(igroup)%f_is_fractal) .or. (carma%f_group(igroup)%f_imiertn == I_MIERTN_BOTET1997)) then
+      if (.not. (present(rmon) .and. present(df) .and. present(falpha))) then
         if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Create: ERROR, for fractal physics must set rmon,df,falpha"
         rc = RC_ERROR
         return 

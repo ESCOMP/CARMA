@@ -216,12 +216,12 @@ contains
       
       sig1 = 79.3556_f - 0.0267212_f * temp ! surface tension at 79.432 wt %
       sig2 = 75.608_f  - 0.0269204_f * temp ! surface tension at 85.9195 wt %      
-      dsigma_dwt = (sig2-sig1)/(85.9195_f - 79.432_f) ! change in density for change in 1 wt %
+      dsigma_dwt = (sig2-sig1) / (85.9195_f - 79.432_f) ! change in density for change in 1 wt %
       sigkelv = sig1 + dsigma_dwt * (80.0_f - 79.432_f)
       
       rwet = rdry * (100._f * rhopdry / wtpkelv / den2)**(1._f / 3._f)
 
-      rkelvinH2O_b = 1._f + wtpkelv * drho_dwt / den2 - 3. * wtpkelv &
+      rkelvinH2O_b = 1._f + wtpkelv * drho_dwt / den2 - 3._f * wtpkelv &
           * dsigma_dwt / (2._f*sigkelv)
 
       rkelvinH2O_a = 2._f * gwtmol(igash2so4) * sigkelv / (den1 * RGAS * temp * rwet)     

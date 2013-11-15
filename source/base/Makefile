@@ -28,7 +28,7 @@ sulfate_utils.o sulfnuc.o sulfnucrate.o hetnucl.o newstate_calc.o \
 fractal_meanfield_mod.o lusolvec_mod.o adgaquad_types_mod.o adgaquad_mod.o \
 sulfhetnucrate.o
 
-CARMA_DOC = carma_constants_mod.html carma_types_mod.html \
+CARMA_DOC = carma_constants_mod.html carma_types_mod.html carma_enums_mod.html \
 carmagroup_mod.html carmagas_mod.html carmaelement_mod.html carmasolute_mod.html \
 carmastate_mod.html carma_mod.html coagl.html coagp.html csolve.html setupbins.html \
 setupatm.html setupvf.html microslow.html newstate.html prestep.html setupckern.html \
