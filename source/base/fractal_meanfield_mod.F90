@@ -640,7 +640,7 @@ module fractal_meanfield_mod
 
     refrel=cmplx(xn,xk,kind=f)
     x=2._f*3.14159265_f*rad/lambda      ! size parameter of monomer
-    dang=1.570796327_f/float(nang-1)
+    dang=1.570796327_f/real(nang-1,kind=f)
 
     call intmie(x,refrel,nang,an,bn,nstop)
 
@@ -678,7 +678,7 @@ module fractal_meanfield_mod
     nstop=xstop
     ymod=abs(y)
     nmx=dmax1(xstop,ymod)+15
-    dang=1.570796327_f/float(nang-1)
+    dang=1.570796327_f/real(nang-1,kind=f)
 
     ! Initializations
     pi0(:) = 0._f

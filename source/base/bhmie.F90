@@ -54,11 +54,11 @@ subroutine bhmie(carma, x, refrel, nang, s1, s2, Qext, Qsca, Qback, gfac, rc)
   ! Will loop over nang angles.
   ymod = int(abs(y))
   nmx  = max(xstop, ymod) + 15
-  dang = 1.570796327_f / float(nang - 1)
+  dang = 1.570796327_f / real(nang - 1, kind=f)
   allocate(d(nmx))
   
   do j = 1, nang
-    theta(j) = (float(j) - 1._f) * dang
+    theta(j) = (real(j, kind=f) - 1._f) * dang
     amu(j)   = cos(theta(j))
   end do
   
