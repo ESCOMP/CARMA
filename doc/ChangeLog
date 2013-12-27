@@ -1,4 +1,27 @@
 ===============================================================
+Tag name:
+Originator(s): Sean Santos
+Date: Dec 27, 2013
+
+One-line Summary:
+
+Support for the NAG Fortran compiler within CAM (nagfor).
+
+Purpose of changes:
+
+Made many changes to work with the NAG compiler within CAM. These include
+mostly changes to deal with kind in a standard-conforming way (as opposed
+to using non-standard intrinsics), and changes to ensure that the code
+contains no more than 132 characters per line.
+
+miess.F90 has more extensive changes; this module used "equivalence" in a
+way not allowed by the standard, and so much of the code had to be
+re-written to work on complex numbers without associating their components
+to reals.
+
+The Makefile is not currently updated with support for nagfor.
+
+===============================================================
 Tag name: 
 Originator(s): Chuck Bardeen
 Date: Nov 15, 2013

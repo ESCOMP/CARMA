@@ -125,7 +125,7 @@ subroutine rhopart(carma, cstate, rc)
       ! Loop over particle size bins.
       do ibin = 1,NBIN
       
-        ! If humidty affects the particle, then determine the equilbirium
+        ! If humidity affects the particle, then determine the equilbirium
         ! radius and density based upon the relative humidity.
         if (irhswell(igroup) == I_WTPCT_H2SO4) then
         

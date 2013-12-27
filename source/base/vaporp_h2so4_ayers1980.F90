@@ -27,7 +27,7 @@ subroutine vaporp_H2SO4_Ayers1980(carma, cstate, iz, rc, pvap_liq, pvap_ice)
   
   implicit none
 
-  type(carma_type), intent(inout)      :: carma     !! the carma object
+  type(carma_type), intent(in)         :: carma     !! the carma object
   type(carmastate_type), intent(inout) :: cstate    !! the carma state object
   integer, intent(in)                  :: iz        !! z index
   real(kind=f), intent(out)            :: pvap_liq  !! vapor pressure wrt liquid [dyne/cm2]

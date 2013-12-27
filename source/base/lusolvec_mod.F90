@@ -72,9 +72,9 @@ module lusolvec_mod
   !! ******************************************************************
   SUBROUTINE LUDCMPC(A,N,NP,INDX,D)
 
+    INTEGER :: NP
     COMPLEX(kind=f) :: A(NP,NP)
     INTEGER :: N
-    INTEGER :: NP
     INTEGER :: INDX(N)
     REAL(kind=f) :: D
 
@@ -86,12 +86,12 @@ module lusolvec_mod
     INTEGER I,J,K,IMAX
 
     D=1._f
-    TINYC=DCMPLX(TINY,0.0_f)
-    ZEROC=DCMPLX(0.0_f,0.0_f)
+    TINYC=cmplx(TINY,0.0_f,kind=f)
+    ZEROC=cmplx(0.0_f,0.0_f,kind=f)
     DO I=1,N
       AAMAX=0._f
       DO J=1,N
-        IF (CDABS(A(I,J)).GT.AAMAX) AAMAX=CDABS(A(I,J))
+        IF (ABS(A(I,J)).GT.AAMAX) AAMAX=ABS(A(I,J))
       END DO
 !      IF (AAMAX.EQ.0._f) PAUSE 'Singular matrix.'
       IF (AAMAX.EQ.0._f) STOP 'Singular matrix.'
@@ -118,7 +118,7 @@ module lusolvec_mod
           END DO
           A(I,J)=SUM
         ENDIF
-        DUM=VV(I)*CDABS(SUM)
+        DUM=VV(I)*ABS(SUM)
         IF (DUM.GE.AAMAX) THEN
           IMAX=I
           AAMAX=DUM
@@ -170,9 +170,9 @@ module lusolvec_mod
   !! ******************************************************************
   SUBROUTINE LUBKSBC(A,N,NP,INDX,B)
 
+    INTEGER :: NP
     COMPLEX(kind=f) :: A(NP,NP)
     INTEGER :: N
-    INTEGER :: NP
     INTEGER :: INDX(N)
     COMPLEX(kind=f) :: B(N)
 
@@ -183,7 +183,7 @@ module lusolvec_mod
     INTEGER :: II,LL,I,J
 
     II=0
-    ZEROC=DCMPLX(0.0_f,0.0_f)
+    ZEROC=cmplx(0.0_f,0.0_f,kind=f)
     DO I=1,N
       LL=INDX(I)
       SUM=B(LL)

@@ -288,8 +288,9 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
           plkint = 0._f
         end if
 
-        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * qext(iwvl,ibin+1,igroup) * PI * (rlow_wet(iz,ibin+1,igroup) ** 2) * arat(ibin+1,igroup) * &
-             (radint(iz,iwvl) - plkint) * dwave(iwvl)
+        qrad = qrad + 4.0_f * PI * (1._f - ssa(iwvl,ibin+1,igroup)) * &
+             qext(iwvl,ibin+1,igroup) * PI * (rlow_wet(iz,ibin+1,igroup) ** 2) &
+             * arat(ibin+1,igroup) * (radint(iz,iwvl) - plkint) * dwave(iwvl)
       end do
       
       ! Save of the Qrad association with the ambient air temperature.
@@ -359,8 +360,9 @@ subroutine pheat(carma, cstate, iz, igroup, iepart, ibin, igas, dmdt, rc)
 !        phprod = phprod + (qrad - qrad0) * pc(iz,ibin+1,iepart) / CP / rhoa(iz)
 
         ! Now add in the heating from thermal conduction.
-        phprod = phprod + 4._f * PI * rlow_wet(iz,ibin+1,igroup) * thcondnc(iz,ibin+1,igroup) * &
-                 ft(iz,ibin+1,igroup) * dtp * pc(iz,ibin+1,iepart) / (CP * rhoa(iz))
+        phprod = phprod + 4._f * PI * rlow_wet(iz,ibin+1,igroup) * &
+             thcondnc(iz,ibin+1,igroup) * ft(iz,ibin+1,igroup) * dtp * &
+             pc(iz,ibin+1,iepart) / (CP * rhoa(iz))
       end if
     end if
   end if

@@ -44,7 +44,11 @@ subroutine setupckern(carma, cstate, rc)
       
   integer :: ip
   integer :: ig, jg
-  real(kind=f) :: cstick_calc    ! the probability that two particles that collide through thermal coagulation will stick to each other.
+
+  ! The probability that two particles that collide through thermal
+  ! coagulation will stick to each other.
+  real(kind=f) :: cstick_calc
+
   integer :: i1, i2, j1, j2, k
   integer :: i, j
   integer :: igrp

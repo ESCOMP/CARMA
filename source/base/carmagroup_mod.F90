@@ -43,13 +43,16 @@ contains
     character(*), intent(in)                    :: name                !! the group name, maximum of 255 characters
     real(kind=f), intent(in)                    :: rmin                !! the minimum radius, can be specified [cm]
     real(kind=f), intent(in)                    :: rmrat               !! the volume ratio between bins
-    integer, intent(in)                         :: ishape              !! the type of the particle shape [I_SPHERE | I_HEXAGON | I_CYLINDER]
+    integer, intent(in)                         :: ishape              !! the type of the particle shape
+                                                                       !! [I_SPHERE | I_HEXAGON | I_CYLINDER]
     real(kind=f), intent(in)                    :: eshape              !! the aspect ratio of the particle shape (length/diameter)
     logical, intent(in)                         :: is_ice              !! is this an ice particle?
     integer, intent(out)                        :: rc                  !! return code, negative indicates failure
     logical, optional, intent(in)               :: is_fractal          !! is this a fractal particle?
-    integer, optional, intent(in)               :: irhswell            !! the parameterization for particle swelling from relative humidity [I_FITZGERALD | I_GERBER]
-    integer, optional, intent(in)               :: irhswcomp           !! the composition for particle swelling from relative humidity [I_FITZGERALD | I_GERBER]
+    integer, optional, intent(in)               :: irhswell            !! the parameterization for particle swelling
+                                                                       !! from relative humidity [I_FITZGERALD | I_GERBER]
+    integer, optional, intent(in)               :: irhswcomp           !! the composition for particle swelling
+                                                                       !! from relative humidity [I_FITZGERALD | I_GERBER]
     complex(kind=f), optional, intent(in)       :: refidx(carma%f_NWAVE) !! refractive index for the particle
     logical, optional, intent(in)               :: do_mie              !! do mie calculations?
     logical, optional, intent(in)               :: do_wetdep           !! do wet deposition for this particle?
@@ -58,14 +61,20 @@ contains
     real(kind=f), intent(in), optional          :: solfac              !! the solubility factor for wet deposition
     real(kind=f), intent(in), optional          :: scavcoef            !! the scavenging coefficient for wet deposition
     character(*), optional, intent(in)          :: shortname           !! the group shortname, maximum of 6 characters
-    integer, optional, intent(in)               :: cnsttype            !! constituent type in parent model [I_CNSTTYPE_PROGNOSTIC | I_CNSTTYPE_DIAGNOSTIC]
-    integer, optional, intent(in)               :: maxbin              !! bin number of the last prognostic bin, the remaining bins are diagnostic
-    integer, optional, intent(in)               :: ifallrtn            !! fall velocity routine [I_FALLRTN_STD | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010 | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
+    integer, optional, intent(in)               :: cnsttype            !! constituent type in parent model
+                                                                       !! [I_CNSTTYPE_PROGNOSTIC | I_CNSTTYPE_DIAGNOSTIC]
+    integer, optional, intent(in)               :: maxbin              !! bin number of the last prognostic bin
+                                                                       !! the remaining bins are diagnostic
+    integer, optional, intent(in)               :: ifallrtn            !! fall velocity routine [I_FALLRTN_STD
+                                                                       !! | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010
+                                                                       !! | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
     logical, optional, intent(in)               :: is_cloud            !! is this a cloud particle?
     real(kind=f), optional, intent(in)          :: rmassmin            !! the minimum mass, when used overrides rmin[g]
-    integer, optional, intent(in)               :: imiertn             !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983 | I_MIERTN_BOTET1997]
+    integer, optional, intent(in)               :: imiertn             !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983
+                                                                       !! | I_MIERTN_BOTET1997]
     logical, optional, intent(in)               :: is_sulfate          !! is this a sulfate particle?
-    real(kind=f), optional, intent(in)          :: dpc_threshold       !! convergence criteria for particle concentration [fraction]
+    real(kind=f), optional, intent(in)          :: dpc_threshold       !! convergence criteria for particle concentration
+                                                                       !! [fraction]
     real(kind=f), optional, intent(in)          :: rmon                !! monomer radius for fractal particles [cm]
     real(kind=f), optional, intent(in)          :: df(carma%f_NBIN)    !! fractal dimension
     real(kind=f), optional, intent(in)          :: falpha              !! fractal packing coefficient
@@ -242,16 +251,24 @@ contains
     !! 
     !
     ! Check consistency for fractal optical property calculation
-    if ((carma%f_group(igroup)%f_imiertn == I_MIERTN_BOTET1997) .and. (.not. carma%f_group(igroup)%f_is_fractal)) then        
-        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Create: ERROR, fractal optics selected without fractal microphysics enabled"
+    if ((carma%f_group(igroup)%f_imiertn == I_MIERTN_BOTET1997) .and. &
+         .not. carma%f_group(igroup)%f_is_fractal) then
+        if (carma%f_do_print) then
+           write(carma%f_LUNOPRT, *) "CARMAGROUP_Create:&
+                &ERROR, fractal optics selected without fractal microphysics enabled."
+        end if
         rc = RC_ERROR
         return
     end if
 
     ! Check input consistency for fractal physics
-    if ((carma%f_group(igroup)%f_is_fractal) .or. (carma%f_group(igroup)%f_imiertn == I_MIERTN_BOTET1997)) then
+    if (carma%f_group(igroup)%f_is_fractal .or. &
+         (carma%f_group(igroup)%f_imiertn == I_MIERTN_BOTET1997)) then
       if (.not. (present(rmon) .and. present(df) .and. present(falpha))) then
-        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMAGROUP_Create: ERROR, for fractal physics must set rmon,df,falpha"
+        if (carma%f_do_print) then
+           write(carma%f_LUNOPRT, *) "CARMAGROUP_Create:&
+                &ERROR, for fractal physics must set rmon,df,falpha"
+        end if
         rc = RC_ERROR
         return 
       end if
@@ -358,20 +375,25 @@ contains
     real(kind=f), optional, intent(out)       :: eshape                       !! the aspect ratio of the particle shape
     logical, optional, intent(out)            :: is_ice                       !! is this an ice particle?
     logical, optional, intent(out)            :: is_fractal                   !! is this a fractal?
-    integer, optional, intent(out)            :: irhswell                     !! the parameterization for particle swelling from relative humidity
-    integer, optional, intent(out)            :: irhswcomp                    !! the composition for particle swelling from relative humidity
+    integer, optional, intent(out)            :: irhswell                     !! the parameterization for particle swelling
+                                                                              !! from relative humidity
+    integer, optional, intent(out)            :: irhswcomp                    !! the composition for particle swelling
+                                                                              !! from relative humidity
     integer, optional, intent(out)            :: cnsttype                     !! constituent type in the parent model
-    real(kind=f), intent(out), optional       :: r(carma%f_NBIN)                !! the bin radius [cm]
-    real(kind=f), intent(out), optional       :: rlow(carma%f_NBIN)             !! the bin radius lower bound [cm]
-    real(kind=f), intent(out), optional       :: rup(carma%f_NBIN)              !! the bin radius upper bound [cm]
-    real(kind=f), intent(out), optional       :: dr(carma%f_NBIN)               !! the bin width in radius space [cm]
-    real(kind=f), intent(out), optional       :: rmass(carma%f_NBIN)            !! the bin mass [g]
-    real(kind=f), intent(out), optional       :: dm(carma%f_NBIN)               !! the bin width in mass space [g]
-    real(kind=f), intent(out), optional       :: vol(carma%f_NBIN)              !! the bin volume [cm<sup>3</sup>]
-    real(kind=f), intent(out), optional       :: arat(carma%f_NBIN)             !! the projected area ratio (area / area enclosing sphere)
-    real(kind=f), intent(out), optional       :: rrat(carma%f_NBIN)             !! the radius ratio (maximum dimension / radius of enclosing sphere)
-    real(kind=f), intent(out), optional       :: rprat(carma%f_NBIN)             !! the porusity radius ratio (scaled porosity radius / equiv. sphere)
-    complex(kind=f), intent(out), optional    :: refidx(carma%f_NWAVE)          !! the refractive index at each wavelength
+    real(kind=f), intent(out), optional       :: r(carma%f_NBIN)              !! the bin radius [cm]
+    real(kind=f), intent(out), optional       :: rlow(carma%f_NBIN)           !! the bin radius lower bound [cm]
+    real(kind=f), intent(out), optional       :: rup(carma%f_NBIN)            !! the bin radius upper bound [cm]
+    real(kind=f), intent(out), optional       :: dr(carma%f_NBIN)             !! the bin width in radius space [cm]
+    real(kind=f), intent(out), optional       :: rmass(carma%f_NBIN)          !! the bin mass [g]
+    real(kind=f), intent(out), optional       :: dm(carma%f_NBIN)             !! the bin width in mass space [g]
+    real(kind=f), intent(out), optional       :: vol(carma%f_NBIN)            !! the bin volume [cm<sup>3</sup>]
+    real(kind=f), intent(out), optional       :: arat(carma%f_NBIN)           !! the projected area ratio
+                                                                              !! (area / area enclosing sphere)
+    real(kind=f), intent(out), optional       :: rrat(carma%f_NBIN)           !! the radius ratio
+                                                                              !! (maximum dimension / radius of enclosing sphere)
+    real(kind=f), intent(out), optional       :: rprat(carma%f_NBIN)          !! the porusity radius ratio
+                                                                              !! (scaled porosity radius / equiv. sphere)
+    complex(kind=f), intent(out), optional    :: refidx(carma%f_NWAVE)        !! the refractive index at each wavelength
     real(kind=f), intent(out), optional       :: qext(carma%f_NWAVE,carma%f_NBIN) !! extinction efficiency
     real(kind=f), intent(out), optional       :: ssa(carma%f_NWAVE,carma%f_NBIN)  !! single scattering albedo
     real(kind=f), intent(out), optional       :: asym(carma%f_NWAVE,carma%f_NBIN) !! asymmetry factor
@@ -383,14 +405,19 @@ contains
     real(kind=f), intent(out), optional       :: scavcoef                     !! the scavenging coefficient for wet deposition
     integer, intent(out), optional            :: ienconc                      !! Particle number conc. element for group
     integer, intent(out), optional            :: ncore                        !! Number of core mass elements for group
-    integer, intent(out), optional            :: icorelem(carma%f_NELEM)        !! Element index of core mass elements for group
+    integer, intent(out), optional            :: icorelem(carma%f_NELEM)      !! Element index of core mass elements for group
     integer, optional, intent(out)            :: maxbin                       !! the last prognostic bin in the group
-    integer, optional, intent(out)            :: ifallrtn                     !! fall velocity routine [I_FALLRTN_STD | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010 | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
+    integer, optional, intent(out)            :: ifallrtn                     !! fall velocity routine [I_FALLRTN_STD
+                                                                              !! | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010
+                                                                              !! | I_FALLRTN_ACKERMAN_DROP
+                                                                              !! | I_FALLRTN_ACKERMAN_ICE]
     logical, optional, intent(out)            :: is_cloud                     !! is this a cloud particle?
     real(kind=f), optional, intent(out)       :: rmassmin                     !! the minimum mass [g]
-    integer, optional, intent(out)            :: imiertn                      !! mie routine [I_MIERTN_TOON1981 | I_MIERTN_BOHREN1983 | I_MIERTN_BOTET1997]
+    integer, optional, intent(out)            :: imiertn                      !! mie routine [I_MIERTN_TOON1981
+                                                                              !! | I_MIERTN_BOHREN1983 | I_MIERTN_BOTET1997]
     logical, optional, intent(out)            :: is_sulfate                   !! is this a sulfate particle?
-    real(kind=f), optional, intent(out)       :: dpc_threshold                !! convergence criteria for particle concentration [fraction]
+    real(kind=f), optional, intent(out)       :: dpc_threshold                !! convergence criteria for particle concentration
+                                                                              !! [fraction]
     real(kind=f), optional, intent(out)       :: rmon                         !! monomer radius for fractal particles
     real(kind=f), optional, intent(out)       :: df(carma%f_NBIN)             !! fractal dimension
     real(kind=f), optional, intent(out)       :: nmon(carma%f_NBIN)           !! number of monomers per
@@ -491,15 +518,19 @@ contains
     real(kind=f)                              :: eshape             ! the aspect ratio of the particle shape
     logical                                   :: is_ice             ! is this an ice particle?
     logical                                   :: is_fractal         ! is this a fractal?
-    integer                                   :: irhswell           ! the parameterization for particle swelling from relative humidity
-    integer                                   :: irhswcomp          ! the composition for particle swelling from relative humidity
+    integer                                   :: irhswell           ! the parameterization for particle swelling
+                                                                    ! from relative humidity
+    integer                                   :: irhswcomp          ! the composition for particle swelling
+                                                                    ! from relative humidity
     integer                                   :: cnsttype           ! constituent type in the parent model
     real(kind=f)                              :: r(carma%f_NBIN)      ! the bin radius [m]
     real(kind=f)                              :: dr(carma%f_NBIN)     ! the bin width in radius space [m]
     real(kind=f)                              :: rmass(carma%f_NBIN)  ! the bin mass [kg]
     real(kind=f)                              :: dm(carma%f_NBIN)     ! the bin width in mass space [kg]
     real(kind=f)                              :: vol(carma%f_NBIN)    ! the bin volume [m<sup>3</sup>]
-    integer                                   :: ifallrtn           ! fall velocity routine [I_FALLRTN_STD | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010 | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
+    integer                                   :: ifallrtn           ! fall velocity routine [I_FALLRTN_STD
+                                                                    ! | I_FALLRTN_STD_SHAPE | I_FALLRTN_HEYMSFIELD2010
+                                                                    ! | I_FALLRTN_ACKERMAN_DROP | I_FALLRTN_ACKERMAN_ICE]
     logical                                   :: is_cloud           ! is this a cloud particle?
     real(kind=f)                              :: rmassmin           ! the minimum mass [g]
     logical                                   :: do_mie             ! do mie calculations?
@@ -508,7 +539,8 @@ contains
     logical                                   :: do_vtran           ! do sedimentation for this particle?
     integer                                   :: imiertn            ! mie scattering routine
     logical                                   :: is_sulfate         ! is this a sulfate particle?
-    real(kind=f)                              :: dpc_threshold      ! convergence criteria for particle concentration [fraction]
+    real(kind=f)                              :: dpc_threshold      ! convergence criteria for particle concentration
+                                                                    ! [fraction]
     real(kind=f)                              :: neutral_volfrc     ! volume fraction of core mass for neutralization
 
     ! Assume success.
@@ -516,10 +548,14 @@ contains
 
     ! Test out the Get method.
     if (carma%f_do_print) then
-      call CARMAGROUP_Get(carma, igroup, rc, name=name, shortname=shortname, rmin=rmin, rmrat=rmrat, ishape=ishape, eshape=eshape, &
-                        is_ice=is_ice, is_fractal=is_fractal, is_cloud=is_cloud, irhswell=irhswell, irhswcomp=irhswcomp, cnsttype=cnsttype, &
-                        r=r, dr=dr, rmass=rmass, dm=dm, vol=vol, ifallrtn=ifallrtn, rmassmin=rmassmin, do_mie=do_mie, do_wetdep=do_wetdep, &
-                        do_drydep=do_drydep, do_vtran=do_vtran, imiertn=imiertn, neutral_volfrc=neutral_volfrc)
+      call CARMAGROUP_Get(carma, igroup, rc, name=name, shortname=shortname, &
+           rmin=rmin, rmrat=rmrat, ishape=ishape, eshape=eshape, &
+           is_ice=is_ice, is_fractal=is_fractal, is_cloud=is_cloud, &
+           irhswell=irhswell, irhswcomp=irhswcomp, cnsttype=cnsttype, &
+           r=r, dr=dr, rmass=rmass, dm=dm, vol=vol, ifallrtn=ifallrtn, &
+           rmassmin=rmassmin, do_mie=do_mie, do_wetdep=do_wetdep, &
+           do_drydep=do_drydep, do_vtran=do_vtran, imiertn=imiertn, &
+           neutral_volfrc=neutral_volfrc)
       if (rc < 0) return
 
     

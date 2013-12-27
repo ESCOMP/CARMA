@@ -338,7 +338,8 @@ contains
       do_pheat, do_pheatatm, dt_threshold, cstick, gsticki, gstickl, tstick, do_clearsky)
     type(carma_type), intent(inout)     :: carma         !! the carma object
     integer, intent(out)                :: rc            !! return code, negative indicates failure
-    logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats (instead of varying with temperature)?
+    logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats
+                                                         !! (instead of varying with temperature)?
     logical, intent(in), optional       :: do_coag       !! do coagulation?
     logical, intent(in), optional       :: do_detrain    !! do detrainement?
     logical, intent(in), optional       :: do_fixedinit  !! do initialization from reference atm?
@@ -351,7 +352,8 @@ contains
     logical, intent(in), optional       :: do_vdiff      !! do Brownian diffusion
     logical, intent(in), optional       :: do_vtran      !! do sedimentation
     logical, intent(in), optional       :: do_drydep     !! do dry deposition
-    real(kind=f), intent(in), optional  :: vf_const      !! if specified and non-zero, constant fall velocity for all particles [cm/s]
+    real(kind=f), intent(in), optional  :: vf_const      !! if specified and non-zero,
+                                                         !! constant fall velocity for all particles [cm/s]
     integer, intent(in), optional       :: minsubsteps   !! minimum number of substeps, default = 1
     integer, intent(in), optional       :: maxsubsteps   !! maximum number of substeps, default = 1
     integer, intent(in), optional       :: maxretries    !! maximum number of substep retries, default = 5
@@ -919,7 +921,11 @@ contains
                      rc)
 
             if (rc < RC_OK) then
-              if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_InitializeOptics:: Mie failed for (band, wavelength, group, bin)", iwave, carma%f_wave(iwave), igroup, ibin
+              if (carma%f_do_print) then
+                 write(carma%f_LUNOPRT, *) "CARMA_InitializeOptics::&
+                      &Mie failed for (band, wavelength, group, bin)", &
+                      iwave, carma%f_wave(iwave), igroup, ibin
+              end if
               return
             end if
 
@@ -1144,7 +1150,8 @@ contains
     integer, intent(in)                :: icollec       !! collection technique [I_COLLEC_CONST | I_COLLEC_FUCHS | I_COLLEC_DATA] 
     integer, intent(out)               :: rc            !! return code, negative indicates failure
     real(kind=f), intent(in), optional :: ck0           !! if specified, forces a constant coagulation kernel
-    real(kind=f), intent(in), optional :: grav_e_coll0  !! if <i>icollec</i> is I_COLLEC_CONST, the constant gravitational collection efficiency      
+    real(kind=f), intent(in), optional :: grav_e_coll0  !! if <i>icollec</i> is I_COLLEC_CONST
+                                                        !! the constant gravitational collection efficiency
     
     ! Assume success.
     rc = RC_OK
@@ -1194,7 +1201,11 @@ contains
       if (present(grav_e_coll0)) then
         carma%f_grav_e_coll0 = grav_e_coll0
       else
-        if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_AddCoagulation:: ERROR - A constant gravitational collection was requests, but grav_e_coll0 was not provided."
+        if (carma%f_do_print) then
+           write(carma%f_LUNOPRT, *) "CARMA_AddCoagulation::&
+                &ERROR - A constant gravitational collection was requests, &
+                &but grav_e_coll0 was not provided."
+        end if
         rc = RC_ERROR
         return
       end if
@@ -1308,7 +1319,8 @@ contains
     type(carma_type), intent(inout)    :: carma       !! the carma object
     integer, intent(in)                :: ielemfrom   !! the source element
     integer, intent(in)                :: ielemto     !! the destination element
-    integer, intent(in)                :: inucproc    !! the nucleation process [I_DROPACT | I_AERFREEZE | I_ICEMELT | I_HETNUC | I_HOMNUC]
+    integer, intent(in)                :: inucproc    !! the nucleation process
+                                                      !! [I_DROPACT | I_AERFREEZE | I_ICEMELT | I_HETNUC | I_HOMNUC]
     real(kind=f), intent(in)           :: rlh_nuc     !! the latent heat of nucleation [cm<sup>2</sup>/s<sup>2</sup>]
     integer, intent(out)               :: rc          !! return code, negative indicated failure
     integer, optional, intent(in)      :: igas        !! the gas
@@ -1357,7 +1369,10 @@ contains
     
     ! If aerosol freezing is selected, but no I_AF_xxx sub-method is selected, then indicate an error.
     if (inucproc == I_AERFREEZE) then
-      if (carma%f_do_print) write(carma%f_LUNOPRT, *) "CARMA_AddNucleation:: ERROR - I_AERFREEZE was specified without an I_AF_xxx value."
+      if (carma%f_do_print) then
+         write(carma%f_LUNOPRT, *) "CARMA_AddNucleation::&
+              &ERROR - I_AERFREEZE was specified without an I_AF_xxx value."
+      end if
       return
     end if
     
