@@ -335,7 +335,8 @@ contains
   subroutine CARMA_Initialize(carma, rc, do_cnst_rlh, do_coag, do_detrain, do_fixedinit, &
       do_grow, do_incloud, do_explised, do_print_init, do_substep, do_thermo, do_vdiff, &
       do_vtran, do_drydep, vf_const, minsubsteps, maxsubsteps, maxretries, conmax, &
-      do_pheat, do_pheatatm, dt_threshold, cstick, gsticki, gstickl, tstick, do_clearsky)
+      do_pheat, do_pheatatm, dt_threshold, cstick, gsticki, gstickl, tstick, do_clearsky, &
+      do_partialinit)
     type(carma_type), intent(inout)     :: carma         !! the carma object
     integer, intent(out)                :: rc            !! return code, negative indicates failure
     logical, intent(in), optional       :: do_cnst_rlh   !! use constant values for latent heats
@@ -366,6 +367,7 @@ contains
     real(kind=f), intent(in), optional  :: gstickl       !! accommodation coefficient - growth (liquid), default = 1.0
     real(kind=f), intent(in), optional  :: tstick        !! accommodation coefficient - temperature, default = 1.0
     logical, intent(in), optional       :: do_clearsky   !! do clear sky growth and coagulation?
+    logical, intent(in), optional       :: do_partialinit !! do initialization of coagulation from reference atm (requires do_fixedinit)?
     
     ! Assume success.
     rc = RC_OK
@@ -392,6 +394,7 @@ contains
     carma%f_gstickl       = 1._f
     carma%f_tstick        = 1._f
     carma%f_do_clearsky   = .FALSE.
+    carma%f_do_partialinit  = .FALSE.
 
     ! Store off any control flag values that have been supplied.
     if (present(do_cnst_rlh))   carma%f_do_cnst_rlh   = do_cnst_rlh
@@ -415,6 +418,7 @@ contains
     if (present(gstickl))       carma%f_gstickl       = gstickl
     if (present(tstick))        carma%f_tstick        = tstick
     if (present(do_clearsky))   carma%f_do_clearsky   = do_clearsky
+    if (present(do_partialinit))  carma%f_do_partialinit  = do_partialinit
     
     
     ! Setup the bin structure.
@@ -1434,7 +1438,8 @@ contains
   !!
   !! @see CARMA_Create
   subroutine CARMA_Get(carma, rc, LUNOPRT, NBIN, NELEM, NGAS, NGROUP, NSOLUTE, NWAVE, do_detrain, &
-    do_drydep, do_fixedinit, do_grow, do_print, do_print_init, do_thermo, wave, dwave, do_wave_emit)
+    do_drydep, do_fixedinit, do_grow, do_print, do_print_init, do_thermo, wave, dwave, do_wave_emit, &
+    do_partialinit)
     
     type(carma_type), intent(in)        :: carma                !! the carma object
     integer, intent(out)                :: rc                   !! return code, negative indicates failure
@@ -1449,6 +1454,7 @@ contains
     logical, optional, intent(out)      :: do_drydep            !! do dry deposition?
     logical, optional, intent(out)      :: do_fixedinit         !! do initialization from reference atm?
     logical, optional, intent(out)      :: do_grow              !! do condensational growth?
+    logical, optional, intent(out)      :: do_partialinit       !! do initialization of coagulation from reference atm?
     logical, optional, intent(out)      :: do_print             !! do print output?
     logical, optional, intent(out)      :: do_print_init        !! do print initialization output?
     logical, optional, intent(out)      :: do_thermo            !! do thermodynamics?
@@ -1471,6 +1477,7 @@ contains
     if (present(do_drydep))     do_drydep      = carma%f_do_drydep
     if (present(do_grow))       do_grow        = carma%f_do_grow
     if (present(do_fixedinit))  do_fixedinit   = carma%f_do_fixedinit
+    if (present(do_partialinit))  do_partialinit   = carma%f_do_partialinit
     if (present(do_print))      do_print       = carma%f_do_print
     if (present(do_print_init)) do_print_init  = carma%f_do_print_init
     if (present(do_thermo))     do_thermo      = carma%f_do_thermo

@@ -1,5 +1,26 @@
 ===============================================================
 Tag name:
+Originator(s): Charles Bardeen, Pengfei Yu
+Date: Aug 13, 2013
+
+One-line Summary:
+
+Added partial initialization and fixed problems with initialization the dry deposition code.
+
+Purpose of changes:
+
+When using fixed initialization, the dry deposition routines were
+not getting initialized, so deposition velocities were not calculated.
+That has been corrected. Also, the metric scaling was being applied
+incorrectly to vd and vf when requested as output from CARMASTATE_Get.
+A new option (partialinit) has been added that can be used with
+fixed initialization to cause reinitialization of fall velocities and
+growth kernels, but not coagulation kernels, which are the most expensive
+calculate. This gives a result that is intermediate between full and
+fixed initialization. 
+
+===============================================================
+Tag name:
 Originator(s): Sean Santos
 Date: Dec 27, 2013
 

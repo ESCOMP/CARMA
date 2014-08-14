@@ -347,6 +347,7 @@ module carma_types_mod
     !   do_clearsky If .true. then do clear sky growth and coagulation    {init}
     !   do_incloud  If .true. then do incloud growth and coagulation      {init}
     !   do_explised If .true. then do sedimentation with substepping      {init}
+    !   do_partialinit If .true. then do initialize coagulation from reference atm       {init}
     !   do_pheat    If .true. then do particle heating for growth rates   {init}
     !   do_pheatatm If .true. then do particle heating on atmosphere      {init}
     !   do_print_init If .true. then do print initializtion info          {init}
@@ -387,6 +388,7 @@ module carma_types_mod
     logical                                       :: f_do_incloud
     logical                                       :: f_do_vtran
     logical                                       :: f_do_explised
+    logical                                       :: f_do_partialinit
     logical                                       :: f_do_pheat
     logical                                       :: f_do_pheatatm
     logical                                       :: f_do_print_init

@@ -979,7 +979,16 @@ contains
     ! NOTE: If configured for fixed initialization, then we will lose some accuracy
     ! in the calculation of the fall velocities, growth kernels, ... and in return
     ! will gain a significant performance by not having to initialize as often.
-    if (.not. cstate%f_carma%f_do_fixedinit) then
+    !
+    ! NOTE: If configured for partial initialized in conjunction with fixed
+    ! initialization, then do the fall velocity (and growth) initialization which
+    ! is relatively quick, but skip the recalculation of the coagulation kernels
+    ! which is relatively expensive. This could be useful for particles that have
+    ! a wet radius that is different from the dry radius or where there are large
+    ! changes from the average conditions (temperature, water vapor, ...) used in
+    ! the fixed initialization.
+    if ((.not. cstate%f_carma%f_do_fixedinit) .or. &
+        (cstate%f_carma%f_do_partialinit)) then
     
       ! Initialize the vertical transport.
       if (cstate%f_carma%f_do_vtran .or. cstate%f_carma%f_do_coag .or. cstate%f_carma%f_do_grow) then
@@ -989,29 +998,8 @@ contains
           call setupbdif(cstate%f_carma, cstate, rc)
         end if
       end if
-      
-      ! intialize the dry deposition
-      if (cstate%f_carma%f_do_drydep) then
-        if (present(lndfv) .and. present(lndram) .and. present(lndfrac) .and. &
-            present(ocnfv) .and. present(ocnram) .and. present(ocnfrac) .and. &
-            present(icefv) .and. present(iceram) .and. present(icefrac)) then
-        
-          ! NOTE: Need to convert surfric and ram from mks to cgs units.
-          call setupvdry(cstate%f_carma, cstate, &
-            lndfv * 100._f, ocnfv * 100._f, icefv * 100._f, &
-            lndram / 100._f, ocnram / 100._f, iceram / 100._f, &
-            lndfrac, ocnfrac, icefrac, rc)
-          if (rc < RC_OK) return
-        else
-          write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Step: &
-               &do_drydep requires that the optional inputs xxxfv, xxxram &
-               &and xxxfrac be provided."
-          rc = RC_ERROR
-          return
-        end if
-      end if
-       
-      ! Intialize the nucleation, growth and evaporation.      
+
+      ! Initialize the nucleation, growth and evaporation.      
       if (cstate%f_carma%f_do_grow)  then
         call setupgrow(cstate%f_carma, cstate, rc)
         if (rc < RC_OK) return
@@ -1024,12 +1012,37 @@ contains
       end if
       
       ! Initialize the coagulation.
-      if (cstate%f_carma%f_do_coag) then
+      if (cstate%f_carma%f_do_coag .and. &
+          (.not. cstate%f_carma%f_do_fixedinit)) then
         call setupckern(cstate%f_carma, cstate, rc)
         if (rc < RC_OK) return
       end if
     end if
-    
+      
+    ! Initialize the dry deposition
+    ! 
+    ! NOTE: This is tied to the surface fields that vary from column to column,
+    ! so it needs to get calculated here whether using fixed or full initialization. 
+    if (cstate%f_carma%f_do_drydep) then
+      if (present(lndfv) .and. present(lndram) .and. present(lndfrac) .and. &
+          present(ocnfv) .and. present(ocnram) .and. present(ocnfrac) .and. &
+          present(icefv) .and. present(iceram) .and. present(icefrac)) then
+      
+        ! NOTE: Need to convert surfric and ram from mks to cgs units.
+        call setupvdry(cstate%f_carma, cstate, &
+          lndfv * 100._f, ocnfv * 100._f, icefv * 100._f, &
+          lndram / 100._f, ocnram / 100._f, iceram / 100._f, &
+          lndfrac, ocnfrac, icefrac, rc)
+        if (rc < RC_OK) return
+      else
+        write(cstate%f_carma%f_LUNOPRT, *) "CARMASTATE_Step: &
+             &do_drydep requires that the optional inputs xxxfv, xxxram &
+             &and xxxfrac be provided."
+        rc = RC_ERROR
+        return
+      end if
+    end if
+       
     ! Calculate the impact of microphysics upon the state.
     call step(cstate%f_carma, cstate, rc)
 
@@ -1190,7 +1203,7 @@ contains
       if (present(rhop_wet))      rhop_wet(:)        = cstate%f_rhop_wet(:, ibin, igroup)
 
       if (cstate%f_carma%f_do_vtran) then
-        if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup) / cstate%f_zmetl(:)
+        if (present(vf))            vf(:)              = cstate%f_vf(:, ibin, igroup) * cstate%f_zmetl(:)
       else
         if (present(vf))            vf(:)              = CAM_FILL
       end if
@@ -1198,9 +1211,9 @@ contains
       if (cstate%f_carma%f_do_drydep) then
         if (present(vd)) then
           if (cstate%f_igridv .eq. I_CART) then
-            vd                 = cstate%f_vd(ibin, igroup) / cstate%f_zmetl(1)
+            vd                 = cstate%f_vd(ibin, igroup) * cstate%f_zmetl(1)
           else
-            vd                 = cstate%f_vd(ibin, igroup) / cstate%f_zmetl(cstate%f_NZP1)
+            vd                 = cstate%f_vd(ibin, igroup) * cstate%f_zmetl(cstate%f_NZP1)
           end if
         end if
       else 

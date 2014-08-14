@@ -139,6 +139,7 @@
 #define do_grow       carma%f_do_grow
 #define do_explised   carma%f_do_explised
 #define do_incloud    carma%f_do_incloud
+#define do_partialinit  carma%f_do_partialinit
 #define do_pheat      carma%f_do_pheat
 #define do_pheatatm   carma%f_do_pheatatm
 #define do_print_init carma%f_do_print_init
