@@ -1,3 +1,17 @@
+# Community Aerosol and Radiation Model for Atmospheres (CARMA)
+
+### Getting the code
+
+```
+git clone --recursive git@github.com:ESCOMP/CARMA.git
+```
+
+This populates source/base with code from git@github.com:ESCOMP/CARMA_base.git.
+
+___
+
+## README
+
 This project contains files to build version 3.0 of the Community Aerosol and
 Radiation Model for Atmospheres (CARMA) that is based off of the 2.3 release,
 but has been ported to Fortran 90 and repackaged so that it can be used as a
@@ -8,18 +22,18 @@ cloud and aerosol physics package embedded into GCMs. The project consists of
   - doc    : the change log and HTML based documentation
   - source : the CARMA microphysics layer
   - tests  : the test routines & benchmark results
-  
+
 Two script files have been provided to build and run the model or its
 components. To build carma and the test cases, issue the following command
 rom the root directory:
 
   make-carma.csh
-  
+
 This will build all the files in a subdirectory called build/carma. To run
 a sample carma model, execute the following command from the root directory:
 
   run-carma.csh
-  
+
 This will copy the CARMA.exe executable to the directory run/carma and then
 will execute it with all output going to the run/carma directory. The
 dependency hierarchy is set up in the make files, so rebuilding should only
@@ -29,7 +43,7 @@ is used to build a version with extra debug information (DEBUG). The scripts can
 also be used to build individual executables. For example, to build and run the
 NUCTEST test routine and to have the run performed in a directory named nuctest
 (this part is optional) execute:
-  
+
   make-carma.csh NUCTESTexe
   run-carma.csh NUCTEST.exe
 
@@ -45,7 +59,7 @@ set a path like:
 After exectuing
 
  run-carma.csh NUCTEST.exe
- 
+
 you should see an IDL prompt that looks like this:
 
 
@@ -59,12 +73,12 @@ you should see an IDL prompt that looks like this:
   Installation number: 95183-2518.
   Licensed for use by: ACD:acd-license:Linux.FL
 
-  IDL> 
-  
+  IDL>
+
 Type:
 
   .r read_nuctest.pro
-  
+
 and you should get a plot generated showing the results of the test.
 
 
@@ -92,12 +106,12 @@ source code for these tests are located in the tests subdirectory.
 To run all of the tests interactively, use the command
 
   run-all.csh
-  
+
 To run all of the tests in the background and compare the results to
 benchmark results, use the command
 
   run-regress.csh
-  
+
 The benchmarks are stored in tests/bench and were created on a Mac
 using the Intel Fortran compiler. You may get slightly different
 results on other platforms or with other compilers.
@@ -106,7 +120,7 @@ results on other platforms or with other compilers.
 The entire project can be put into a tar file, using the command
 
   make-carma.csh tar
-  
+
 This will create a tar file called CARMA.tar in the current build directory,
 which defaults to build/carma. NOTE: This tar file does not contain the
 contents of the build, doc or run directories since they are
