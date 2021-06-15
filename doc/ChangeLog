@@ -1,4 +1,21 @@
 ===============================================================
+
+Tag name:
+Originator(s): fvitt
+Date:
+
+One-line Summary: Bring in base source code as a git submodule
+
+Purpose of changes:
+
+This eliminates duplicate code in two separate repositories which
+may be difficult to keep in sync.  The mechanism to bring in the
+external base code repository is git submodule, which was chosen
+over git subtree to ease the task of pushing changes the CARMA base
+code.
+
+===============================================================
+===============================================================
 Tag name:
 Originator(s): Charles Bardeen, Pengfei Yu
 Date: Aug 13, 2013
@@ -17,7 +34,7 @@ A new option (partialinit) has been added that can be used with
 fixed initialization to cause reinitialization of fall velocities and
 growth kernels, but not coagulation kernels, which are the most expensive
 calculate. This gives a result that is intermediate between full and
-fixed initialization. 
+fixed initialization.
 
 ===============================================================
 Tag name:
@@ -43,7 +60,7 @@ to reals.
 The Makefile is not currently updated with support for nagfor.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Chuck Bardeen
 Date: Nov 15, 2013
 
@@ -58,7 +75,7 @@ some compatibility bugs were fixed in the code so that it would
 compile and link under gfortran.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Chuck Bardeen, Mike Mills
 Date: Nov 14, 2013
 
@@ -78,7 +95,7 @@ the wrong gas concentration was being used for the sulfate weight
 percent calculation.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Chuck Bardeen
 Date: Nov 3, 2013
 
@@ -95,7 +112,7 @@ solution is currently not used for ice particles or when particle
 heating is being used.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Sean Santos
 Date: July 15, 2013
 
@@ -109,7 +126,7 @@ Setting rprat to 1._r8 for I_HEXAGON and I_CYLINDER shapes will prevent
 errors due to uninitialized data for the cirrus/dust model.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Sean Santos
 Date: July 2, 2013
 
@@ -123,7 +140,7 @@ Fix several compatibility issues with PGI and Lahey. fractal_meanfield_mod
 in particular used Intel compiler extensions throughout.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: June 14, 2013
 
@@ -141,7 +158,7 @@ is treated very simplistically and is either all or none and just
 affects the vapor pressure.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: May 17, 2013
 
@@ -159,7 +176,7 @@ another interface to the Group to set the optical properties to
 allow them to come from an external source.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen, Pete Colarco
 Date: May 13, 2013
 
@@ -175,7 +192,7 @@ statistic after the particle count had been updated and not
 including the nucleation loss rate in the calculation.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Eric Wolf, Charles Bardeen
 Date: May 9, 2013
 
@@ -191,7 +208,7 @@ that depend on the particles fractal dimension. This will affect growth,
 sedimentation, coagulation, deposition and optical properties.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Sean Santos
 Date: April 24, 2013
 
@@ -211,7 +228,7 @@ is a compiler extension. Therefore "imag" has been changed to "aimag" and
 comments that are no longer relevant have been removed.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen, Mike Mills
 Date: March 18, 2013
 
@@ -238,7 +255,7 @@ Fixed a problem with the way the coagulation due to convection was
 being calculated that caused asymmetric coagulation kernels.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: September 7, 2012
 
@@ -254,7 +271,7 @@ to crash when growth is enabled, core elements exist in the group
 and no solutes are defined for the cores.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: January 26, 2011
 
@@ -281,7 +298,7 @@ Two tests have been added for this :
   - GROWCLRTEST = in-cloud & clear sky test
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen, Mike Mills
 Date: December 1, 2011
 
@@ -298,7 +315,7 @@ Also producing some additional diagnostics to help diagnose the
 sulfate physics.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: November 8, 2011
 
@@ -317,7 +334,7 @@ retry. Added a test case (NUC2TEST.exe) to see at what supersaturation
 aerosol freezing begins.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen, Mike Mills
 Date: October 9, 2011
 
@@ -333,7 +350,7 @@ result in 0 wtpct. This was causing WACCM to crash with the
 sulfate model.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen, Tianyi Fan
 Date: September 3, 2011
 
@@ -352,7 +369,7 @@ code started with work done by Mike Mills and then was modified
 by Jason English, Tianyi Fan and Chuck Bardeen.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: August 19, 2011
 
@@ -367,7 +384,7 @@ dry deposition so that surface friction and aerodynamic resistance
 are provided and used per land surface type.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: August 9, 2011
 
@@ -382,7 +399,7 @@ accurate estimate of outgoing radiation for particle heating. Also
 modified the test case to start the SW band at a non-zero wavelength.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: August 4, 2011
 
@@ -403,7 +420,7 @@ growth rates and temperatures may change for other reasons making it hard
 to do the difference later.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: July 14, 2011
 
@@ -420,7 +437,7 @@ To make this usable, all of the tests have be modified to have minimal
 output to the screen for normal operation.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: July 13, 2011
 
@@ -439,7 +456,7 @@ properties, so there is more flexibility for setting group
 shape.
 
 ===============================================================
-Tag name: 
+Tag name:
 Originator(s): Charles Bardeen
 Date: June 8, 2011
 
