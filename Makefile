@@ -23,26 +23,26 @@ FFLAGS =
 ifeq ($(FORTRAN),ifort)
 #  FFLAGS += -ftz -fp-model precise
   FFLAGS += -fp-model precise
-  
+
   # Work around for an incompatibility with some versions of ifort and OSX.
 #  FFLAGS += -use-asm
 
   # Debug options.
   FFLAGS += -g -O0 -traceback -fp-stack-check -check bounds -check uninit -fpe0 -ftrapuv
-  
+
   # Open/MP
-  FFLAGS += -openmp
-  
+  FFLAGS += -qopenmp
+
   # The no_pie flags also the executable to work with idb.
   LDFLAGS = $(FFLAGS) -no_pie
 endif
 
 # Add options for the Portland Group compiler.
 ifeq ($(FORTRAN),pgf90)
-  FFLAGS  += 
+  FFLAGS  +=
 
   # Debug options.
-#  FFLAGS += -g -O0 -Mbounds
+  FFLAGS += -g -O0 -Mbounds
 
   # Open/MP
 #  FFLAGS  += -mp
@@ -57,7 +57,7 @@ ifeq ($(FORTRAN),g95)
 
   # Debug options.
 #  FFLAGS += -g -fbounds-check -ftrace=full
-  
+
   # Open/MP
   #
   # NOTE: g95 does not support Open/MP directives. This will cause one
@@ -72,7 +72,7 @@ ifeq ($(FORTRAN),gfortran)
 
   # Debug options.
   FFLAGS += -g -fbounds-check -ffpe-trap=zero,invalid,overflow -fbacktrace
-  
+
   # Open/MP
   # Open/MP
   FFLAGS  += -fopenmp
@@ -84,11 +84,11 @@ endif
 #
 # NOTE: It doesn't support float to zero.
 ifeq ($(FORTRAN),xlf90)
-  FFLAGS  += -q64 -qarch=auto -qspillsize=2500 -g -qfullpath 
- 
+  FFLAGS  += -q64 -qarch=auto -qspillsize=2500 -g -qfullpath
+
   # Debug options.
   FFLAGS += -qinitauto=7FF7FFFF -qflttrap=ov:zero:inv:en -C
-  
+
   # Open/MP
 #  FFLAGS += -qsmp=omp
 #  FFLAGS += -qsmp=omp:noopt
@@ -111,7 +111,7 @@ VPATH := ../../source/base ../../tests
 #
 # NOTE: In the future it might be nice to generate this dependency
 # try automatically.
-include ../../source/base/Makefile
+include ../../source/Makefile
 include ../../tests/Makefile
 
 # Rules for each executable that could be build.
@@ -141,20 +141,20 @@ GROWSUBTEST.exe : $(CARMA_OBJ) carma_growsubtest.o carma_testutils.o atmosphere_
 	$(FORTRAN) $(LDFLAGS) -o GROWSUBTEST.exe carma_growsubtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 INITTEST.exe : $(CARMA_OBJ) carma_inittest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o INITTEST.exe carma_inittest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
-MIETEST.exe : $(CARMA_OBJ) carma_mietest.o carma_testutils.o 
+MIETEST.exe : $(CARMA_OBJ) carma_mietest.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o MIETEST.exe carma_mietest.o carma_testutils.o  $(CARMA_OBJ)
-NUCTEST.exe : $(CARMA_OBJ) carma_nuctest.o carma_testutils.o 
+NUCTEST.exe : $(CARMA_OBJ) carma_nuctest.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o NUCTEST.exe carma_nuctest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
-NUC2TEST.exe : $(CARMA_OBJ) carma_nuc2test.o carma_testutils.o 
+NUC2TEST.exe : $(CARMA_OBJ) carma_nuc2test.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o NUC2TEST.exe carma_nuc2test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 PHEATTEST.exe : $(CARMA_OBJ) carma_pheattest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o PHEATTEST.exe carma_pheattest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
-SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o carma_testutils.o 
+SWELLTEST.exe : $(CARMA_OBJ) carma_swelltest.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o SWELLTEST.exe carma_swelltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
-VDIFTEST.exe : $(CARMA_OBJ) carma_vdiftest.o carma_testutils.o 
+VDIFTEST.exe : $(CARMA_OBJ) carma_vdiftest.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o VDIFTEST.exe carma_vdiftest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
-DRYDEPTEST.exe : $(CARMA_OBJ) carma_drydeptest.o carma_testutils.o 
-	$(FORTRAN) $(LDFLAGS) -o DRYDEPTEST.exe carma_drydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)	
+DRYDEPTEST.exe : $(CARMA_OBJ) carma_drydeptest.o carma_testutils.o
+	$(FORTRAN) $(LDFLAGS) -o DRYDEPTEST.exe carma_drydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SIGMADRYDEPTEST.exe : $(CARMA_OBJ) carma_sigmadrydeptest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o SIGMADRYDEPTEST.exe carma_sigmadrydeptest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SCFALLTEST.exe : $(CARMA_OBJ) carma_scfalltest.o carma_testutils.o atmosphere_mod.o
