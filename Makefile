@@ -2,8 +2,8 @@
 # Jamison A. Smith, AKA JAS
 # April 26, 2007
 
-#FORTRAN =	ifort
-FORTRAN =	pgf90
+FORTRAN =	ifort
+#FORTRAN =	pgf90
 #FORTRAN =	pathf90
 #FORTRAN =	gfortran
 #FORTRAN =	g95
@@ -31,7 +31,7 @@ ifeq ($(FORTRAN),ifort)
   FFLAGS += -g -O0 -traceback -fp-stack-check -check bounds -check uninit -fpe0 -ftrapuv
 
   # Open/MP
-  FFLAGS += -openmp
+  FFLAGS += -qopenmp
 
   # The no_pie flags also the executable to work with idb.
   LDFLAGS = $(FFLAGS) -no_pie
