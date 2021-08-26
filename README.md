@@ -3,7 +3,7 @@
 ### Getting the code
 
 ```
-git clone --recursive git@github.com:ESCOMP/CARMA.git
+git clone --recursive https://github.com/ESCOMP/CARMA.git
 ```
 
 This populates source/base with source code from https://github.com/ESCOMP/CARMA_base.
