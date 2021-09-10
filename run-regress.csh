@@ -58,8 +58,6 @@ echo ""
 echo "     Do you want the script to stop on the first difference found between "
 read -p "        a test file and its corresponding benchmark file? (y/n) " $doall
 
-#echo $doall
-
 # Create a directory for the build.
 mkdir -p $rundir
 
@@ -105,10 +103,10 @@ foreach runtgt (`ls -1 *TEST.exe`)
 			   echo "      Quitting."
 			   echo ""
 			   exit -1
-		   else
+           else
 		       # otherwise, increment the number of differing file pairs found
 		       set ndiffs = `expr $ndiffs + 1`		       
-		   endif
+           endif
        endif
     endif
   endif
@@ -121,6 +119,4 @@ echo ""
 echo "      There are " $ndiffs "test files that differ from their corresponding benchmark files."
 echo ""
 echo ""
-#echo "All Tests Passed!"
-
 

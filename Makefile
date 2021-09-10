@@ -32,7 +32,7 @@ ifeq ($(FORTRAN),ifort)
   
   # Open/MP
 #  FFLAGS += -openmp
-  
+
   # The no_pie flags also the executable to work with idb.
   LDFLAGS = $(FFLAGS) -no_pie
 endif
@@ -111,7 +111,7 @@ VPATH := ../../source/base ../../tests
 #
 # NOTE: In the future it might be nice to generate this dependency
 # try automatically.
-include ../../source/base/Makefile
+include ../../source/Makefile
 include ../../tests/Makefile
 
 # Rules for each executable that could be build.
