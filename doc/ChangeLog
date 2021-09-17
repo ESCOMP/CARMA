@@ -1,6 +1,27 @@
 ===============================================================
 
 Tag name:
+Originator(s): manderberg
+Date: Sept 17, 2021
+
+One-line Summary: Bring in Yunqian Zhu's changes to CARAMA stand-alone regression testing.
+
+Purpose of changes: update the CARMA stand-alone regression tests
+
+List all existing files that have been modified, and describe the changes:
+
+The following files were replaced:
+
+	CARMA/tests/carma_fractalopticstest.F90
+	CARMA/tests/carma_mietest.F90
+	CARMA/tests/bench/carma_fractalopticstest.txt
+	CARMA/tests/bench/carma_mietest.txt
+	CARMA/tests/bench/carma_sulfatetest.txt
+	CARMA/tests/bench/carma_sulfhettest.txt
+
+===============================================================
+
+Tag name:
 Originator(s): fvitt
 Date:
 

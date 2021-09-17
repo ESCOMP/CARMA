@@ -31,7 +31,7 @@ ifeq ($(FORTRAN),ifort)
   FFLAGS += -g -O0 -traceback -fp-stack-check -check bounds -check uninit -fpe0 -ftrapuv
 
   # Open/MP
-#  FFLAGS += -openmp
+  FFLAGS += -qopenmp
 
   # The no_pie flags also the executable to work with idb.
   LDFLAGS = $(FFLAGS) -no_pie
