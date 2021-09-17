@@ -132,7 +132,7 @@ subroutine test_mie()
   
   ! Setup the CARMA processes to exercise
 !  write(*,*) "  Initialize ..."
-  call CARMA_Initialize(carma, rc)
+  call CARMA_Initialize(carma, rc, do_pheat=.true.)
   if (rc < 0) stop "    *** FAILED ***"
 
   

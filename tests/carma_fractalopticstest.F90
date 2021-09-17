@@ -93,11 +93,11 @@ subroutine test_fractaloptics()
     carma_ptr => carma
 
      ! Define the groups
-     rho = 0.64_f   ! [g cm-3]
+     rho = 2.65_f   ! [g cm-3]
      rmrat = 2.5_f
      df(:)  = 2.0_f
      rmon = 50.0e-7_f  ! [cm]
-     nmon = 1000._f
+     nmon = 100._f
      rmin = nmon**(1._f/3._f)*rmon
      falpha = 1.1_f
 
@@ -125,7 +125,7 @@ subroutine test_fractaloptics()
     
 
     ! Setup the CARMA processes to exercise
-    call CARMA_Initialize(carma, rc)
+    call CARMA_Initialize(carma, rc, do_pheat=.TRUE.)
     if (rc < 0) stop "    *** FAILED ***"
     do igroup = 1, NGROUP
       call CARMAGROUP_Get(carma, igroup, rc, r=r, qext=qext, ssa=ssa, asym=asym)
