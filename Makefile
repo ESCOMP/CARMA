@@ -42,7 +42,7 @@ ifeq ($(FORTRAN),pgf90)
   FFLAGS  +=
 
   # Debug options.
-  FFLAGS += -g -O0 -Mbounds
+#  FFLAGS += -g -O0 -Mbounds
 
   # Open/MP
 #  FFLAGS  += -mp
