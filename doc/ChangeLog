@@ -2,6 +2,30 @@
 
 Tag name:
 Originator(s): manderberg
+Date: Dec 1, 2021
+
+One-line Summary: 
+
+Adding kappawetrtest, benchmark file and Makefiles to regression testing
+
+Purpose of changes: Suppoort addition of kappawtertest
+
+List all existing files that have been modified, and describe the changes:
+
+	CARMA/Makefile
+	CARMA/tests/Makefile
+	CARMA/source/Makefile
+
+
+The following files were added:
+
+	CARMA/tests/carma_kappa_wetrtest.F90
+	CARMA/test/bench/carma_kappa_wetrtest.txt
+
+===============================================================
+
+Tag name:
+Originator(s): manderberg
 Date: Sept 17, 2021
 
 One-line Summary: Bring in Yunqian Zhu's changes to CARAMA stand-alone regression testing.
