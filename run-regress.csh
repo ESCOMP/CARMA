@@ -54,7 +54,7 @@ echo ""
 
 # Inquire if the user wants to to have the script stop on the first instance of
 #	a difference found between a test file and its corresponding benchmark file
-#       
+#
 echo "     Do you want the script to stop on the first difference found between "
 read -p "        a test file and its corresponding benchmark file? (y/n) " $doall
 
@@ -75,24 +75,24 @@ foreach runtgt (`ls -1 *TEST.exe`)
   echo ""
   echo ""
   echo "  ** Starting $runtgt at `date` **"
-  #Run the test proggram; if the test fails exit the script
+  #Run the test program; if the test fails exit the script
   ./$runtgt || echo '  *** Run Failed ***' && exit -1
   echo "  ** Finished at `date` **"
   echo ""
-  
+
   set outfile="carma_`echo $runtgt:r | tr '[A-Z]' '[a-z]'`.txt"
-  
+
   setenv FDIFF -sqw
 
   # The diff on AIX doesn't have the -q option ..."
   if (`uname` == AIX ) then
     setenv FDIFF -sw
   endif
-   
+
   # check for exisitence of output file and set up the diff-grep string
   if (-f $outfile) then
        set grepdiff=`diff $FDIFF $outfile ../../$benchdir/$outfile | grep -o differ`
-  
+
        # if a difference is found between the test file and its benchmark file...
        if $grepdiff != "" then
            # ... then print out a message to that effect
@@ -105,7 +105,7 @@ foreach runtgt (`ls -1 *TEST.exe`)
 			   exit -1
            else
 		       # otherwise, increment the number of differing file pairs found
-		       set ndiffs = `expr $ndiffs + 1`		       
+		       set ndiffs = `expr $ndiffs + 1`
            endif
        endif
     endif
