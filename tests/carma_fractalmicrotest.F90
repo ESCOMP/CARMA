@@ -12,17 +12,17 @@ program carma_fractalmicrotest
 
   write(*,*) "Fractal Test"
 
-  call test_fractalmicro()  
-  
+  call test_fractalmicro()
+
   write(*,*) "Done"
 end program
 
 
 subroutine test_fractalmicro()
-  use carma_precision_mod 
-  use carma_constants_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
+  use carma_precision_mod
+  use carma_constants_mod
+  use carma_enums_mod
+  use carma_types_mod
   use carmaelement_mod
   use carmagroup_mod
   use carmastate_mod
@@ -46,34 +46,28 @@ subroutine test_fractalmicro()
 
   real(kind=f), parameter   :: dtime  = 604800._f
   !real(kind=f), parameter   :: dtime  = 86400._f
-  real(kind=f), parameter   :: deltax = 100._f
-  real(kind=f), parameter   :: deltay = 100._f
   real(kind=f), parameter   :: deltaz = 1000._f
   real(kind=f), parameter   :: zmin   = 0._f
-  
+
   integer, parameter        :: I_DUST       = 1
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
   type(carmastate_type)               :: cstate
   integer                             :: rc = 0
-  
-  real(kind=f), allocatable   :: xc(:,:,:)
-  real(kind=f), allocatable   :: dx(:,:,:)
-  real(kind=f), allocatable   :: yc(:,:,:)
-  real(kind=f), allocatable   :: dy(:,:,:)
+
   real(kind=f), allocatable   :: zc(:,:,:)
   real(kind=f), allocatable   :: zl(:,:,:)
   real(kind=f), allocatable   :: p(:,:,:)
   real(kind=f), allocatable   :: pl(:,:,:)
   real(kind=f), allocatable   :: t(:,:,:)
-  
+
   real(kind=f), allocatable, target  :: mmr(:,:,:,:,:)
-  
+
   real(kind=f), allocatable          :: lat(:,:)
   real(kind=f), allocatable          :: lon(:,:)
 
-  integer		:: z  
+  integer		:: z
   integer               :: i
   integer               :: ix
   integer               :: iy
@@ -101,23 +95,22 @@ subroutine test_fractalmicro()
   real(kind=f), allocatable   :: rhoa(:,:,:)
 
   logical               :: do_explised = .false.
-    
+
 
 !  write(*,*) ""
 !  write(*,*) "Dry Fractal Aggregates of Spheres"
 
   ! Open the output text file
   open(unit=lun,file="carma_fractalmicrotest.txt",status="unknown")
-  
+
   ! Allocate the arrays that we need for the model
-  allocate(xc(NZ,NY,NX), dx(NZ,NY,NX), yc(NZ,NY,NX), dy(NZ,NY,NX), &
-           zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
+  allocate(zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
            t(NZ,NY,NX))
   allocate(mmr(NZ,NY,NX,NELEM,NBIN))
   allocate(mmr_out(nrun,nstep,NZ,NY,NX,NELEM,NBIN))
   allocate(mmr_emis(NZ,NY,NX,NELEM,NBIN))
-  allocate(lat(NY,NX), lon(NY,NX))  
-  allocate(df_in(NBIN), df(NBIN), r(NBIN), rrat(NBIN), rprat(NBIN), rmass(NBIN), dr(NBIN), nmon(NBIN)) 
+  allocate(lat(NY,NX), lon(NY,NX))
+  allocate(df_in(NBIN), df(NBIN), r(NBIN), rrat(NBIN), rprat(NBIN), rmass(NBIN), dr(NBIN), nmon(NBIN))
   allocate(rhoa(NZ,NY,NX))
 
 
@@ -141,7 +134,7 @@ subroutine test_fractalmicro()
 
 !  write(*,*) "  Add Group(s) ..."
 
-  if (irun .EQ. 1) then 
+  if (irun .EQ. 1) then
     ! fractal run
     call CARMAGROUP_Create(carma, 1, "fractal", rmin, rmrat, I_SPHERE, 1._f, .FALSE., rc, &
                          is_fractal=.TRUE., rmon=rmon_in, df=df_in, falpha=falpha_in)
@@ -154,7 +147,7 @@ subroutine test_fractalmicro()
     if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   end if
 
-  if (irun .EQ. 2) then 
+  if (irun .EQ. 2) then
     !fractal run
     call CARMAGROUP_Create(carma, 1, "sphere", rmin, rmrat, I_SPHERE, 1._f, .FALSE., rc, &
                          is_fractal=.FALSE. )
@@ -164,8 +157,8 @@ subroutine test_fractalmicro()
     call CARMAELEMENT_Create(carma, 1, 1, "sphere", rho, I_INVOLATILE, I_DUST, rc)
     if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
   end if
-  
-  call CARMA_AddCoagulation(carma, 1, 1, 1, I_COLLEC_DATA, rc) 
+
+  call CARMA_AddCoagulation(carma, 1, 1, 1, I_COLLEC_DATA, rc)
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
 ! Setup the CARMA processes to exercise
@@ -178,45 +171,35 @@ subroutine test_fractalmicro()
   call CARMAGROUP_Get(carma, 1, rc, r=r, rrat=rrat, rprat=rprat, rmon=rmon, df=df, dr=dr, rmass=rmass, nmon=nmon)
   ! Write output for the test
 
-  if (irun .EQ. 1) then 
+  if (irun .EQ. 1) then
     write(lun,*) NBIN, RMON_in
 
     do ibin = 1, NBIN
       write(lun,'(i4,f4.1,e10.3, 2f10.5,e10.3)') ibin, df_in(ibin),r(ibin) , rrat(ibin), rprat(ibin), nmon(ibin)
-    end do  
+    end do
   end if
 
   ! Print the Group Information
 !  write(*,*)  ""
 !  call dumpGroup(carma, rc)
 !  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
-  
+
   ! Print the Element Information
 !  write(*,*)  ""
 !  call dumpElement(carma, rc)
 !  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
 !  write(*,*) ""
-  
+
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
   !
-  ! NOTE: For Cartesian coordinates, the first level is the bottom 
+  ! NOTE: For Cartesian coordinates, the first level is the bottom
   ! of the model (e.g. z = 0), while for sigma and hybrid coordinates
   ! the first level is the top of the model.
   lat(:,:) = 40.0_f
   lon(:,:) = -105.0_f
-  
-  ! Horizonal centers
-  do ix = 1, NX
-    do iy = 1, NY
-      dx(:,iy,ix) = deltax
-      xc(:,iy,ix) = ix*dx(:,iy,ix) / 2._f
-      dy(:,iy,ix) = deltay
-      yc(:,iy,ix) = iy*dy(:,iy,ix) / 2._f
-    end do
-  end do
-  
+
   ! Vertical center
   do i = 1, NZ
     zc(i,:,:) = zmin + (deltaz * (i - 0.5_f))
@@ -243,7 +226,7 @@ subroutine test_fractalmicro()
 !    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
 !  end do
 
-  			
+
   ! Put inital aerosol mass in the model first bin at 60 km
   mmr(:,:,:,:,:) = 0._f
   do i = 1, NZ
@@ -256,9 +239,9 @@ subroutine test_fractalmicro()
 !  do i = 1, NZ
 !	  write(*, '(i6, 4g12.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
 !  end do
-  
 
-  if (irun .EQ. 1) then 
+
+  if (irun .EQ. 1) then
     ! Write output for the fractalmicrotest
     write(lun,*) NZ
     do i = 1, NZ
@@ -285,7 +268,7 @@ subroutine test_fractalmicro()
   ! write(*,*) ""
 
   do istep = 1, nstep
-  
+
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
@@ -297,9 +280,7 @@ subroutine test_fractalmicro()
 
        ! Create a CARMASTATE for this column.
        call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
-                              I_CART, I_CART, lat(iy,ix), lon(iy,ix), &
-                              xc(:,iy,ix), dx(:,iy,ix), &
-                              yc(:,iy,ix), dy(:,iy,ix), &
+                              I_CART, lat(iy,ix), lon(iy,ix), &
                               zc(:,iy,ix), zl(:,iy,ix), p(:,iy,ix), &
                               pl(:,iy,ix), t(:,iy,ix), rc)
 
@@ -312,7 +293,7 @@ subroutine test_fractalmicro()
 
         end do
        end do
-			
+
        ! Execute the step
        call CARMASTATE_Step(cstate, rc)
 
@@ -327,7 +308,7 @@ subroutine test_fractalmicro()
        ! Get the updated temperature.
        call CARMASTATE_GetState(cstate, rc, t=t(:,iy,ix))
     enddo
-   
+
     do i=1, NBIN
       mmr_out(irun,istep,:,NY,NX,1,i) = mmr(:,NY,NX,1,i)
     end do
@@ -339,21 +320,21 @@ subroutine test_fractalmicro()
     !end do
     !mmr = mmr + mmr_emis
 
-  end do   ! time loop 
-	
+  end do   ! time loop
+
   ! Cleanup the carma state objects
   call CARMASTATE_Destroy(cstate, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
 
   end do   ! run loop
-	
+
    ! Write output for the fractaltest
    do istep = 1, nstep
     write(lun,'(f12.0)') istep*dtime
      do z = 1, NZ
       !do i = 1, NBIN
-   
+
        write(lun,'(i3,e10.3,e10.3,e10.3,e10.3)') &
            z, SUM(real(mmr_out(1,istep,z,NY,NX,1,:)*rhoa(z,NY,NX)/rmass(:)*1e-6_f*1e3_f)), &
                 SUM(real(mmr_out(1,istep,z,NY,NX,1,:)*p(z,NY,NX) / 287._f / t(z,NY,NX))), &
@@ -365,7 +346,7 @@ subroutine test_fractalmicro()
 
 
   ! Close the output file
-  close(unit=lun)	
+  close(unit=lun)
 
 
 !  write(*,*)  ""
@@ -374,9 +355,9 @@ subroutine test_fractalmicro()
 !  do i = 1, NZ
 !   write(*, '(i8, 8g14.3)') i, mmr(i,NY,NX,1,1), mmr(i,NY,NX,1,2)
 !  end do
-		
+
 !  write(*,*)  ""
-!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"		
+!  write(*, '(a8, 2a12)') "level", "t(:,1,1)", "t(:,NY,NX)"
 !  do i = 1, NZ
 !   write(*, '(i8, 2f12.3)') i, t(i,1,1), t(i,NY,NX)
 !  end do
@@ -386,5 +367,5 @@ subroutine test_fractalmicro()
 !  write(*,*)  ""
 !  write(*,*) "  CARMA_Destroy() ..."
   call CARMA_Destroy(carma, rc)
-  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc  
+  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 end subroutine

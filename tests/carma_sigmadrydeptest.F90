@@ -14,20 +14,20 @@ program carma_sigmadrydeptest
 
   write(*,*) "Sedimentation Test (Sigma Coordinates)"
 
-  call test_sigmadrydep()  
-  
+  call test_sigmadrydep()
+
   write(*,*) "Done"
 end program
 
 
-!! Create 2 particle groups, one for particles with dry deposition 
+!! Create 2 particle groups, one for particles with dry deposition
 !! using arbitary values of ram(aerodynamic resistance) and fv (friction velocity)
 !! the other for particles without dry deposition, to see if they make a difference.
 subroutine test_sigmadrydep()
-  use carma_precision_mod 
-  use carma_constants_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
+  use carma_precision_mod
+  use carma_constants_mod
+  use carma_enums_mod
+  use carma_types_mod
   use carmaelement_mod
   use carmagroup_mod
   use carmastate_mod
@@ -45,38 +45,32 @@ subroutine test_sigmadrydep()
   integer, parameter    :: NGAS         = 0
   integer, parameter    :: NWAVE        = 0
   integer, parameter    :: nstep        = 100*6
-  
-  
+
+
   ! To keep the file processing simpler, only one bin will get written out
-  ! to the output file. 
+  ! to the output file.
   integer, parameter        :: OUTBIN       = 14
-  
+
   real(kind=f), parameter   :: dtime  = 1000._f
-  real(kind=f), parameter   :: deltax = 100._f
-  real(kind=f), parameter   :: deltay = 100._f
-  
+
   integer, parameter        :: I_PART       = 1
 
   type(carma_type), target  :: carma
   type(carma_type), pointer :: carma_ptr
   type(carmastate_type)     :: cstate
   integer                   :: rc = 0
-  
-  real(kind=f), allocatable   :: xc(:)
-  real(kind=f), allocatable   :: dx(:)
-  real(kind=f), allocatable   :: yc(:)
-  real(kind=f), allocatable   :: dy(:)
+
   real(kind=f), allocatable   :: zc(:)
   real(kind=f), allocatable   :: zl(:)
   real(kind=f), allocatable   :: p(:)
   real(kind=f), allocatable   :: pl(:)
   real(kind=f), allocatable   :: t(:)
-  
+
   real(kind=f), allocatable, target  :: mmr(:,:,:)
-  
+
   real(kind=f)          :: lat
   real(kind=f)          :: lon
-  
+
   integer               :: i
   integer               :: istep
   integer               :: ielem
@@ -87,7 +81,7 @@ subroutine test_sigmadrydep()
 
   real(kind=f)          :: time
   real(kind=f)          :: rmin, rmrat, rho
-  
+
   real(kind=f)          :: a72(73), b72(73), t72(72), ze(73)
   real(kind=f)          :: dz(NZ), zm(NZ), rhoa(NZ)
   real(kind=f), parameter :: ps = 98139.8  ! GEOS-5, Omaha, NE, 20090101
@@ -95,17 +89,17 @@ subroutine test_sigmadrydep()
   real(kind=f)          :: lndfv    = 1.5_f   ! land friction velocity
   real(kind=f)          :: lndram   = 60._f   ! land aerodynamic resistance
   real(kind=f)          :: lndfrac  = 0.0_f   ! land fraction
-  
+
   real(kind=f)          :: ocnfv    = 2.0_f   ! ocean friction velocity
   real(kind=f)          :: ocnram   = 40._f   ! ocean aerodynamic resistance
   real(kind=f)          :: ocnfrac  = 1.0_f   ! ocean fraction
-  
+
   real(kind=f)          :: icefv    = 2.5_f   ! ice friction velocity
   real(kind=f)          :: iceram   = 20._f   ! ice aerodynamic resistance
   real(kind=f)          :: icefrac  = 0.0_f   ! ice fraction
 
   real(kind=f)          :: vdry(NBIN, NGROUP)
-  
+
   data a72 / &
        1.0000000,       2.0000002,       3.2700005,       4.7585009,       6.6000011, &
        8.9345014,       11.970302,       15.949503,       21.134903,       27.852606, &
@@ -139,7 +133,7 @@ subroutine test_sigmadrydep()
       0.74937819,      0.77063753,      0.79194696,      0.81330397,      0.83466097, &
       0.85601798,      0.87742898,      0.89890800,      0.92038701,      0.94186501, &
       0.96340602,      0.98495195,       1.0000000 /
-      
+
   data t72 / &
       212.161,   210.233,   217.671,   225.546,   232.222,   237.921,   241.836,   243.246, &
       250.032,   265.518,   262.335,   255.389,   253.560,   253.848,   252.496,   247.806, &
@@ -150,7 +144,7 @@ subroutine test_sigmadrydep()
       250.606,   254.079,   257.222,   260.012,   262.534,   265.385,   267.348,   267.998, &
       267.964,   267.827,   268.075,   268.397,   268.440,   268.371,   268.302,   268.203, &
       267.943,   266.305,   265.331,   265.628,   266.371,   267.219,   267.981,   268.379 /
-  
+
   data ze / &
       78126.3,   73819.6,   70792.7,   68401.3,   66240.5,   64180.9,   62142.8,   60110.2,   58104.9,   56084.0,  53980.6, &
       51944.7,   50003.9,   48117.8,   46270.4,   44469.8,   42739.0,   41076.6,   39488.8,   37977.8,   36530.2,  35144.5, &
@@ -163,14 +157,13 @@ subroutine test_sigmadrydep()
 
   ! Open the output text file
   open(unit=lun,file="carma_sigmadrydeptest.txt",status="unknown")
-  
+
   ! Allocate the arrays that we need for the model
-  allocate(xc(NZ), dx(NZ), yc(NZ), dy(NZ), &
-           zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
+  allocate(zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
            t(NZ))
   allocate(mmr(NZ,NELEM,NBIN))
-  
-  
+
+
   ! Define the particle-grid extent of the CARMA test
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=6)
   if (rc /=0) write(*, *) "    *** CARMA_Create FAILED ***, rc=", rc
@@ -182,43 +175,37 @@ subroutine test_sigmadrydep()
   rmin = 1e-6_f
 
   call CARMAGROUP_Create(carma, 1, "DryDep", rmin, rmrat, I_SPHERE, 1._f, .FALSE., rc, &
-       do_mie = .FALSE., do_wetdep=.FALSE., do_drydep=.TRUE., do_vtran=.TRUE., shortname="DD") 
+       do_mie = .FALSE., do_wetdep=.FALSE., do_drydep=.TRUE., do_vtran=.TRUE., shortname="DD")
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
-  
+
   call CARMAGROUP_Create(carma, 2, "NoDryDep", rmin, rmrat, I_SPHERE, 1._f, .FALSE., rc, &
        do_mie = .FALSE., do_wetdep=.FALSE., do_drydep=.FALSE., do_vtran=.TRUE., shortname="NDD")
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
-  
+
   ! Define the element
   call CARMAELEMENT_Create(carma, 1, 1, "DryDep", rho, I_INVOLATILE, I_PART, rc)
   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
-  
+
   call CARMAELEMENT_Create(carma, 2, 2, "NoDryDep", rho, I_INVOLATILE, I_PART, rc)
   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
-  
+
 !  write(*,*) "  CARMA_AddCoagulation(carma, 1, 1, 1, I_COLLEC_DATA, rc) ..."
-!  call CARMA_AddCoagulation(carma, 1, 1, 1, I_COLLEC_DATA, rc) 
+!  call CARMA_AddCoagulation(carma, 1, 1, 1, I_COLLEC_DATA, rc)
 !  if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
-   
+
   ! Setup the CARMA processes to exercise
   call CARMA_Initialize(carma, rc, do_vtran=.TRUE., do_drydep=.TRUE.)
   if (rc /=0) write(*, *) "    *** CARMA_Initialize FAILED ***, rc=", rc
-  
+
 
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
   !
-  ! NOTE: For Cartesian coordinates, the first level is the bottom 
+  ! NOTE: For Cartesian coordinates, the first level is the bottom
   ! of the model (e.g. z = 0), while for sigma and hybrid coordinates
   ! the first level is the top of the model.
   lat = 40.0_f
   lon = -105.0_f
-  
-  ! Horizonal centers
-  dx(:) = deltax
-  xc(:) = dx(:) / 2._f
-  dy(:) = deltay
-  yc(:) = dy(:) / 2._f
 
   ! Layer edges
   pl(:) = a72(:) + b72(:)*ps
@@ -226,55 +213,53 @@ subroutine test_sigmadrydep()
   t(:)  = t72(:)
 
 
-  ! Calculate based upon the known fields (edges to middle, ...)  
+  ! Calculate based upon the known fields (edges to middle, ...)
   p(:)    = (pl(1:NZ) + pl(2:NZP1)) / 2._f
   zc(:)   = (zl(1:NZ) + zl(2:NZP1)) / 2._f
-  
+
   rhoa(:) = p(:) / 287._f / t(:)
   dz(:)   = zl(2:NZP1) - zl(1:NZ)
   zm(:) = (ze(2:NZP1) + ze(1:NZ)) / 2._f
   dz(:)   = ze(1:NZ) - ze(2:NZP1)
 
-  			
+
   ! Put a blob in the model for all elements and bins at 8 km.
   mmr(:,:,:) = 0._f
   do ielem = 1, NELEM
-    do ibin = 1, NBIN        
+    do ibin = 1, NBIN
       mmr(:,ielem,ibin) = 1e-10_f * exp(-((zm(:) - 8.e3_f) / 3.e3_f)**2) / rhoa(:)
     end do
-  end do		     
+  end do
 
-   
+
   ! Write output for the test
   write(lun,*) NZ, NELEM
   do i = 1, NZ
     write(lun,'(i3,2f10.1)') i, zm(i), dz(i)
   end do
-  
+
   write(lun,*) 0
   do ielem = 1, NELEM
     do i = 1, NZ
       write(lun,'(2i4,e10.3,e10.3)') ielem, i, real(mmr(i,ielem,OUTBIN)), real(mmr(i,ielem,OUTBIN)*rhoa(i))
     end do
   end do
-  
-  
+
+
   ! Iterate the model over a few time steps.
   do istep = 1, nstep
-  
+
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
     ! Create a CARMASTATE for this column.
     call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
-                              I_HYBRID, I_CART, lat, lon, &
-                              xc(:), dx(:), &
-                              yc(:), dy(:), &
+                              I_HYBRID, lat, lon, &
                               zc(:), zl(:), &
 			      p(:), pl(:), &
 			      t(:), rc)
     if (rc /=0) stop "    *** CARMASTATE_Create FAILED ***"
-		
+
     ! Send the bin mmrs to CARMA
     do ielem = 1, NELEM
       do ibin = 1, NBIN
@@ -282,14 +267,14 @@ subroutine test_sigmadrydep()
         if (rc /=0) stop "    *** CARMASTATE_SetBin FAILED ***"
       end do
     end do
-			
+
     ! Execute the step
     call CARMASTATE_Step(cstate, rc, &
       lndfv=lndfv,     ocnfv=ocnfv,     icefv=icefv, &
       lndram=lndram,   ocnram=ocnram,   iceram=iceram, &
       lndfrac=lndfrac, ocnfrac=ocnfrac, icefrac=icefrac)
     if (rc /=0) stop "    *** CARMASTATE_Step FAILED ***"
-	
+
     ! Get the updated bin mmr.
     do ielem = 1, NELEM
       do ibin = 1, NBIN
@@ -301,37 +286,36 @@ subroutine test_sigmadrydep()
     ! Get the updated temperature.
     call CARMASTATE_GetState(cstate, rc, t=t(:))
     if (rc /=0) stop "    *** CARMASTATE_GetState FAILED ***"
- 
+
     ! Write output for the test
     write(lun,'(f12.0)') istep*dtime
-    
+
     do ielem = 1, NELEM
       do i = 1, NZ
         write(lun,'(2i4,e10.3,e10.3)') ielem, i, real(mmr(i,ielem,OUTBIN)), real(mmr(i,ielem,OUTBIN)*p(i) / 287._f / t(i))
       end do
     end do
   end do   ! time loop
-  
-  
+
+
   ! Cleanup the carma state objects
   call CARMASTATE_Destroy(cstate, rc)
   if (rc /=0) stop "    *** CARMASTATE_Destroy FAILED ***"
 
   ! Close the output file
-  close(unit=lun)	
-  
-  
+  close(unit=lun)
+
+
   ! write the dry deposition velocity
   open(unit=lun1,file="carma_sigmavdry.txt",status="unknown")
-  
+
   write(lun1, *) NGROUP
   do igroup = 1, NGROUP
-    write(lun1,*) igroup, real(vdry(:, igroup))     
+    write(lun1,*) igroup, real(vdry(:, igroup))
   end do
 
   close(unit=lun1)
-  	
-  call CARMA_Destroy(carma, rc)
-  if (rc /=0) write(*, *) "    *** CARMA_Destroy FAILED ***, rc=", rc  
-end subroutine
 
+  call CARMA_Destroy(carma, rc)
+  if (rc /=0) write(*, *) "    *** CARMA_Destroy FAILED ***, rc=", rc
+end subroutine
