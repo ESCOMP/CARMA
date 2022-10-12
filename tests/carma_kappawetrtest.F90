@@ -338,8 +338,8 @@ subroutine test_kappawetr_simple()
     !bin 6 assume all aerosol close to 1e-10, dust veries from 0, 1e-8
     mmr(:,I_ELEM_MXDUST,6) = 1.e-12_f*1.5**(istep)
 
-      ! Create a CARMASTATE for this column.
-      call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
+    ! Create a CARMASTATE for this column.
+    call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
                           I_CART, lat, lon, &
                           zc(:), zl(:), &
                           p(:),  pl(:), &
