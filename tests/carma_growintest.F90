@@ -12,8 +12,8 @@ program carma_growintest
 
   write(*,*) "In-Cloud Growth Test with Substepping"
 
-  call test_growin_sub()  
-  
+  call test_growin_sub()
+
   write(*,*) "Done"
 end program
 
@@ -25,10 +25,10 @@ end program
 !! and then get a perturbation in the first timestep to the specified gas
 !! concentration.
 subroutine test_growin_sub()
-  use carma_precision_mod 
-  use carma_constants_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
+  use carma_precision_mod
+  use carma_constants_mod
+  use carma_enums_mod
+  use carma_types_mod
   use carmaelement_mod
   use carmagroup_mod
   use carmagas_mod
@@ -47,14 +47,14 @@ subroutine test_growin_sub()
   integer, parameter        :: NGAS         = 1
   integer, parameter        :: NWAVE        = 0
   integer, parameter        :: LUNOPRT      = 6
-  
+
 
 
   ! Different sizes for time steps provide different results
   ! because of the satbility issues.
   integer                    :: maxsubsteps = 32
   integer                    :: maxretries  = 10
-  
+
 !  real(kind=f), parameter   :: dtime  = 1._f
 !  real(kind=f), parameter   :: dtime  = 5._f
 !  real(kind=f), parameter   :: dtime  = 10._f
@@ -66,8 +66,6 @@ subroutine test_growin_sub()
 !  real(kind=f), parameter   :: dtime  = 10000._f
 !  real(kind=f), parameter   :: dtime  = 50000._f
 
-  real(kind=f), parameter   :: deltax = 100._f
-  real(kind=f), parameter   :: deltay = 100._f
   real(kind=f), parameter   :: deltaz = 100._f
 
   real(kind=f), parameter   :: zmin   = 3000._f
@@ -81,11 +79,7 @@ subroutine test_growin_sub()
   type(carma_type), pointer           :: carma_ptr
   type(carmastate_type)               :: cstate
   integer                             :: rc = 0
-  
-  real(kind=f), allocatable   :: xc(:)
-  real(kind=f), allocatable   :: dx(:)
-  real(kind=f), allocatable   :: yc(:)
-  real(kind=f), allocatable   :: dy(:)
+
   real(kind=f), allocatable   :: zc(:)
   real(kind=f), allocatable   :: zl(:)
   real(kind=f), allocatable   :: p(:)
@@ -95,21 +89,21 @@ subroutine test_growin_sub()
   real(kind=f), allocatable   :: rho(:)
   real(kind=f), allocatable   :: cldfrc(:)
   real(kind=f), allocatable   :: rhcrit(:)
-  
-  
+
+
   real(kind=f), allocatable   :: mmr(:,:,:)
   real(kind=f), allocatable   :: mmr_gas(:,:)
   real(kind=f), allocatable   :: mmr_gas_old(:,:)
   real(kind=f), allocatable   :: satliq(:,:)
   real(kind=f), allocatable   :: satice(:,:)
   real(kind=f), allocatable   :: pvapice(:,:)
-  
+
   real(kind=f), allocatable   :: r(:)
   real(kind=f), allocatable   :: rmass(:)
 
   real(kind=f)                :: lat
   real(kind=f)                :: lon
-  
+
   integer               :: i
   integer               :: istep
   integer               :: igas
@@ -119,7 +113,7 @@ subroutine test_growin_sub()
   integer, parameter    :: lun = 42
   integer               :: nsubsteps
   integer               :: lastsub = 0
-  
+
   real(kind=f)          :: nretries
   real(kind=f)          :: lastret = 0._f
 
@@ -127,15 +121,14 @@ subroutine test_growin_sub()
   real(kind=f)          :: rmin, rmrat
   real(kind=f)          :: drh
   real(kind=f)          :: t_orig
-  
+
 
   ! Open the output text file
   open(unit=lun,file="carma_growintest.txt",status="unknown")
-  
+
   ! Allocate the arrays that we need for the model
-  allocate(xc(NZ), dx(NZ), yc(NZ), dy(NZ), &
-           zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
-           t(NZ), rho(NZ), cldfrc(NZ), rhcrit(NZ)) 
+  allocate(zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
+           t(NZ), rho(NZ), cldfrc(NZ), rhcrit(NZ))
   allocate(mmr(NZ,NELEM,NBIN))
   allocate(mmr_gas(NZ,NGAS))
   allocate(mmr_gas_old(NZ,NGAS))
@@ -160,19 +153,19 @@ subroutine test_growin_sub()
   rmin  = 1e-4_f
   call CARMAGROUP_Create(carma, 1, "Ice Crystal", rmin, rmrat, I_SPHERE, 1._f, .TRUE., rc, is_cloud=.true.)
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
-  
-  
+
+
   ! Define the elements
   call CARMAELEMENT_Create(carma, 1, 1, "Ice Crystal", RHO_I, I_VOLATILE, I_H2O, rc)
   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
-  
+
   ! Define the gases
   call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, &
       I_GCOMP_H2O, rc, ds_threshold=0.2_f)
 !  call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_GOFF1946, I_GCOMP_H2O, rc)
   if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
 
-  
+
   ! Setup the CARMA processes to exercise
   call CARMA_AddGrowth(carma, 1, 1, rc)
   if (rc /=0) stop "    ***  CARMA_AddGrowth FAILED ***"
@@ -182,29 +175,23 @@ subroutine test_growin_sub()
      minsubsteps=1, maxsubsteps=maxsubsteps, maxretries=maxretries, dt_threshold=2._f, &
      do_incloud=.true.)
   if (rc /=0) stop "    ***  CARMA_Initialize FAILED ***"
-  
-  
-  
+
+
+
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
   !
-  ! NOTE: For Cartesian coordinates, the first level is the bottom 
+  ! NOTE: For Cartesian coordinates, the first level is the bottom
   ! of the model (e.g. z = 0), while for sigma and hybrid coordinates
   ! the first level is the top of the model.
   lat = -40.0_f
   lon = -105.0_f
-  
-  ! Horizonal centers
-  dx(:) = deltax
-  xc(:) = dx(:) / 2._f
-  dy(:) = deltay
-  yc(:) = dy(:) / 2._f
-  
+
   ! Vertical center
   do i = 1, NZ
     zc(i) = zmin + (deltaz * (i - 0.5_f))
   end do
-  
+
   call GetStandardAtmosphere(zc, p=p, t=t)
 
   ! Vertical edge
@@ -213,23 +200,23 @@ subroutine test_growin_sub()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
-  
+
   ! Setup up an arbitray mass mixing ratio of water vapor, so there is someting to
   ! grow the particles.
   mmr_gas(:,:) = 1e-2_f
-        
+
   ! Start with some initial water drops in the smallest bin, which can then grow
   ! to larger sizes in the presence of the water vapor.
   mmr(:,:,1) = 1e-6_f
-  
-  
+
+
   ! Write output for the test
   write(lun,*) NGROUP, NELEM, NBIN, NGAS
 
   do igroup = 1, NGROUP
     call CARMAGROUP_Get(carma, igroup, rc, r=r, rmass=rmass)
     if (rc /=0) stop "    *** CARMAGROUP_Get FAILED ***"
-    
+
     do ibin = 1, NBIN
       write(lun,'(2i4,2e10.3)') igroup, ibin, r(ibin) * 1e4_f, rmass(ibin)
     end do
@@ -248,17 +235,17 @@ subroutine test_growin_sub()
   rho(1)       = (p(1) * 10._f) / (R_AIR * t(1)) * (1e-3_f * 1e6_f)
   pl(1)        = p(1) - (zl(1) - zc(1)) * rho(1) * (GRAV / 100._f)
   pl(2)        = p(1) - (zl(2) - zc(1)) * rho(1) * (GRAV / 100._f)
-  
+
   mmr(:,1,1)   = (0.1_f * rmass(1) * (1e-3_f * 1e6_f)) / rho(:)
 
   ! Calculate saturation using Murphy and Koop [2005].
   pvapice(:,1)      = exp(9.550426_f - (5723.265_f / t(:)) + (3.53068_f * log(t(:))) - (0.00728332_f * t(:)))
   mmr_gas_old(:,1)  = pvapice(:,1) * 18.0_f / p(:) * 28.9_f
   mmr_gas(:,1)      = 3.5e-6_f
-  
+
   t_orig = t(1)
-  
-   
+
+
   write(lun,*) 0
 
   write(lun,'(2i6,e12.3)') 0, 0, real(t(1) - t_orig)
@@ -273,10 +260,10 @@ subroutine test_growin_sub()
     write(lun,'(i4,3e10.3)') igas, real(mmr_gas(1,igas)), 0._f, 0._f
   end do
 
-    
+
   ! Iterate the model over a few time steps.
   do istep = 1, nstep
-  
+
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
@@ -284,14 +271,12 @@ subroutine test_growin_sub()
     ! in any other CARMA routines. They should only loop over NZ.
     ! Create a CARMASTATE for this column.
     call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
-                          I_CART, I_CART, lat, lon, &
-                          xc(:), dx(:), &
-                          yc(:), dy(:), &
+                          I_CART, lat, lon, &
                           zc(:), zl(:), &
                           p(:),  pl(:), &
                           t(:),  rc, told=t(:))
     if (rc /=0) stop "    *** CARMASTATE_Create FAILED ***"
-    
+
     ! Send the bin mmrs to CARMA
     do ielem = 1, NELEM
       do ibin = 1, NBIN
@@ -299,10 +284,10 @@ subroutine test_growin_sub()
        if (rc /=0) stop "    *** CARMASTATE_SetBin FAILED ***"
       end do
     end do
-      
+
     ! Send the gas mmrs to CARMA
     do igas = 1, NGAS
-      
+
       ! For the first time step, set mmr_old to the original value and
       ! then set the current mmr to the new value. This will create a
       ! change in gas during the timestep that substepping can use to
@@ -310,12 +295,12 @@ subroutine test_growin_sub()
       if (istep == 1) then
         satice(:, igas) = -1._f
         satliq(:, igas) = -1._f
-        
+
         call CARMASTATE_SetGas(cstate, igas, mmr_gas(:,igas), rc, &
           mmr_old=mmr_gas_old(:,igas), satice_old=satice(:,igas), satliq_old=satliq(:,igas))
         if (rc /=0) stop "    *** CARMASTATE_SetGas FAILED ***"
       else
-      
+
         call CARMASTATE_SetGas(cstate, igas, mmr_gas(:,igas), rc, &
           mmr_old=mmr_gas(:,igas), satice_old=satice(:,igas), satliq_old=satliq(:,igas))
         if (rc /=0) stop "    *** CARMASTATE_SetGas FAILED ***"
@@ -325,10 +310,10 @@ subroutine test_growin_sub()
     ! Execute the step
     cldfrc(:) = 0.5_f
     rhcrit(:) = 0.8_f
-    
+
     call CARMASTATE_Step(cstate, rc, cldfrc, rhcrit)
     if (rc /=0) stop "    *** CARMASTATE_Step FAILED ***"
-     
+
     ! Get the updated bin mmr.
     do ielem = 1, NELEM
       do ibin = 1, NBIN
@@ -341,7 +326,7 @@ subroutine test_growin_sub()
     do igas = 1, NGAS
       call CARMASTATE_GetGas(cstate, igas, &
                               mmr_gas(:,igas), &
-                              rc, & 
+                              rc, &
                               satliq=satliq(:,igas), &
                               satice=satice(:,igas))
       if (rc /=0) stop "    *** CARMASTATE_GetGas FAILED ***"
@@ -352,7 +337,7 @@ subroutine test_growin_sub()
     if (rc /=0) stop "    *** CARMASTATE_Get FAILED ***"
     call CARMASTATE_GetState(cstate, rc, t=t(:))
     if (rc /=0) stop "    *** CARMASTATE_GetState FAILED ***"
-    
+
 
     ! Write output for the test.
     write(lun,'(f12.0)') istep*dtime
@@ -366,7 +351,7 @@ subroutine test_growin_sub()
         write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,ielem,ibin))
       end do
     end do
-  
+
     do igas = 1, NGAS
       write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,igas)), satliq(1,igas), satice(1,igas)
     end do
@@ -377,8 +362,8 @@ subroutine test_growin_sub()
   if (rc /=0) stop "    *** CARMASTATE_Destroy FAILED ***"
 
   ! Close the output file
-  close(unit=lun) 
-  
+  close(unit=lun)
+
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** CARMA_Destroy FAILED ***"
 end subroutine

@@ -11,8 +11,8 @@ program carma_nuctest
 
   write(*,*) "Nucleation & Growth Test"
 
-  call test_nuc_ttl()  
-  
+  call test_nuc_ttl()
+
   write(*,*) "Done"
 end program
 
@@ -21,10 +21,10 @@ end program
 !! and then the ice can grow using a gas. The total mass of ice + gas should
 !! be conserved.
 subroutine test_nuc_ttl()
-  use carma_precision_mod 
-  use carma_constants_mod 
-  use carma_enums_mod 
-  use carma_types_mod 
+  use carma_precision_mod
+  use carma_constants_mod
+  use carma_enums_mod
+  use carma_types_mod
   use carmaelement_mod
   use carmagroup_mod
   use carmagas_mod
@@ -47,7 +47,7 @@ subroutine test_nuc_ttl()
   integer, parameter        :: NWAVE        = 0
   integer, parameter        :: LUNOPRT      = 6
   integer, parameter        :: nstep        = 100
-  
+
 
 
   real(kind=f), parameter   :: dtime  = 1._f
@@ -60,15 +60,13 @@ subroutine test_nuc_ttl()
 !  real(kind=f), parameter   :: dtime  = 5000._f
 !  real(kind=f), parameter   :: dtime  = 10000._f
 !  real(kind=f), parameter   :: dtime  = 50000._f
-  real(kind=f), parameter   :: deltax = 100._f
-  real(kind=f), parameter   :: deltay = 100._f
   real(kind=f), parameter   :: deltaz = 100._f
   real(kind=f), parameter   :: zmin   = 3000._f
 
-  real(kind=f), parameter             :: n    = 100._f     !! concentration (cm-3) 
+  real(kind=f), parameter             :: n    = 100._f     !! concentration (cm-3)
   real(kind=f), parameter             :: r0   = 2.5e-6_f   !! mean radius (cm)
   real(kind=f), parameter             :: rsig = 1.5_f      !! distribution width
-  
+
   real(kind=f)                        :: rhop
   real(kind=f)                        :: rhoa
 
@@ -80,11 +78,7 @@ subroutine test_nuc_ttl()
   type(carma_type), pointer           :: carma_ptr
   type(carmastate_type)               :: cstate
   integer                             :: rc = 0
-  
-  real(kind=f), allocatable   :: xc(:,:,:)
-  real(kind=f), allocatable   :: dx(:,:,:)
-  real(kind=f), allocatable   :: yc(:,:,:)
-  real(kind=f), allocatable   :: dy(:,:,:)
+
   real(kind=f), allocatable   :: zc(:,:,:)
   real(kind=f), allocatable   :: zl(:,:,:)
   real(kind=f), allocatable   :: p(:,:,:)
@@ -92,19 +86,19 @@ subroutine test_nuc_ttl()
   real(kind=f), allocatable   :: t(:,:,:)
   real(kind=f), allocatable   :: relhum(:,:,:)
   real(kind=f), allocatable   :: rho(:,:,:)
-  
+
   real(kind=f), allocatable   :: mmr(:,:,:,:,:)
   real(kind=f), allocatable   :: mmr_gas(:,:,:,:)
   real(kind=f), allocatable   :: satliq(:,:,:,:)
   real(kind=f), allocatable   :: satice(:,:,:,:)
-  
+
   real(kind=f), allocatable   :: r(:)
   real(kind=f), allocatable   :: dr(:)
   real(kind=f), allocatable   :: rmass(:)
 
   real(kind=f), allocatable          :: lat(:,:)
   real(kind=f), allocatable          :: lon(:,:)
-  
+
   integer               :: i
   integer               :: ix
   integer               :: iy
@@ -120,20 +114,19 @@ subroutine test_nuc_ttl()
   real(kind=f)          :: time
   real(kind=f)          :: rmin, rmrat
   real(kind=f)          :: drh
-  
+
   real(kind=f)          :: RHO_CN = 1.78_f
-  
+
 
 !  write(*,*) ""
 !  write(*,*) "Particle Growth - Simple"
 
   ! Open the output text file
   open(unit=lun,file="carma_nuctest.txt",status="unknown")
-  
+
   ! Allocate the arrays that we need for the model
-  allocate(xc(NZ,NY,NX), dx(NZ,NY,NX), yc(NZ,NY,NX), dy(NZ,NY,NX), &
-           zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
-           t(NZ,NY,NX), rho(NZ,NY,NX)) 
+  allocate(zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
+           t(NZ,NY,NX), rho(NZ,NY,NX))
   allocate(mmr(NZ,NY,NX,NELEM,NBIN))
   allocate(mmr_gas(NZ,NY,NX,NGAS))
   allocate(satliq(NZ,NY,NX,NGAS))
@@ -141,7 +134,7 @@ subroutine test_nuc_ttl()
   allocate(r(NBIN))
   allocate(dr(NBIN))
   allocate(rmass(NBIN))
-  allocate(lat(NY,NX), lon(NY,NX))  
+  allocate(lat(NY,NX), lon(NY,NX))
 
 
   ! Define the particle-grid extent of the CARMA test
@@ -162,8 +155,8 @@ subroutine test_nuc_ttl()
                          rc, do_wetdep=.true., do_drydep=.false., solfac=0.3_f, &
                          scavcoef=0.1_f, shortname="CRICE", do_mie=.false.)
   if (rc /=0) stop "    *** FAILED ***"
-  
-  
+
+
   ! Define the elements
 !  write(*,*) "  Add Element(s) ..."
   call CARMAELEMENT_Create(carma, 1, 1, "Sulfate IN", RHO_CN, I_INVOLATILE, I_H2SO4, rc, shortname="CRIN", isolute=1)
@@ -171,11 +164,11 @@ subroutine test_nuc_ttl()
 
   call CARMAELEMENT_Create(carma, 2, 2, "Ice Crystal", RHO_I, I_VOLATILE, I_ICE, rc, shortname="CRICE")
   if (rc /=0) stop "    *** FAILED ***"
-  
+
   call CARMAELEMENT_Create(carma, 3, 2, "Core Mass", RHO_CN, I_COREMASS, I_H2SO4, rc, shortname="CRCORE", isolute=1)
   if (rc /=0) stop "    *** FAILED ***"
 
-  
+
   ! Define the Solutes
   call CARMASOLUTE_Create(carma, 1, "Sulfuric Acid", 2, 98._f, 1.38_f, rc)
   if (rc /=0) stop "    *** FAILED ***"
@@ -186,7 +179,7 @@ subroutine test_nuc_ttl()
   call CARMAGAS_Create(carma, 1, "Water Vapor", WTMOL_H2O, I_VAPRTN_H2O_MURPHY2005, I_GCOMP_H2O, rc, shortname='Q')
   if (rc /=0) stop "    *** FAILED ***"
 
-  
+
   ! Setup the CARMA processes to exercise growth and nucleation.
   call CARMA_AddGrowth(carma, 2, 1, rc)
   if (rc /=0) stop "    *** FAILED ***"
@@ -199,13 +192,13 @@ subroutine test_nuc_ttl()
 !  write(*,*) "  Initialize ..."
   call CARMA_Initialize(carma, rc, do_grow=.true.)
   if (rc /=0) stop "    *** FAILED ***"
-  
+
 
   ! Print the Group Information
 !  write(*,*)  ""
 !  call dumpGroup(carma, rc)
 !  if (rc /=0) stop "    *** FAILED ***"
-  
+
   ! Print the Element Information
 !  write(*,*)  ""
 !  call dumpElement(carma, rc)
@@ -217,32 +210,22 @@ subroutine test_nuc_ttl()
 !  if (rc /=0) stop "    *** FAILED ***"
 
 !  write(*,*) ""
-  
-  
+
+
   ! For simplicity of setup, do a case with Cartesian coordinates,
   ! which are specified in this interface in meters.
   !
-  ! NOTE: For Cartesian coordinates, the first level is the bottom 
+  ! NOTE: For Cartesian coordinates, the first level is the bottom
   ! of the model (e.g. z = 0), while for sigma and hybrid coordinates
   ! the first level is the top of the model.
   lat(:,:) = -40.0_f
   lon(:,:) = -105.0_f
-  
-  ! Horizonal centers
-  do ix = 1, NX
-    do iy = 1, NY
-      dx(:,iy,ix) = deltax
-      xc(:,iy,ix) = ix*dx(:,iy,ix) / 2._f
-      dy(:,iy,ix) = deltay
-      yc(:,iy,ix) = iy*dy(:,iy,ix) / 2._f
-    end do
-  end do
-  
+
   ! Vertical center
   do i = 1, NZ
     zc(i,:,:) = zmin + (deltaz * (i - 0.5_f))
   end do
-  
+
   call GetStandardAtmosphere(zc, p=p, t=t)
 
   ! Vertical edge
@@ -251,14 +234,14 @@ subroutine test_nuc_ttl()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
-  
+
   ! Write output for the test
   write(lun,*) NGROUP, NELEM, NBIN, NGAS
 
   do igroup = 1, NGROUP
     call CARMAGROUP_Get(carma, igroup, rc, r=r, dr=dr, rmass=rmass)
     if (rc /=0) stop "    *** FAILED ***"
-    
+
     do ibin = 1, NBIN
       write(lun,'(2i4,2e10.3)') igroup, ibin, r(ibin) * 1e4_f, rmass(ibin)
     end do
@@ -280,7 +263,7 @@ subroutine test_nuc_ttl()
   pl(2,:,:)        = p(1,:,:) - (zl(2,:,:) - zc(1,:,:)) * rho(1,:,:) * (GRAV / 100._f)
 !  mmr_gas(:,:,:,:) = 3.5e-6_f
   mmr_gas(:,:,:,:) = 4e-5_f
-  
+
   ! Put in an intial distribution of sulfates.
   call CARMAGROUP_Get(carma, 1, rc, r=r, dr=dr, rmass=rmass)
   if (rc /=0) stop "    *** FAILED ***"
@@ -294,22 +277,22 @@ subroutine test_nuc_ttl()
 
     mmr(:,:,:,1,ibin)   = rhop / rhoa
   end do
-  
-  
+
+
 !  write(*,'(a6, 3a12)') "level", "zc", "p", "t"
 !  write(*,'(a6, 3a12)') "", "(m)", "(Pa)", "(K)"
 !  do i = 1, NZ
 !    write(*,'(i6,3f12.3)') i, zc(i,NY,NX), p(i,NY,NX), t(i,NY,NX)
 !  end do
-  
+
 !  write(*,*) ""
 !  write(*,'(a6, 2a12)') "level", "zl", "pl"
 !  write(*,'(a6, 2a12)') "", "(m)", "(Pa)"
 !  do i = 1, NZP1
 !    write(*,'(i6,2f12.3)') i, zl(i,NY,NX), pl(i,NY,NX)
 !  end do
-  
-   
+
+
   write(lun,*) 0
 
   do ielem = 1, NELEM
@@ -325,7 +308,7 @@ subroutine test_nuc_ttl()
   ! Iterate the model over a few time steps.
 !  write(*,*) ""
   do istep = 1, nstep
-  
+
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
@@ -334,16 +317,14 @@ subroutine test_nuc_ttl()
     do ixy = 1, NX*NY
       ix = ((ixy-1) / NY) + 1
       iy = ixy - (ix-1)*NY
-      
+
       ! Create a CARMASTATE for this column.
       call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
-                          I_CART, I_CART, lat(iy,ix), lon(iy,ix), &
-                          xc(:,iy,ix), dx(:,iy,ix), &
-                          yc(:,iy,ix), dy(:,iy,ix), &
+                          I_CART, lat(iy,ix), lon(iy,ix), &
                           zc(:,iy,ix), zl(:,iy,ix), p(:,iy,ix), &
                           pl(:,iy,ix), t(:,iy,ix), rc)
       if (rc /=0) stop "    *** FAILED ***"
-		
+
       ! Send the bin mmrs to CARMA
       do ielem = 1, NELEM
         do ibin = 1, NBIN
@@ -352,7 +333,7 @@ subroutine test_nuc_ttl()
           if (rc /=0) stop "    *** FAILED ***"
         end do
       end do
-			
+
       ! Send the gas mmrs to CARMA
       do igas = 1, NGAS
         call CARMASTATE_SetGas(cstate, igas, &
@@ -363,7 +344,7 @@ subroutine test_nuc_ttl()
       ! Execute the step
       call CARMASTATE_Step(cstate, rc)
       if (rc /=0) stop "    *** FAILED ***"
-       
+
       ! Get the updated bin mmr.
       do ielem = 1, NELEM
         do ibin = 1, NBIN
@@ -395,19 +376,19 @@ subroutine test_nuc_ttl()
         write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin))
       end do
     end do
-  
+
     do igas = 1, NGAS
       write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,NY,NX,igas)), satliq(1,NY,NX,igas), satice(1,NY,NX,igas)
     end do
   end do   ! time loop
-	
+
   ! Cleanup the carma state objects
   call CARMASTATE_Destroy(cstate, rc)
   if (rc /=0) stop "    *** FAILED ***"
 
   ! Close the output file
-  close(unit=lun)	
-	
+  close(unit=lun)
+
 !  write(*,*)  ""
 
   if (rc /=0) stop "    *** FAILED ***"

@@ -53,8 +53,6 @@ subroutine test_kappawetr_simple()
 !  real(kind=f), parameter   :: dtime  = 1000._f
   real(kind=f), parameter   :: dtime  = 1800._f
 
-  real(kind=f), parameter   :: deltax = 100._f
-  real(kind=f), parameter   :: deltay = 100._f
   real(kind=f), parameter   :: deltaz = 100._f
   real(kind=f), parameter   :: zmin   = 3000._f
 
@@ -67,10 +65,6 @@ subroutine test_kappawetr_simple()
   type(carmastate_type)               :: cstate
   integer                             :: rc = 0
 
-  real(kind=f), allocatable   :: xc(:)
-  real(kind=f), allocatable   :: dx(:)
-  real(kind=f), allocatable   :: yc(:)
-  real(kind=f), allocatable   :: dy(:)
   real(kind=f), allocatable   :: zc(:)
   real(kind=f), allocatable   :: zl(:)
   real(kind=f), allocatable   :: p(:)
@@ -150,8 +144,7 @@ subroutine test_kappawetr_simple()
   open(unit=lun,file="carma_kappawetrtest.txt",status="unknown")
 
   ! Allocate the arrays that we need for the model
-  allocate(xc(NZ), dx(NZ), yc(NZ), dy(NZ), &
-           zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
+  allocate(zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
            t(NZ), rho(NZ), rlheat(NZ))
   allocate(mmr(NZ,NELEM,NBIN))
   allocate(mmr_gas(NZ,NGAS))
@@ -259,12 +252,6 @@ subroutine test_kappawetr_simple()
   lat = -40.0_f
   lon = -105.0_f
 
-  ! Horizonal centers
-  dx(:) = deltax
-  xc(:) = dx(:) / 2._f
-  dy(:) = deltay
-  yc(:) = dy(:) / 2._f
-
   ! Vertical center
   do i = 1, NZ
     zc(i) = zmin + (deltaz * (i - 0.5_f))
@@ -351,11 +338,9 @@ subroutine test_kappawetr_simple()
     !bin 6 assume all aerosol close to 1e-10, dust veries from 0, 1e-8
     mmr(:,I_ELEM_MXDUST,6) = 1.e-12_f*1.5**(istep)
 
-      ! Create a CARMASTATE for this column.
-      call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
-                          I_CART, I_CART, lat, lon, &
-                          xc(:), dx(:), &
-                          yc(:), dy(:), &
+    ! Create a CARMASTATE for this column.
+    call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
+                          I_CART, lat, lon, &
                           zc(:), zl(:), &
                           p(:),  pl(:), &
                           t(:), rc, &
