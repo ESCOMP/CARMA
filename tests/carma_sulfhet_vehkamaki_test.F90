@@ -126,7 +126,7 @@ subroutine test_sulfate_simple()
   real(kind=f)          :: t_orig
 
   ! Open the output text file
-  open(unit=lun,file="carma_sulfhettest.txt",status="unknown")
+  open(unit=lun,file="carma_sulfhet_vehkamaki_test.txt",status="unknown")
 
   ! Allocate the arrays that we need for the model
   allocate(zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
@@ -200,7 +200,7 @@ subroutine test_sulfate_simple()
 
 
   call CARMA_Initialize(carma, rc, do_grow=.true., do_coag=.true., do_substep=.true., &
-          do_thermo=.true., maxretries=16, maxsubsteps=1, dt_threshold=5._f, nucl_method='ZhaoTurco')
+          do_thermo=.true., maxretries=16, maxsubsteps=1, dt_threshold=5._f, nucl_method='Vehkamaki')
   if (rc /=0) stop "    *** CARMA_Initialize FAILED ***"
 
   ! For simplicity of setup, do a case with Cartesian coordinates,

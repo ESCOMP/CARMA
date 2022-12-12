@@ -11,7 +11,7 @@ TEST_OBJ = carma_bcoctest.o carma_bc2gtest.o carma_coagtest.o carma_drydeptest.o
 carma_growtest.o carma_inittest.o carma_kappawetrtest.o carma_mietest.o carma_nuctest.o \
 carma_pheattest.o carma_sigmadrydeptest.o carma_sigmafalltest.o carma_swelltest.o \
 carma_vdiftest.o carma_test.o atmosphere_mod.o carma_scfalltest.o carma_growsubtest.o \
-carma_growintest.o carma_fractalmicrotest.o carma_fractalopticstest.o carma_sulfhettests.o
+carma_growintest.o carma_fractalmicrotest.o carma_fractalopticstest.o carma_sulfhettest.o
 
 TEST_DOC = carma_bcoctest.html carma_bc2gtest.html carma_coagtest.html carma_drydeptest.html \
 carma_falltest.html carma_growtest.html carma_inittest.html carma_kappawetrtest.html \
@@ -95,9 +95,14 @@ carma_sulfatetest.o : carma_sulfatetest.F90 atmosphere_mod.mod carma_mod.mod car
 carma_sulfhettest.o : carma_sulfhettest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
+carma_sulfate_vehkamaki_test.o : carma_sulfate_vehkamaki_test.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_sulfhet_vehkamaki_test.o : carma_sulfhet_vehkamaki_test.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
 carma_test.o : carma_test.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_vdiftest.o : carma_vdiftest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
-

@@ -161,6 +161,10 @@ SCFALLTEST.exe : $(CARMA_OBJ) carma_scfalltest.o carma_testutils.o atmosphere_mo
 	$(FORTRAN) $(LDFLAGS) -o SCFALLTEST.exe carma_scfalltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SULFATETEST.exe : $(CARMA_OBJ) carma_sulfatetest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o SULFATETEST.exe carma_sulfatetest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+SULFHET_VEHKAMAKI_TEST.exe : $(CARMA_OBJ) carma_sulfhet_vehkamaki_test.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(LDFLAGS) -o SULFHET_VEHKAMAKI_TEST.exe carma_sulfhet_vehkamaki_test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+SULFATE_VEHKAMAKI_TEST.exe : $(CARMA_OBJ) carma_sulfate_vehkamaki_test.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(LDFLAGS) -o SULFATE_VEHKAMAKI_TEST.exe carma_sulfate_vehkamaki_test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SULFHETTEST.exe : $(CARMA_OBJ) carma_sulfhettest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o SULFHETTEST.exe carma_sulfhettest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 KAPPAWETRTEST.exe : $(CARMA_OBJ) carma_kappawetrtest.o carma_testutils.o atmosphere_mod.o
@@ -171,7 +175,7 @@ all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
 SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
 SULFATETEST.exe NUC2TEST.exe GROWINTEST.exe GROWCLRTEST.exe FRACTALMICROTEST.exe \
-FRACTALOPTICSTEST.exe SULFHETTEST.exe KAPPAWETRTEST.exe
+FRACTALOPTICSTEST.exe SULFHETTEST.exe KAPPAWETRTEST.exe SULFHET_VEHKAMAKI_TEST.exe SULFATE_VEHKAMAKI_TEST.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)
