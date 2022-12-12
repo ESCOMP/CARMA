@@ -200,7 +200,7 @@ subroutine test_sulfate_simple()
 
 
   call CARMA_Initialize(carma, rc, do_grow=.true., do_coag=.true., do_substep=.true., &
-          do_thermo=.true., maxretries=16, maxsubsteps=1, dt_threshold=5._f, nucl_method='Vehkamaki')
+          do_thermo=.true., maxretries=16, maxsubsteps=1, dt_threshold=5._f, sulf_nucl_method='Vehkamaki')
   if (rc /=0) stop "    *** CARMA_Initialize FAILED ***"
 
   ! For simplicity of setup, do a case with Cartesian coordinates,
