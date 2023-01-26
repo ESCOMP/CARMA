@@ -1,5 +1,5 @@
-!! This code is to test the impact of particle swelling from
-!! relative humidity on sedimentation. Upon execution, a text
+!! This code is to test the Vehkamaki sulfate nucleation.
+!! Upon execution, a text
 !! file (carma_sulfate_vehkamaki_test.txt) is generated.  The text file can
 !! be read with the IDL procedure read_swelltest.pro.
 !!

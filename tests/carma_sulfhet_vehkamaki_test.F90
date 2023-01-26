@@ -1,5 +1,5 @@
-!! This code is to test the sulfate heterogenous nucleation and
-!! neutralization. Upon execution, a text
+!! This code is to test the Vehkamaki sulfate heterogenous nucleation.
+!! Upon execution, a text
 !! file (carma_swelltest.txt) is generated.  The text file can
 !! be read with the IDL procedure read_swelltest.pro.
 !!
