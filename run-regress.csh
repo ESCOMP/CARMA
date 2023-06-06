@@ -55,8 +55,9 @@ echo ""
 # Inquire if the user wants to to have the script stop on the first instance of
 #	a difference found between a test file and its corresponding benchmark file
 #
-echo "     Do you want the script to stop on the first difference found between "
-read -p "        a test file and its corresponding benchmark file? (y/n) " $doall
+echo    "     Do you want the script to stop on the first difference found between "
+echo -n "     a test file and its corresponding benchmark file? (y/n) "
+set doall = $<
 
 # Create a directory for the build.
 mkdir -p $rundir
@@ -119,4 +120,3 @@ echo ""
 echo "      There are " $ndiffs "test files that differ from their corresponding benchmark files."
 echo ""
 echo ""
-
