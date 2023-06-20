@@ -46,6 +46,7 @@ subroutine test_grow_pheat()
   integer, parameter        :: LUNOPRT      = 6
   integer, parameter        :: nstep        = 50
 
+  integer, parameter    :: NREFIDX  = 1               !! Number of refractive indices per element
 
 
   ! Different sizes for time steps provide different results
@@ -95,7 +96,7 @@ subroutine test_grow_pheat()
   real(kind=f), allocatable          :: wave(:)       ! wavelength centers (cm)
   real(kind=f), allocatable          :: dwave(:)      ! wavelength width (cm)
   real(kind=f), allocatable          :: radint(:,:)   ! radiative intensity (W/m2/sr/cm)
-  complex(kind=f), allocatable       :: refidx(:)     ! refractive index
+  complex(kind=f), allocatable       :: refidx(:,:)     ! refractive index
 
   integer               :: i
   integer               :: istep
@@ -127,17 +128,16 @@ subroutine test_grow_pheat()
   allocate(satice(NZ,NGAS))
   allocate(r(NBIN))
   allocate(rmass(NBIN))
-  allocate(wave(NWAVE), dwave(NWAVE), refidx(NWAVE), radint(NZ,NWAVE))
+  allocate(wave(NWAVE), dwave(NWAVE), refidx(NWAVE, NREFIDX), radint(NZ,NWAVE))
 
 
   ! Define the band centers and widths (in cm) and the refractive indices.
   wave(:)   = (/ 0.26e-4_f, 0.75e-4_f, 3.0e-4_f, 10e-4_f/)
   dwave(:)  = (/ 0.48e-4_f, 0.5e-4_f, 4.0e-4_f, 10e-4_f/)
-  refidx(:) = (/ (1.35090_f, 2e-11_f), (1.30590_f, 5.87000e-08_f), (1.03900, 4.38000e-01_f), (1.19260_f, 5.00800e-02_f) /)
-
+  refidx(:,1) = (/ (1.35090_f, 2e-11_f), (1.30590_f, 5.87000e-08_f), (1.03900, 4.38000e-01_f), (1.19260_f, 5.00800e-02_f) /)
 
   ! Define the particle-grid extent of the CARMA test
-  call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT, wave=wave, dwave=dwave)
+  call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT, wave=wave, dwave=dwave, NREFIDX=NREFIDX)
   if (rc /=0) stop "    *** CARMA_Create FAILED ***"
 	carma_ptr => carma
 
@@ -151,12 +151,12 @@ subroutine test_grow_pheat()
   ! TTL
 !  rmin  = 1e-4_f
 !  rmrat = 2._f
-  call CARMAGROUP_Create(carma, 1, "Ice Crystal", rmin, rmrat, I_SPHERE, 1._f, .TRUE., rc, refidx=refidx, do_mie=.true.)
+  call CARMAGROUP_Create(carma, 1, "Ice Crystal", rmin, rmrat, I_SPHERE, 1._f, .TRUE., rc, do_mie=.true.)
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
 
 
   ! Define the elements
-  call CARMAELEMENT_Create(carma, 1, 1, "Ice Crystal", RHO_I, I_VOLATILE, I_H2O, rc)
+  call CARMAELEMENT_Create(carma, 1, 1, "Ice Crystal", RHO_I, I_VOLATILE, I_H2O, rc, refidx=refidx)
   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
 
   ! Define the gases
