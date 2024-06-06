@@ -34,7 +34,7 @@ ifeq ($(FORTRAN),ifort)
   FFLAGS += -qopenmp
 
   # The no_pie flags also the executable to work with idb.
-  LDFLAGS = $(FFLAGS) -no_pie
+  LDFLAGS = $(FFLAGS) -no-pie -qmkl
 endif
 
 # Add options for the Portland Group compiler.
