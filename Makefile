@@ -77,7 +77,7 @@ ifeq ($(FORTRAN),gfortran)
   # Open/MP
   FFLAGS  += -fopenmp
 
-  LDFLAGS = $(FFLAGS)
+  LDFLAGS = $(FFLAGS) -llapack
 endif
 
 # Add options for the IBM XL Fortran compiler.
