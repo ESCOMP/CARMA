@@ -33,7 +33,7 @@ ifeq ($(FORTRAN),ifort)
   # Open/MP
   FFLAGS += -qopenmp
 
-  # The no_pie flags also the executable to work with idb.
+  # The -qmkl flag if for linking to LAPACK lib
   LDFLAGS = $(FFLAGS) -no-pie -qmkl
 endif
 
@@ -74,9 +74,9 @@ ifeq ($(FORTRAN),gfortran)
   FFLAGS += -g -fbounds-check -ffpe-trap=zero,invalid,overflow -fbacktrace
 
   # Open/MP
-  # Open/MP
   FFLAGS  += -fopenmp
 
+  # The -llapack flag if for linking to LAPACK lib
   LDFLAGS = $(FFLAGS) -llapack
 endif
 
