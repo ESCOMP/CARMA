@@ -11,7 +11,7 @@ This populates source/base with source code from https://github.com/ESCOMP/CARMA
 ___
 ## README
 
-This project contains files to build version 3.0 of the Community Aerosol and
+This project contains files to build version 4.0 of the Community Aerosol and
 Radiation Model for Atmospheres (CARMA) that is based off of the 2.3 release,
 but has been ported to Fortran 90 and repackaged so that it can be used as a
 cloud and aerosol physics package embedded into GCMs. The project consists of
@@ -28,8 +28,11 @@ rom the root directory:
 ```
   make-carma.csh
 ```
-This will build all the files in a subdirectory called build/carma. To run
-a sample carma model, execute the following command from the root directory:
+This will build all the files in a subdirectory called build/carma. 
+Note: LAPACK external library is required for the CARMA base code 
+(This avoids the used of the copied LU matrix solve routines from copyrighted source)
+
+To run a sample carma model, execute the following command from the root directory:
 ```
   run-carma.csh
 ```

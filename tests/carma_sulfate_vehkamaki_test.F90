@@ -6,7 +6,7 @@
 !! @author  Chuck Bardeen
 !! @version May-2009
 
-program carma_sulfatetest
+program carma_sulfate_vehkamaki_test
   implicit none
 
   write(*,*) "Sulfate Test"

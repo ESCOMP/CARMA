@@ -25,7 +25,7 @@ freezaerl_koop2000.o rhoice_heymsfield2010.o setupvf_heymsfield2010.o \
 freezaerl_mohler2010.o setupvdry.o calcrs.o vaporp_h2o_goff1946.o \
 pheat.o planck.o bhmie.o mie.o vaporp_h2so4_ayers1980.o \
 sulfate_utils.o sulfnuc.o sulfnucrate.o hetnucl.o newstate_calc.o \
-fractal_meanfield_mod.o lusolvec_mod.o adgaquad_types_mod.o adgaquad_mod.o \
+fractal_meanfield_mod.o adgaquad_types_mod.o adgaquad_mod.o \
 sulfhetnucrate.o coremasscheck.o hygroscopicity.o fixcorecol.o
 
 CARMA_DOC = carma_constants_mod.html carma_types_mod.html carma_enums_mod.html \
@@ -45,7 +45,7 @@ freezaerl_koop2000.html rhoice_heymsfield2010.html setupvf_heymsfield2010.html \
 freezaerl_mohler2010.html setupvdry.html calcrs.html  vaporp_h2o_goff1946.html \
 pheat.html planck.html bhmie.html mie.html vaporp_h2so4_ayers1980.html \
 sulfate_utils.html sulfnuc.html sulfnucrate.html hetnucl.html newstate_calc.html \
-fractal_meanfield_mod.html lusolvec_mod.html adgaquad_types_mod.html adgaquad_mod.html \
+fractal_meanfield_mod.html adgaquad_types_mod.html adgaquad_mod.html \
 sulfhetnucrate.html coremasscheck.html hygroscopicity.html fixcorecol.html
 
 carma_precision_mod.o : carma_precision_mod.F90
@@ -79,9 +79,6 @@ carma_mod.o : carma_mod.F90 carma_globaer.h carma_types_mod.mod carma_constants_
 	$(FORTRAN) $(FFLAGS) -c $<
 
 adgaquad_types_mod.o : adgaquad_types_mod.F90 carma_precision_mod.mod
-	$(FORTRAN) $(FFLAGS) -c $<
-
-lusolvec_mod.o : lusolvec_mod.F90 carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
 adgaquad_mod.o : adgaquad_mod.F90 carma_precision_mod.mod adgaquad_types_mod.mod
@@ -159,7 +156,7 @@ growp.o : growp.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types
 gsolve.o : gsolve.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
-fractal_meanfield_mod.o : fractal_meanfield_mod.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod adgaquad_mod.mod lusolvec_mod.mod
+fractal_meanfield_mod.o : fractal_meanfield_mod.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod adgaquad_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
 hetnucl.o : hetnucl.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod
