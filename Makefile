@@ -2,8 +2,7 @@
 # Jamison A. Smith, AKA JAS
 # April 26, 2007
 
-#FORTRAN =	ifort
-FORTRAN =      /opt/local/bin/gfortran-mp-11
+FORTRAN =	ifort
 #FORTRAN =	pgf90
 #FORTRAN =	pathf90
 #FORTRAN =	gfortran
@@ -68,7 +67,7 @@ ifeq ($(FORTRAN),g95)
 endif
 
 # Add options for the gfortran compiler.
-ifeq ($(FORTRAN),/opt/local/bin/gfortran-mp-11)
+ifeq ($(FORTRAN),gfortran)
   FFLAGS  += -ffree-line-length-none
 
   # Debug options.
@@ -172,7 +171,7 @@ KAPPAWETRTEST.exe : $(CARMA_OBJ) carma_kappawetrtest.o carma_testutils.o atmosph
 	$(FORTRAN) $(LDFLAGS) -o KAPPAWETRTEST.exe carma_kappawetrtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SULFATE_CCDON.exe : $(CARMA_OBJ) carma_sulfate_ccdon.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o SULFATE_CCDON.exe carma_sulfate_ccdon.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
-	
+
 # Compile everything.
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
