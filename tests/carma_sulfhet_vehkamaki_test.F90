@@ -6,7 +6,7 @@
 !! @author  Chuck Bardeen
 !! @version June-2013
 
-program carma_sulfhettest
+program carma_sulfhet_vehkamaki_test
   implicit none
 
   write(*,*) "Sulfate Heterogeneous Test"
