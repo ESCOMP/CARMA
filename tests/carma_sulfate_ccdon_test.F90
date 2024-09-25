@@ -6,13 +6,13 @@
 !! @author  Chuck Bardeen
 !! @version May-2009
 
-program carma_sulfate_ccdon
+program carma_sulfate_ccdon_test
   implicit none
 
   write(*,*) "Sulfate Test with ccd on, a dummy test"
 
   call test_sulfate_simple()
-end program
+end program carma_sulfate_ccdon_test
 
 !! Just have one grid box. In that grid box, but an initial concentration
 !! of drops at the smallest size, then allow that to grow using a gas. The
@@ -108,7 +108,7 @@ subroutine test_sulfate_simple()
   real(kind=f)          :: t_orig
 
   ! Open the output text file
-  open(unit=lun,file="carma_sulfate_ccdon.txt",status="unknown")
+  open(unit=lun,file="carma_sulfate_ccdon_test.txt",status="unknown")
 
   ! Allocate the arrays that we need for the model
   allocate(zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &

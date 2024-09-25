@@ -1,5 +1,47 @@
 ===============================================================
 
+Tag name: v4.06
+Originator(s): fvitt
+Date: 5 Sep 2024
+
+LU matrix solve cleanup
+
+M       Makefile
+M       README.md
+M       doc/index.html
+M       source/Makefile
+M       source/base
+M       tests/carma_sulfate_vehkamaki_test.F90
+M       tests/carma_sulfhet_vehkamaki_test.F90
+
+===============================================================
+
+Tag name: v4.05
+Originator(s): fvitt
+Date: 23 Jul 2023
+
+One-line Summary: Use CARMA base tag carma4_05
+
+M       source/base
+
+===============================================================
+
+Tag name: v4.04
+Originator(s): fvitt
+Date: 20 Jun 2023
+
+One-line Summary: Changes for optics updates in CARMA base
+
+M       run-regress.csh
+M       source/base
+M       tests/bench/carma_kappawetrtest.txt
+M       tests/bench/carma_mietest.txt
+M       tests/carma_fractalopticstest.F90
+M       tests/carma_mietest.F90
+M       tests/carma_pheattest.F90
+
+===============================================================
+
 Tag name: v4.03
 Originator(s): fvitt
 Date: 22 Mar 2023
