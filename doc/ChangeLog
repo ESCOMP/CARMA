@@ -1,5 +1,25 @@
 ===============================================================
 
+Tag name: v4.07
+Originator(s): Yunqian Zhu (zywshoon)
+Date: ?? Sep 2024
+
+Add test for convective diffusion coagulation and update bendmarks
+
+M       Makefile
+M       source/base
+M       tests/Makefile
+M       tests/bench/carma_fractalmicrotest.txt
+M       tests/bench/carma_sulfate_vehkamaki_test.txt
+M       tests/bench/carma_sulfatetest.txt
+M       tests/bench/carma_sulfhet_vehkamaki_test.txt
+M       tests/bench/carma_sulfhettest.txt
+
+A       tests/carma_sulfate_ccdon_test.F90
+A       tests/bench/carma_sulfate_ccdon_test.txt
+
+===============================================================
+
 Tag name: v4.06
 Originator(s): fvitt
 Date: 5 Sep 2024
