@@ -1,8 +1,18 @@
 ===============================================================
 
+Tag name: v4.08
+Originator(s): Francis Vitt (fvitt)
+Date: 21 Nov 2024
+
+Use base tag carma4_08 -- added real kind specifiers, misc clean up
+
+M       source/base
+
+===============================================================
+
 Tag name: v4.07
 Originator(s): Yunqian Zhu (zywshoon)
-Date: ?? Sep 2024
+Date: 29 Oct 2024
 
 Add test for convective diffusion coagulation and update bendmarks
 
