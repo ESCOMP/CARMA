@@ -75,6 +75,7 @@ subroutine test_kappawetr_simple()
   real(kind=f), allocatable   :: rlheat(:)
 
   real(kind=f), allocatable   :: mmr(:,:,:)
+  real(kind=f), allocatable   :: adjmmr(:,:,:)
   real(kind=f), allocatable   :: mmr_gas(:,:)
   real(kind=f), allocatable   :: satliq(:,:)
   real(kind=f), allocatable   :: satice(:,:)
@@ -89,13 +90,18 @@ subroutine test_kappawetr_simple()
   real(kind=f)          :: lat
   real(kind=f)          :: lon
 
-  integer               :: i
+  integer               :: i, j
   integer               :: istep
   integer               :: igas
   integer               :: igroup
   integer               :: ielem
   integer               :: ibin
   integer, parameter    :: lun = 42
+
+  integer               :: ienconc
+  integer               :: ncore
+  integer               :: icorelem(NELEM)
+  integer               :: icore
 
   real(kind=f)          :: time
   real(kind=f)          :: rmin_PRSUL, rmrat_PRSUL,rmin_MXAER, rmrat_MXAER
@@ -147,6 +153,7 @@ subroutine test_kappawetr_simple()
   allocate(zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
            t(NZ), rho(NZ), rlheat(NZ))
   allocate(mmr(NZ,NELEM,NBIN))
+  allocate(adjmmr(NZ,NELEM,NBIN))
   allocate(mmr_gas(NZ,NGAS))
   allocate(satliq(NZ,NGAS))
   allocate(satice(NZ,NGAS))
@@ -321,6 +328,10 @@ subroutine test_kappawetr_simple()
     t(1) = t(1)-0.5
     !write(*,*) "t(1)",t(1)
 
+    ! NOTE : Need to reset things here, since the concentration element
+    ! the total mass not the mass of the sulfate.
+    mmr(:,:,:)   = 1.e-10_f
+
     !bin 1 no variation
 
     !bin 2 assume all aerosol close to 1e-10, sulfate veries from 0, 1e-8
@@ -338,6 +349,26 @@ subroutine test_kappawetr_simple()
     !bin 6 assume all aerosol close to 1e-10, dust veries from 0, 1e-8
     mmr(:,I_ELEM_MXDUST,6) = 1.e-12_f*1.5**(istep)
 
+    ! The mmr of the concentration element is supposed to be the mass of the
+    ! total particle, not the mass of the sulfate as Mike has it configured here.
+    !
+    ! Recalculate the mass of the concentration element
+    adjmmr(:,:,:) = mmr(:,:,:)
+    do j = 1, NELEM
+
+       call CARMAELEMENT_Get(carma, j, rc, igroup=igroup)
+       call CARMAGROUP_Get(carma, igroup, rc, ienconc=ienconc, ncore=ncore, icorelem=icorelem)
+
+       if ((j .eq. ienconc) .and. (ncore .gt. 0)) then
+          do i = 1, NBIN
+             do icore = 1, ncore
+                adjmmr(1,j,i) = adjmmr(1,j,i) + mmr(1,icorelem(icore),i)
+             end do
+          end do
+       end if
+
+    end do
+
     ! Create a CARMASTATE for this column.
     call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
                           I_CART, lat, lon, &
@@ -350,7 +381,7 @@ subroutine test_kappawetr_simple()
       ! Send the bin mmrs to CARMA
       do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_SetBin(cstate, ielem, ibin, mmr(:,ielem,ibin), rc)
+         call CARMASTATE_SetBin(cstate, ielem, ibin, adjmmr(:,ielem,ibin), rc)
          if (rc /=0) stop "    *** CARMASTATE_SetBin FAILED ***"
         end do
       end do
