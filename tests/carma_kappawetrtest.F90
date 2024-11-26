@@ -328,10 +328,6 @@ subroutine test_kappawetr_simple()
     t(1) = t(1)-0.5
     !write(*,*) "t(1)",t(1)
 
-    ! NOTE : Need to reset things here, since the concentration element
-    ! the total mass not the mass of the sulfate.
-    mmr(:,:,:)   = 1.e-10_f
-
     !bin 1 no variation
 
     !bin 2 assume all aerosol close to 1e-10, sulfate veries from 0, 1e-8
@@ -349,26 +345,6 @@ subroutine test_kappawetr_simple()
     !bin 6 assume all aerosol close to 1e-10, dust veries from 0, 1e-8
     mmr(:,I_ELEM_MXDUST,6) = 1.e-12_f*1.5**(istep)
 
-    ! The mmr of the concentration element is supposed to be the mass of the
-    ! total particle, not the mass of the sulfate as Mike has it configured here.
-    !
-    ! Recalculate the mass of the concentration element
-    adjmmr(:,:,:) = mmr(:,:,:)
-    do j = 1, NELEM
-
-       call CARMAELEMENT_Get(carma, j, rc, igroup=igroup)
-       call CARMAGROUP_Get(carma, igroup, rc, ienconc=ienconc, ncore=ncore, icorelem=icorelem)
-
-       if ((j .eq. ienconc) .and. (ncore .gt. 0)) then
-          do i = 1, NBIN
-             do icore = 1, ncore
-                adjmmr(1,j,i) = adjmmr(1,j,i) + mmr(1,icorelem(icore),i)
-             end do
-          end do
-       end if
-
-    end do
-
     ! Create a CARMASTATE for this column.
     call CARMASTATE_Create(cstate, carma_ptr, time, dtime, NZ, &
                           I_CART, lat, lon, &
@@ -381,7 +357,7 @@ subroutine test_kappawetr_simple()
       ! Send the bin mmrs to CARMA
       do ielem = 1, NELEM
         do ibin = 1, NBIN
-         call CARMASTATE_SetBin(cstate, ielem, ibin, adjmmr(:,ielem,ibin), rc)
+         call CARMASTATE_SetBin(cstate, ielem, ibin, mmr(:,ielem,ibin), rc)
          if (rc /=0) stop "    *** CARMASTATE_SetBin FAILED ***"
         end do
       end do
@@ -426,9 +402,33 @@ subroutine test_kappawetr_simple()
     write(lun,'(f12.0,f12.3)') istep*dtime,t(1)
 
 
+    ! NOTE: This section adjusts the mmr for the change in the mmr of the
+    ! concentration element. Before it was the total mass of the particle, but
+    ! now it is just the mass of the concentration element. This allows the test
+    ! to be comapred with the old benchmarks.
+    !
+    ! NOTE: Once the tests have been approved, this section could be removed and
+    ! the benchmarks regenerated with the new values for the concentration
+    ! elements. THe plotting routines (xxx.pro) might also need to be adjust
+    ! for the new defintion of the concentration element.
+    adjmmr(:,:,:) = mmr(:,:,:)
+    do j = 1, NELEM
+
+      call CARMAELEMENT_Get(carma, j, rc, igroup=igroup)
+      call CARMAGROUP_Get(carma, igroup, rc, ienconc=ienconc, ncore=ncore, icorelem=icorelem)
+
+      if ((j .eq. ienconc) .and. (ncore .gt. 0)) then
+        do i = 1, NBIN
+          do icore = 1, ncore
+            adjmmr(1,j,i) = adjmmr(1,j,i) + mmr(1,icorelem(icore),i)
+          end do
+        end do
+      end if
+    end do
+
     do ielem = 2, NELEM
       do ibin = 1, 6
-        write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,ielem,ibin))
+        write(lun,'(2i4,e12.3)') ielem, ibin, real(adjmmr(1,ielem,ibin))
       end do
     end do
 
