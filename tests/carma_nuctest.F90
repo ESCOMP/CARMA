@@ -88,6 +88,7 @@ subroutine test_nuc_ttl()
   real(kind=f), allocatable   :: rho(:,:,:)
 
   real(kind=f), allocatable   :: mmr(:,:,:,:,:)
+  real(kind=f), allocatable   :: adjmmr(:,:,:,:,:)
   real(kind=f), allocatable   :: mmr_gas(:,:,:,:)
   real(kind=f), allocatable   :: satliq(:,:,:,:)
   real(kind=f), allocatable   :: satice(:,:,:,:)
@@ -99,7 +100,7 @@ subroutine test_nuc_ttl()
   real(kind=f), allocatable          :: lat(:,:)
   real(kind=f), allocatable          :: lon(:,:)
 
-  integer               :: i
+  integer               :: i, j
   integer               :: ix
   integer               :: iy
   integer               :: ixy
@@ -110,6 +111,11 @@ subroutine test_nuc_ttl()
   integer               :: ibin
   integer               :: ithread
   integer, parameter    :: lun = 42
+
+  integer               :: ienconc
+  integer               :: ncore
+  integer               :: icorelem(NELEM)
+  integer               :: icore
 
   real(kind=f)          :: time
   real(kind=f)          :: rmin, rmrat
@@ -128,6 +134,7 @@ subroutine test_nuc_ttl()
   allocate(zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
            t(NZ,NY,NX), rho(NZ,NY,NX))
   allocate(mmr(NZ,NY,NX,NELEM,NBIN))
+  allocate(adjmmr(NZ,NY,NX,NELEM,NBIN))
   allocate(mmr_gas(NZ,NY,NX,NGAS))
   allocate(satliq(NZ,NY,NX,NGAS))
   allocate(satice(NZ,NY,NX,NGAS))
@@ -369,11 +376,35 @@ subroutine test_nuc_ttl()
 
     enddo
 
+    ! NOTE: This section adjusts the mmr for the change in the mmr of the
+    ! concentration element. Before it was the total mass of the particle, but
+    ! now it is just the mass of the concentration element. This allows the test
+    ! to be comapred with the old benchmarks.
+    !
+    ! NOTE: Once the tests have been approved, this section could be removed and
+    ! the benchmarks regenerated with the new values for the concentration
+    ! elements. THe plotting routines (xxx.pro) might also need to be adjust
+    ! for the new defintion of the concentration element.
+    adjmmr(:,:,:,:,:) = mmr(:,:,:,:,:)
+    do j = 1, NELEM
+
+      call CARMAELEMENT_Get(carma, j, rc, igroup=igroup)
+      call CARMAGROUP_Get(carma, igroup, rc, ienconc=ienconc, ncore=ncore, icorelem=icorelem)
+
+      if ((j .eq. ienconc) .and. (ncore .gt. 0)) then
+        do i = 1, NBIN
+          do icore = 1, ncore
+            adjmmr(1,NY,NX,j,i) = adjmmr(1,NY,NX,j,i) + mmr(1,NX,NY,icorelem(icore),i)
+          end do
+        end do
+      end if
+    end do
+
     ! Write output for the falltest
     write(lun,'(f12.0)') istep*dtime
     do ielem = 1, NELEM
       do ibin = 1, NBIN
-        write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,NY,NX,ielem,ibin))
+        write(lun,'(2i4,e12.3)') ielem, ibin, real(adjmmr(1,NY,NX,ielem,ibin))
       end do
     end do
 
