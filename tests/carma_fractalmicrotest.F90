@@ -172,7 +172,7 @@ subroutine test_fractalmicro()
   ! Write output for the test
 
   if (irun .EQ. 1) then
-    write(lun,*) NBIN, RMON_in
+    write(lun,'(i4, "  ", e12.5)') NBIN, RMON_in
 
     do ibin = 1, NBIN
       write(lun,'(i4,f4.1,e10.3, 2f10.5,e10.3)') ibin, df_in(ibin),r(ibin) , rrat(ibin), rprat(ibin), nmon(ibin)
