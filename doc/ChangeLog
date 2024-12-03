@@ -1,5 +1,41 @@
 ===============================================================
 
+Tag name: v4.09
+Originator(s): Francis Vitt (fvitt)
+Date: 3 Dec 2024
+
+Add concentration element test and other changes needed for the
+concentration element updates in base
+
+Chuck's corrections to stand-alone CARMA tests
+
+Update regression test benchmark files
+
+Use base tag carma4_09
+
+M       Makefile
+M       tests/Makefile
+
+M       tests/carma_bc2gtest.F90
+M       tests/carma_bcoctest.F90
+M       tests/carma_fractalmicrotest.F90
+M       tests/carma_growtest.F90
+M       tests/carma_kappawetrtest.F90
+M       tests/carma_nuc2test.F90
+M       tests/carma_nuctest.F90
+M       tests/carma_sulfhet_vehkamaki_test.F90
+M       tests/carma_sulfhettest.F90
+
+M       tests/bench/carma_fractalmicrotest.txt
+M       tests/bench/carma_kappawetrtest.txt
+
+A       tests/bench/carma_cetest.txt
+A       tests/carma_cetest.F90
+
+M       source/base
+
+===============================================================
+
 Tag name: v4.08
 Originator(s): Francis Vitt (fvitt)
 Date: 21 Nov 2024

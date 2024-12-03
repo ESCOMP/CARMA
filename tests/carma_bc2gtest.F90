@@ -64,6 +64,7 @@ subroutine test_coagulation_bc2g()
   real(kind=f), allocatable   :: rhoa(:,:,:)
 
   real(kind=f), allocatable, target  :: mmr(:,:,:,:,:)
+  real(kind=f), allocatable, target  :: adjmmr(:,:,:,:,:)
 
   real(kind=f), allocatable          :: lat(:,:)
   real(kind=f), allocatable          :: lon(:,:)
@@ -77,6 +78,12 @@ subroutine test_coagulation_bc2g()
   integer               :: ibin
   integer               :: ithread
   integer, parameter    :: lun = 42
+
+  integer               :: igroup
+  integer               :: ienconc
+  integer               :: ncore
+  integer               :: icorelem(NELEM)
+  integer               :: icore
 
   real(kind=f)          :: time
   real(kind=f)          :: rmin, rmrat, rho, ck0
@@ -95,6 +102,7 @@ subroutine test_coagulation_bc2g()
   allocate(zc(NZ,NY,NX), zl(NZP1,NY,NX), p(NZ,NY,NX), pl(NZP1,NY,NX), &
            t(NZ,NY,NX), rhoa(NZ,NY,NX))
   allocate(mmr(NZ,NY,NX,NELEM,NBIN))
+  allocate(adjmmr(NZ,NY,NX,NELEM,NBIN))
   allocate(lat(NY,NX), lon(NY,NX))
 
   ! Define the particle-grid extent of the CARMA test
@@ -308,11 +316,35 @@ subroutine test_coagulation_bc2g()
     write(lun,'(f12.0)') istep*dtime
     rhoa(:,:,:) = p(:,:,:)/287._f/t(:,:,:)
 
+    ! NOTE: This section adjusts the mmr for the change in the mmr of the
+    ! concentration element. Before it was the total mass of the particle, but
+    ! now it is just the mass of the concentration element. This allows the test
+    ! to be comapred with the old benchmarks.
+    !
+    ! NOTE: Once the tests have been approved, this section could be removed and
+    ! the benchmarks regenerated with the new values for the concentration
+    ! elements. THe plotting routines (xxx.pro) might also need to be adjust
+    ! for the new defintion of the concentration element.
+    adjmmr(:,:,:,:,:) = mmr(:,:,:,:,:)
+    do j = 1, NELEM
+
+      call CARMAELEMENT_Get(carma, j, rc, igroup=igroup)
+      call CARMAGROUP_Get(carma, igroup, rc, ienconc=ienconc, ncore=ncore, icorelem=icorelem)
+
+      if ((j .eq. ienconc) .and. (ncore .gt. 0)) then
+        do i = 1, NBIN
+          do icore = 1, ncore
+            adjmmr(1,NY,NX,j,i) = adjmmr(1,NY,NX,j,i) + mmr(1,NX,NY,icorelem(icore),i)
+          end do
+        end do
+      end if
+    end do
+
     do j = 1, NELEM
      do i = 1, NBIN
       write(lun,'(i3,1(1x,e12.5))') &
        i, &
-       mmr(1,NY,NX,j,i)*rhoa(1,NY,NX)*1e-6_f*1e3_f
+       adjmmr(1,NY,NX,j,i)*rhoa(1,NY,NX)*1e-6_f*1e3_f
      end do
     end do
 

@@ -36,6 +36,9 @@ carma_bcoctest.o : carma_bcoctest.F90 atmosphere_mod.mod carma_mod.mod carma_con
 carma_bc2gtest.o : carma_bc2gtest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
+carma_cetest.o : carma_cetest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
 carma_coagtest.o : carma_coagtest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
