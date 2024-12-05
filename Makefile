@@ -131,6 +131,8 @@ BCOCTEST.exe : $(CARMA_OBJ) carma_bcoctest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o BCOCTEST.exe carma_bcoctest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 BC2GTEST.exe : $(CARMA_OBJ) carma_bc2gtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o BC2GTEST.exe carma_bc2gtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+CETEST.exe : $(CARMA_OBJ) carma_cetest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(LDFLAGS) -o CETEST.exe carma_cetest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 GROWTEST.exe : $(CARMA_OBJ) carma_growtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o GROWTEST.exe carma_growtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 GROWCLRTEST.exe : $(CARMA_OBJ) carma_growclrtest.o carma_testutils.o atmosphere_mod.o
@@ -173,7 +175,7 @@ SULFATE_CCDON_TEST.exe : $(CARMA_OBJ) carma_sulfate_ccdon_test.o carma_testutils
 	$(FORTRAN) $(LDFLAGS) -o SULFATE_CCDON_TEST.exe carma_sulfate_ccdon_test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe GROWTEST.exe INITTEST.exe \
+all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
 SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
 SULFATETEST.exe NUC2TEST.exe GROWINTEST.exe GROWCLRTEST.exe FRACTALMICROTEST.exe \

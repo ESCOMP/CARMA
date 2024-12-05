@@ -77,6 +77,7 @@ subroutine test_grow_simple()
   real(kind=f), allocatable   :: rlheat(:)
 
   real(kind=f), allocatable   :: mmr(:,:,:)
+  real(kind=f), allocatable   :: adjmmr(:,:,:)
   real(kind=f), allocatable   :: mmr_gas(:,:)
   real(kind=f), allocatable   :: satliq(:,:)
   real(kind=f), allocatable   :: satice(:,:)
@@ -87,13 +88,18 @@ subroutine test_grow_simple()
   real(kind=f)          :: lat
   real(kind=f)          :: lon
 
-  integer               :: i
+  integer               :: i, j
   integer               :: istep
   integer               :: igas
   integer               :: igroup
   integer               :: ielem
   integer               :: ibin
   integer, parameter    :: lun = 42
+
+  integer               :: ienconc
+  integer               :: ncore
+  integer               :: icorelem(NELEM)
+  integer               :: icore
 
   real(kind=f)          :: time
   real(kind=f)          :: rmin, rmrat
@@ -108,6 +114,7 @@ subroutine test_grow_simple()
   allocate(zc(NZ), zl(NZP1), p(NZ), pl(NZP1), &
            t(NZ), rho(NZ), rlheat(NZ))
   allocate(mmr(NZ,NELEM,NBIN))
+  allocate(adjmmr(NZ,NELEM,NBIN))
   allocate(mmr_gas(NZ,NGAS))
   allocate(satliq(NZ,NGAS))
   allocate(satice(NZ,NGAS))
@@ -285,9 +292,34 @@ subroutine test_grow_simple()
 
     write(lun,'(2g16.5)') t(1) - t_orig, rlheat(1)
 
+    ! NOTE: This section adjusts the mmr for the change in the mmr of the
+    ! concentration element. Before it was the total mass of the particle, but
+    ! now it is just the mass of the concentration element. This allows the test
+    ! to be comapred with the old benchmarks.
+    !
+    ! NOTE: Once the tests have been approved, this section could be removed and
+    ! the benchmarks regenerated with the new values for the concentration
+    ! elements. THe plotting routines (xxx.pro) might also need to be adjust
+    ! for the new defintion of the concentration element.
+    adjmmr(:,:,:) = mmr(:,:,:)
+    do j = 1, NELEM
+
+      call CARMAELEMENT_Get(carma, j, rc, igroup=igroup)
+      call CARMAGROUP_Get(carma, igroup, rc, ienconc=ienconc, ncore=ncore, icorelem=icorelem)
+
+      if ((j .eq. ienconc) .and. (ncore .gt. 0)) then
+        do i = 1, NBIN
+          do icore = 1, ncore
+            adjmmr(1,j,i) = adjmmr(1,j,i) + mmr(1,icorelem(icore),i)
+          end do
+        end do
+      end if
+
+    end do
+
     do ielem = 1, NELEM
       do ibin = 1, NBIN
-        write(lun,'(2i4,e12.3)') ielem, ibin, real(mmr(1,ielem,ibin))
+        write(lun,'(2i4,e12.3)') ielem, ibin, real(adjmmr(1,ielem,ibin))
       end do
     end do
 
