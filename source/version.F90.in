@@ -1,0 +1,25 @@
+! Copyright (C) 2025 University Corporation for Atmospheric Research
+! SPDX-License-Identifier: Apache-2.0
+!
+module carma_version
+  implicit none
+
+  private
+  public :: get_carma_version
+
+contains
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  function get_carma_version( ) result(version)
+    ! Returns the CARMA version that is being built
+
+    character(:), allocatable :: version
+    
+    version = "@carma_VERSION@"
+
+  end function get_carma_version
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+end module carma_version
