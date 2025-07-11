@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 project(
   carma
   VERSION 4.0.0
-  LANGUAGES Fortran
+  LANGUAGES Fortran CXX C
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -47,4 +47,12 @@ add_subdirectory(source)
 # Only include pacakaging if we are the top-level project
 if(PROJECT_IS_TOP_LEVEL)
   add_subdirectory(packaging)
+endif()
+
+################################################################################
+# Tests
+
+if(PROJECT_IS_TOP_LEVEL)
+  enable_testing()
+  add_subdirectory(tests)
 endif()

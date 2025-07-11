@@ -4,6 +4,7 @@ RUN dnf -y update \
     && dnf -y install \
         cmake \
         gcc \
+        gcc-c++ \
         gcc-fortran \
         gdb \
         git \

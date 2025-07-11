@@ -28,7 +28,7 @@ target_link_libraries(
 )
 
 add_library(carma $<TARGET_OBJECTS:carma_object>)
-add_library(carma::carma ALIAS carma)
+add_library(musica::carma ALIAS carma)
 
 if(NOT BUILD_SHARED_LIBS)
   set_target_properties(carma_object PROPERTIES POSITION_INDEPENDENT_CODE ON)
