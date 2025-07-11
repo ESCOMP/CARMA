@@ -24,6 +24,7 @@ target_link_libraries(
     PkgConfig::netcdfc
     ${LAPACK_LIBRARIES}
     LAPACK::LAPACK
+    ${BLAS_LIBRARIES}
 )
 
 add_library(carma $<TARGET_OBJECTS:carma_object>)

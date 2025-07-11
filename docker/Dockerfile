@@ -24,7 +24,7 @@ RUN mkdir build \
       && cmake -D CMAKE_BUILD_TYPE=release \
                -D CARMA_INSTALL_INCLUDE_DIR=/usr/local/include \
                -D CARMA_INSTALL_MOD_DIR=/usr/local/include \
-               .. \
+               /carma \
       && make install -j 8
 
 WORKDIR /build

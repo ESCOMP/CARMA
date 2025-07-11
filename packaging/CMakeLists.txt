@@ -3,7 +3,7 @@ include(CMakePackageConfigHelpers)
 # install the binary and static library
 install(
   TARGETS 
-   carma carma carma_object
+   carma carma_object
   EXPORT 
     carma_Exports
   LIBRARY DESTINATION ${INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}

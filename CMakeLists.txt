@@ -39,7 +39,7 @@ include(cmake/dependencies.cmake)
 ################################################################################
 # CAMRA targets
 
-add_subdirectory(src)
+add_subdirectory(source)
 
 ################################################################################
 # Packaging
