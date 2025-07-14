@@ -4,19 +4,11 @@ include(FetchContent)
 ##################################################################################
 # LAPACK
 
-# Try to find BLAS first, then LAPACK, then LAPACKE
+# Try to find BLAS first, then LAPACK
 # Use shared libraries preference to avoid static library issues
 set(BLA_STATIC OFF)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-
-# For LAPACKE, try pkg-config first as it's more reliable
-if(UNIX AND NOT APPLE)
-  pkg_check_modules(LAPACKE lapacke)
-  if(NOT LAPACKE_FOUND)
-    find_package(LAPACKE REQUIRED)
-  endif()
-endif()
 
 # ##############################################################################
 # Memory check
