@@ -15,7 +15,7 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-message ( STATUS "CMake build configuration for tuv-x(${CMAKE_BUILD_TYPE}) ${PROJECT_VERSION}" )
+message ( STATUS "CMake build configuration for carma(${CMAKE_BUILD_TYPE}) ${PROJECT_VERSION}" )
 
 ################################################################################
 # Project wide setup options

@@ -11,9 +11,11 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 # For LAPACKE, try pkg-config first as it's more reliable
-pkg_check_modules(LAPACKE lapacke)
-if(NOT LAPACKE_FOUND)
-  find_package(LAPACKE REQUIRED)
+if(UNIX AND NOT APPLE)
+  pkg_check_modules(LAPACKE lapacke)
+  if(NOT LAPACKE_FOUND)
+    find_package(LAPACKE REQUIRED)
+  endif()
 endif()
 
 # ##############################################################################
