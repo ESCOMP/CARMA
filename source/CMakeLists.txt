@@ -156,4 +156,5 @@ target_sources(
     base/wetr.F90
     base/zeromicro.F90
     ${CMAKE_CURRENT_BINARY_DIR}/version.F90
+    ../tests/atmosphere_mod.F90
 )
