@@ -22,11 +22,11 @@ if(CARMA_ENABLE_MEMCHECK)
           /usr/lib64/openmpi/share/openmpi /usr/share)
   if(MEMCHECK_SUPPRESS_FILE)
     set(MEMCHECK_SUPPRESS
-        "--suppressions=${PROJECT_SOURCE_DIR}/test/valgrind.supp --suppressions=${MEMCHECK_SUPPRESS_FILE}"
+        "--suppressions=${PROJECT_SOURCE_DIR}/tests/valgrind.supp --suppressions=${MEMCHECK_SUPPRESS_FILE}"
     )
   else()
     set(MEMCHECK_SUPPRESS
-        "--suppressions=${PROJECT_SOURCE_DIR}/test/valgrind.supp")
+        "--suppressions=${PROJECT_SOURCE_DIR}/tests/valgrind.supp")
   endif()
 endif()
 
