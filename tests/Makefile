@@ -13,7 +13,8 @@ carma_pheattest.o carma_sigmadrydeptest.o carma_sigmafalltest.o carma_swelltest.
 carma_vdiftest.o carma_test.o atmosphere_mod.o carma_scfalltest.o carma_growsubtest.o \
 carma_growintest.o carma_fractalmicrotest.o carma_fractalopticstest.o carma_sulfhettest.o \
 carma_sulfate_vehkamaki_test.o carma_sulfhet_vehkamaki_test.o \
-carma_sulfatetest.o carma_sulfate_ccdon_test.o
+carma_sulfatetest.o carma_sulfate_ccdon_test.o\
+carma_sulfatetest_2nc.o carma_fractalopticstest_2nc.o carma_aluminumtest_2nc.o
 
 TEST_DOC = carma_bcoctest.html carma_bc2gtest.html carma_coagtest.html carma_drydeptest.html \
 carma_falltest.html carma_growtest.html carma_inittest.html carma_kappawetrtest.html \
@@ -22,12 +23,25 @@ carma_pheattest.html carma_sigmadrydeptest.html carma_sigmafalltest.html carma_s
 carma_vdiftest.html carma_test.html atmosphere_mod.html carma_scfalltest.html carma_growsubtest.html \
 carma_growintest.html carma_fractalmicrotest.html carma_fractalopticstest.html carma_sulfhettest.html \
 carma_sulfate_vehkamaki_test.html carma_sulfhet_vehkamaki_test.html \
-carma_sulfatetest.html carma_sulfate_ccdon_test.html
+carma_sulfatetest.html carma_sulfate_ccdon_test.html\
+carma_sulfatetest_2nc.html carma_fractalopticstest_2nc.html carma_aluminumtest_2nc.html
 
 atmosphere_mod.o : atmosphere_mod.F90
 	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_testutils.o : carma_testutils.F90
+	$(FORTRAN) $(FFLAGS) -c $<
+
+ncio_mod.o : ncio_mod.F90
+	$(FORTRAN) $(FFLAGS) -c $<
+
+nc_types_mod.o : nc_types_mod.F90
+	$(FORTRAN) $(FFLAGS) -c $<
+
+test2nc_mod.o : test2nc_mod.F90 ncio_mod.mod nc_types_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carmadiags_mod.o : carmadiags_mod.F90 ncio_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_bcoctest.o : carma_bcoctest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
@@ -115,4 +129,13 @@ carma_test.o : carma_test.F90 atmosphere_mod.mod carma_mod.mod carma_constants_m
 	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_vdiftest.o : carma_vdiftest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_sulfatetest_2nc.o : carma_sulfatetest_2nc.F90 atmosphere_mod.mod ncio_mod.mod test2nc_mod.mod carmadiags_mod.mod nc_types_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_fractalopticstest_2nc.o : carma_fractalopticstest_2nc.F90 carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod ncio_mod.mod test2nc_mod.mod nc_types_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_aluminumtest_2nc.o : carma_aluminumtest_2nc.F90 atmosphere_mod.mod ncio_mod.mod test2nc_mod.mod carmadiags_mod.mod nc_types_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
