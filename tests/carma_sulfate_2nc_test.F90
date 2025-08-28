@@ -3,16 +3,14 @@
 !! file (carma_swelltest.txt) is generated.  The text file can
 !! be read with the IDL procedure read_swelltest.pro.
 !!
-!! @author  Chuck Bardeen
-!! @version May-2009
 
-program carma_sulfatetest
+program carma_sulfate_2nc_test
   implicit none
 
   write(*,*) "Sulfate Test"
 
   call test_sulfate_simple()
-end program
+end program carma_sulfate_2nc_test
 
 !! Just have one grid box. In that grid box, but an initial concentration
 !! of drops at the smallest size, then allow that to grow using a gas. The
@@ -28,12 +26,12 @@ subroutine test_sulfate_simple()
   use carmastate_mod
   use carma_mod
   use atmosphere_mod
-  use nc_types_mod 
-  use test2nc_mod  
+  use nc_types_mod
+  use test2nc_mod
   use carmadiags_mod
   implicit none
 
-  ! Model dimension 
+  ! Model dimension
   integer, parameter        :: NZ           = 1
   integer, parameter        :: NY           = 1 ! lat
   integer, parameter        :: NX           = 1 ! lon
@@ -49,8 +47,8 @@ subroutine test_sulfate_simple()
   ! Model Grid
   real(kind=f)          :: lat(NY)
   real(kind=f)          :: lon(NX)
-  real(kind=f)          :: time 
-  integer               :: bins(NBIN) 
+  real(kind=f)          :: time
+  integer               :: bins(NBIN)
 
   ! Different sizes for time steps provide different results
   ! because of the satbility issues.
@@ -73,8 +71,8 @@ subroutine test_sulfate_simple()
   integer               :: lastsub = 0
   real(kind=f)          :: nretries
   real(kind=f)          :: lastret = 0._f
-  
-  ! Indexes for iterations  
+
+  ! Indexes for iterations
   integer               :: i
   integer               :: iy = 1
   integer               :: ix = 1
@@ -92,29 +90,29 @@ subroutine test_sulfate_simple()
 
   ! Input for Group/element
   integer, parameter        :: I_H2SO4  = 1
-  real(kind=f)              :: rmin = 2.e-8_f 
+  real(kind=f)              :: rmin = 2.e-8_f
   real(kind=f)              :: rmrat = 2._f
   real(kind=f)              :: RHO_SULFATE = 1.923_f  ! dry density of sulfate particles (g/cm3)
-  
+
   ! Output for Atmospheric variables
-  real(kind=f) :: zc(NZ), zl(NZP1), p(NZ), pl(NZP1), t(NZ), rhoa(NZ), rlheat(NZ), deltaT(NZ) 
+  real(kind=f) :: zc(NZ), zl(NZP1), p(NZ), pl(NZP1), t(NZ), rhoa(NZ), rlheat(NZ), deltaT(NZ)
 
   ! Output for Gas variables
   real(kind=f) :: mmr_gas(NZ,NGAS), satliq(NZ,NGAS), satice(NZ,NGAS)
   real(kind=f) :: ei(NZ,NGAS), el(NZ,NGAS), wt(NZ,NGAS)
-  
+
   ! Output for Group variables
   real(kind=f) :: r(NBIN, NGROUP), rlow(NBIN,NGROUP), rup(NBIN,NGROUP), dr(NBIN,NGROUP)
-  real(kind=f) :: arat(NBIN, NGROUP), rrat(NBIN, NGROUP), rprat(NBIN, NGROUP) 
+  real(kind=f) :: arat(NBIN, NGROUP), rrat(NBIN, NGROUP), rprat(NBIN, NGROUP)
   real(kind=f) :: rmass(NBIN,NGROUP), dm(NBIN,NGROUP), vol(NBIN,NGROUP)
-  real(kind=f) :: df(NBIN,NGROUP), nmon(NBIN,NGROUP) 
-       
+  real(kind=f) :: df(NBIN,NGROUP), nmon(NBIN,NGROUP)
+
   real(kind=f) :: nd(NZ, NGROUP), ad(NZ, NGROUP), md(NZ, NGROUP), re(NZ, NGROUP), rew(NZ, NGROUP)
   real(kind=f) :: rm(NZ, NGROUP), jn(NZ, NGROUP), mr(NZ, NGROUP), pa(NZ, NGROUP)
   real(kind=f) :: ar(NZ, NGROUP), vm(NZ, NGROUP), ex(NZ, NGROUP), od(NZ, NGROUP)
   real(kind=f) :: wr_bin(NZ, NGROUP, NBIN), nd_bin(NZ, NGROUP, NBIN), ro_bin(NZ, NGROUP, NBIN)
   real(kind=f) :: mr_bin(NZ, NGROUP, NBIN), vd_bin(NZ, NGROUP, NBIN)
-  
+
   ! Output for Element variables
   real(kind=f) :: mr_elm_bin(NZ, NELEM, NBIN)
 
@@ -126,8 +124,8 @@ subroutine test_sulfate_simple()
   integer           :: date = 00010101
   real(kind=f)      :: fill_value =-9.255963134931783e+061_f
 
-  ! Working variables 
-  character(len=80) :: sname,sname_gas(NGAS),sname_elm(NELEM), sname_grp(NGROUP)  
+  ! Working variables
+  character(len=80) :: sname,sname_gas(NGAS),sname_elm(NELEM), sname_grp(NGROUP)
   real(kind=f)      :: t_orig(NZ)
   real(kind=f)      :: new_gas(NZ, NGAS) ! If you want to increment mmr_gas
   real(kind=f)      :: mmr(NZ, NELEM, NBIN)
@@ -146,7 +144,7 @@ subroutine test_sulfate_simple()
           rc, irhswell=I_WTPCT_H2SO4, do_drydep=.true., do_mie=.false., &
                         shortname="PRSUL", is_sulfate=.true.)
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
-   
+
   ! Define the elements
   call CARMAELEMENT_Create(carma, 1, 1, "Sulfate", RHO_SULFATE, I_VOLATILE, I_H2SO4, rc, shortname="SULF")
   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
@@ -198,18 +196,18 @@ subroutine test_sulfate_simple()
   end do
   call GetStandardAtmosphere(zl, p=pl)
 
- 
+
   do ibin = 1,NBIN
-        bins(ibin) = ibin  
+        bins(ibin) = ibin
   end do
 
- 
+
    ! p, T, z, mmrgas
    ! 90 hPa, 190 K, 17 km, H2O mmr 3.5e-6 g/g
    p(1)         = 90._f * 100._f ! hPa
-   zc(1)        = 17000._f       ! m       
+   zc(1)        = 17000._f       ! m
    t(1)         = 250._f         ! K
-   t_orig = t(1)  
+   t_orig = t(1)
    zl(1)        = zc(1) - deltaz
    zl(2)        = zc(1) + deltaz
    rhoa(1)       = (p(1) * 10._f) / (R_AIR * t(1)) * (1e-3_f * 1e6_f)
@@ -220,7 +218,7 @@ subroutine test_sulfate_simple()
    mmr_gas(:,1)  = 100.e-6_f     ! H2O g/g
    mmr_gas(:,2)  = 0.1e-9_f * (98._f / 29._f)    ! H2SO4
    mmr(:,:,:)   = 0._f ! Initial element concentration
-  
+
    ! ---------------- Create a NETCDF file  --------------------
    ! Get flags for definition/creation of variables in the netcdf file
    ! Flags are all set to FALSE. Set to TRUE the flag of the variable you want to save
@@ -243,10 +241,10 @@ subroutine test_sulfate_simple()
            ncflgs%f_nc_gas(igas)%f_nc_el  = .TRUE.
            ncflgs%f_nc_gas(igas)%f_nc_wt  = .TRUE.
   end do
-  
+
   ! ELEM flags
   do ielem = 1, NELEM
-           ncflgs%f_nc_elem(ielem)%f_nc_mr_elm_bin = .TRUE. 
+           ncflgs%f_nc_elem(ielem)%f_nc_mr_elm_bin = .TRUE.
   end do
 
   ! GROUP flags
@@ -255,7 +253,7 @@ subroutine test_sulfate_simple()
            ncflgs%f_nc_group(igroup)%f_nc_rmass   = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_vol     = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_dr      = .TRUE.
-           ncflgs%f_nc_group(igroup)%f_nc_dm      = .TRUE. 
+           ncflgs%f_nc_group(igroup)%f_nc_dm      = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_rup     = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_rlw     = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_rrat    = .TRUE.
@@ -274,7 +272,7 @@ subroutine test_sulfate_simple()
            ncflgs%f_nc_group(igroup)%f_nc_mr    = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_pa    = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_ar    = .TRUE.
-           ncflgs%f_nc_group(igroup)%f_nc_vm    = .TRUE. 
+           ncflgs%f_nc_group(igroup)%f_nc_vm    = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_exvis = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_odvis = .TRUE.
 
@@ -288,30 +286,30 @@ subroutine test_sulfate_simple()
 
 
   ! Get variables for nc definition
-  do igas = 1, NGAS  
+  do igas = 1, NGAS
           call CARMAGAS_Get(carma, igas, rc, shortname=sname_gas(igas))
   end do
-  
+
   do ielem = 1, NELEM
           call CARMAELEMENT_Get(carma, ielem, rc, shortname=sname_elm(ielem))
   end do
-  
+
   do igroup = 1, NGROUP
         call CARMAGROUP_Get(carma, igroup, rc, shortname=sname_grp(igroup), &
-                r=r(:,igroup), rlow=rlow(:,igroup), rup=rup(:,igroup), dr=dr(:,igroup), & 
+                r=r(:,igroup), rlow=rlow(:,igroup), rup=rup(:,igroup), dr=dr(:,igroup), &
                 arat=arat(:,igroup), rrat=rrat(:,igroup), rprat=rprat(:,igroup), &
-                rmass=rmass(:,igroup), dm=dm(:,igroup), vol=vol(:,igroup), & 
-                df=df(:,igroup), nmon=nmon(:,igroup)) 
+                rmass=rmass(:,igroup), dm=dm(:,igroup), vol=vol(:,igroup), &
+                df=df(:,igroup), nmon=nmon(:,igroup))
   end do
 
-  
+
   ! Creation of ncfile and variable definition
   call ncdef(ncflgs,filename_out, fill_value, NZ, NY, NX, NBIN, NGAS, NELEM, NGROUP, &
          sname_gas(:), sname_elm(:), sname_grp(:), &
          outid)
 
-  ! Fill nc variables that are not time dependent (out of the loop) 
-  call ncwrt_olp(ncflgs, outid, NZ, NY, NX, NGAS, NELEM, NGROUP, NBIN, &  
+  ! Fill nc variables that are not time dependent (out of the loop)
+  call ncwrt_olp(ncflgs, outid, NZ, NY, NX, NGAS, NELEM, NGROUP, NBIN, &
           p(:), lat, lon, bins, sname_grp, &
           r=r(:,:), rmass=rmass(:,:), vol=vol(:,:), &
           dr=dr(:,:), dm=dm(:,:), rup=rup(:,:), rlow=rlow(:,:), &
@@ -321,7 +319,7 @@ subroutine test_sulfate_simple()
 
   ! Iterate the model over a few time steps.
   do istep = 2, nstep + 1
-     
+
     ! Calculate the model time.
     time = (istep - 1) * dtime
 
@@ -380,7 +378,7 @@ subroutine test_sulfate_simple()
                 wr_bin=wr_bin(:,:,:), nd_bin=nd_bin(:,:,:), &
                 ro_bin=ro_bin(:,:,:), mr_bin=mr_bin(:,:,:), &
                 vd_bin=vd_bin(:,:,:), mr_elm_bin=mr_elm_bin(:,:,:) )
-      
+
         call ncwrt_ilp(ncflgs, outid, NZ, NY, NX, NBIN, NGAS, NELEM, NGROUP, 1,  &
                 zc, iy, ix, bins, 0._f, secsperday, date, &
                 sname_gas, sname_elm, sname_grp, &
@@ -389,7 +387,7 @@ subroutine test_sulfate_simple()
                 nd=nd, ad=ad, md=md, re=re, rew=rew, rm=rm, jn=jn, mr=mr, pa=pa, &
                 ar=ar, vm=vm, ex_vis=ex, od_vis=od, &
                 vd_bin=vd_bin, nd_bin=nd_bin, wr_bin=wr_bin, ro_bin=ro_bin, mr_bin=mr_bin, &
-                mr_elm_bin=mr_elm_bin) 
+                mr_elm_bin=mr_elm_bin)
     end if
 
     ! Execute the step
@@ -423,7 +421,7 @@ subroutine test_sulfate_simple()
     end do
 
     ! Writing output in NETCDF
-    
+
     call carmadiags(cstate, carma, NZ, NBIN, NELEM, NGROUP, NWAVE, &
                 deltaz, &
                 nd=nd(:, :), ad=ad(:, :), md=md(:, :), re=re(:, :), rew=rew(:, :), &
@@ -431,14 +429,14 @@ subroutine test_sulfate_simple()
                 ar=ar(:, :), vm=vm(:, :), ex=ex(:,:), od=od(:,:), &
                 wr_bin=wr_bin(:,:,:), nd_bin=nd_bin(:,:,:), &
                 ro_bin=ro_bin(:,:,:), mr_bin=mr_bin(:,:,:), &
-                vd_bin=vd_bin(:,:,:), mr_elm_bin=mr_elm_bin(:,:,:)) 
-    
+                vd_bin=vd_bin(:,:,:), mr_elm_bin=mr_elm_bin(:,:,:))
+
     call ncwrt_ilp(ncflgs, outid, NZ, NY, NX, NBIN, NGAS, NELEM, NGROUP, istep,  &
                 zc, iy, ix, bins, time, secsperday, date, &
                 sname_gas, sname_elm, sname_grp, &
                 p, t, zc, deltaT, rhoa, rlheat, &
                 mmr=mmr_gas, si=satice, sl=satliq, ei=ei, el=el, wt=wt, &
-                nd=nd, ad=ad, md=md, re=re, rew=rew, rm=rm, jn=jn, mr=mr, pa=pa, & 
+                nd=nd, ad=ad, md=md, re=re, rew=rew, rm=rm, jn=jn, mr=mr, pa=pa, &
                 ar=ar, vm=vm, ex_vis=ex, od_vis=od,&
                 vd_bin=vd_bin, nd_bin=nd_bin, wr_bin=wr_bin, ro_bin=ro_bin, mr_bin=mr_bin, &
                 mr_elm_bin=mr_elm_bin)

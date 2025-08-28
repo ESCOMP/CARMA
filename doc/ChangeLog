@@ -1,5 +1,48 @@
 ===============================================================
 
+Tag name: v4.11
+Originator(s): Ilaria Quaglia (ilaria-quaglia)
+Date: 28 Aug 2005
+
+Introduce tests that write output to netcdf and provide corresponding
+Jupyter notebooks for visualizing the output
+
+M       Makefile
+M       README.md
+M       doc/ChangeLog
+M       tests/Makefile
+A       tests/carma_aluminum_2nc_test.F90
+A       tests/carma_fractaloptics_2nc_test.F90
+A       tests/carma_sulfate_2nc_test.F90
+A       tests/carmadiags_mod.F90
+A       tests/nc_types_mod.F90
+A       tests/ncio_mod.F90
+A       tests/python/figures/.gitkeep
+A       tests/python/plots_optics.ipynb
+A       tests/python/plots_timeseries.ipynb
+A       tests/test2nc_mod.F90
+
+===============================================================
+
+Tag name: v4.10
+Originator(s): Francis Vitt (fvitt)
+Date: 5 Aug 2025
+
+Update CARMA base to carma4_10 and baselines
+
+            modified:   source/base (new commits)
+            modified:   tests/bench/carma_fractalmicrotest.txt
+            modified:   tests/bench/carma_kappawetrtest.txt
+            modified:   tests/bench/carma_nuc2test.txt
+            modified:   tests/bench/carma_nuctest.txt
+            modified:   tests/bench/carma_sulfate_ccdon_test.txt
+            modified:   tests/bench/carma_sulfate_vehkamaki_test.txt
+            modified:   tests/bench/carma_sulfatetest.txt
+            modified:   tests/bench/carma_sulfhet_vehkamaki_test.txt
+            modified:   tests/bench/carma_sulfhettest.txt
+
+===============================================================
+
 Tag name: v4.09
 Originator(s): Francis Vitt (fvitt)
 Date: 5 Dec 2024
