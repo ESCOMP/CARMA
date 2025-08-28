@@ -41,7 +41,6 @@ ifeq ($(FORTRAN),ifort)
 
 endif
 
-
 # Add options for the Portland Group compiler.
 ifeq ($(FORTRAN),pgf90)
   FFLAGS  +=
@@ -186,7 +185,7 @@ ALUMINUM_2NC_TEST.exe : $(CARMA_OBJ) carma_aluminum_2nc_test.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o ALUMINUM_2NC_TEST.exe carma_aluminum_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe  COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
+all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
 SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
 SULFATETEST.exe NUC2TEST.exe GROWINTEST.exe GROWCLRTEST.exe FRACTALMICROTEST.exe \
