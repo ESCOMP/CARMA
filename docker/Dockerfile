@@ -2,6 +2,7 @@ FROM fedora:latest
 
 ARG BUILD_TYPE=Release
 ARG ENABLE_NETCDF=ON
+ARG ENABLE_MEMCHECK=OFF
 
 RUN dnf -y update \
     && dnf -y install \
@@ -27,6 +28,7 @@ RUN mkdir build \
       && cd build \
       && cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
                -D CARMA_ENABLE_NETCDF=${ENABLE_NETCDF} \
+               -D CARMA_ENABLE_MEMCHECK=${ENABLE_MEMCHECK} \
                -D CARMA_INSTALL_INCLUDE_DIR=/usr/local/include \
                -D CARMA_INSTALL_MOD_DIR=/usr/local/include \
                /carma \
