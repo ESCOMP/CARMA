@@ -1,0 +1,42 @@
+name: Ubuntu
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        compiler:
+          - { cpp: g++-12, c: gcc-12}
+          - { cpp: g++-13, c: gcc-13}
+          - { cpp: g++-14, c: gcc-14}
+        build_type: [Release, Debug]
+        enable_netcdf: [ON, OFF]
+    env:
+      CC: ${{ matrix.compiler.c }}
+      CXX: ${{ matrix.compiler.cpp }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Cmake
+        run: cmake -S . -B build -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} -D CARMA_ENABLE_NETCDF=${{ matrix.enable_netcdf }} -D CARMA_ENABLE_MEMCHECK=ON -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel 10
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C ${{ matrix.build_type }} --rerun-failed --output-on-failure . --verbose

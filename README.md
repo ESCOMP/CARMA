@@ -1,4 +1,6 @@
 # Community Aerosol and Radiation Model for Atmospheres (CARMA)
+[![License](https://img.shields.io/github/license/ESCOMP/CARMA.svg)](https://github.com/ESCOMP/CARMA/blob/main/LICENSE)
+[![ubuntu](https://github.com/ESCOMP/CARMA/actions/workflows/Ubuntu.yml/badge.svg)](https://github.com/ESCOMP/CARMA/actions/workflows/Ubuntu.yml)
 
 ### Getting the code
 
@@ -136,3 +138,52 @@ which is also stored in the doc directory.
 
 Chuck Bardeen, Pete Colarco and Jamie Smith
 Jul-2011
+
+## CMake Build
+
+To build CARMA with CMake locally and run the tests:
+```
+git clone https://github.com/ESCOMP/CARMA.git
+cd CARMA
+mkdir build
+cd build
+cmake ..
+make
+make test
+```
+
+Note that the CMake tests only run the test configurations, but do not verify results.
+To include memory checking with Valgrind for the tests, add the `CARMA_ENABLE_MEMCHECK`
+flag to the cmake step:
+```
+cmake -D CARMA_ENABLE_MEMCHECK=ON ..
+```
+
+To exclude NetCDF as a dependency:
+```
+cmake -D CARMA_ENABLE_NETCDF=OFF ..
+```
+Note that this will disable some of the tests.
+
+## Docker Build
+
+To build and run CARMA with Docker:
+```
+git clone https://github.com/ESCOMP/CARMA.git
+cd CARMA
+docker build -t carma . -f docker/Dockerfile
+docker run carma bash
+make test
+```
+
+Build args can be used to set CARMA build options
+| Build Arg | Values |
+|-----------|--------|
+| BUILD_TYPE | Release / Debug |
+| ENABLE_NETCDF | ON / OFF |
+| ENABLE_MEMCHECK | ON / OFF |
+
+To include the args modify the `docker build` step:
+```
+docker build -t carma . -f docker/Dockerfile --build-arg ENABLE_NETCDF=OFF --build-arg BUILD_TYPE=Debug
+```
