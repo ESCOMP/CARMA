@@ -28,8 +28,8 @@ rom the root directory:
 ```
   make-carma.csh
 ```
-This will build all the files in a subdirectory called build/carma. 
-Note: LAPACK external library is required for the CARMA base code 
+This will build all the files in a subdirectory called build/carma.
+Note: LAPACK external library is required for the CARMA base code
 (This avoids the used of the copied LU matrix solve routines from copyrighted source)
 
 To run a sample carma model, execute the following command from the root directory:
@@ -46,7 +46,7 @@ also be used to build individual executables. For example, to build and run the
 NUCTEST test routine and to have the run performed in a directory named nuctest
 (this part is optional) execute:
 ```
-  make-carma.csh NUCTESTexe
+  make-carma.csh NUCTEST.exe
   run-carma.csh NUCTEST.exe
 ```
 NOTE: bash and ksh users will need to use export rather than setenv.

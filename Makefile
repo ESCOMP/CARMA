@@ -34,7 +34,11 @@ ifeq ($(FORTRAN),ifort)
   FFLAGS += -qopenmp
 
   # The -qmkl flag if for linking to LAPACK lib
-  LDFLAGS = $(FFLAGS) -no-pie -qmkl
+  LDFLAGS = $(FFLAGS) -no-pie -L/opt/local/lib -qmkl
+
+  # Add options for the netcdf libraries
+  LDFLAGS += -L/opt/local/lib -lnetcdff -L/opt/local/lib -Wl,-headerpad_max_install_names -lnetcdf -lnetcdf
+
 endif
 
 # Add options for the Portland Group compiler.
@@ -173,6 +177,12 @@ KAPPAWETRTEST.exe : $(CARMA_OBJ) carma_kappawetrtest.o carma_testutils.o atmosph
 	$(FORTRAN) $(LDFLAGS) -o KAPPAWETRTEST.exe carma_kappawetrtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 SULFATE_CCDON_TEST.exe : $(CARMA_OBJ) carma_sulfate_ccdon_test.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o SULFATE_CCDON_TEST.exe carma_sulfate_ccdon_test.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+SULFATE_2NC_TEST.exe : $(CARMA_OBJ) carma_sulfate_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o SULFATE_2NC_TEST.exe carma_sulfate_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
+FRACTALOPTICS_2NC_TEST.exe : $(CARMA_OBJ) carma_fractaloptics_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o FRACTALOPTICS_2NC_TEST.exe carma_fractaloptics_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o nc_types_mod.o $(CARMA_OBJ)
+ALUMINUM_2NC_TEST.exe : $(CARMA_OBJ) carma_aluminum_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o ALUMINUM_2NC_TEST.exe carma_aluminum_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
 
 # Compile everything.
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
@@ -180,7 +190,8 @@ MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.
 SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
 SULFATETEST.exe NUC2TEST.exe GROWINTEST.exe GROWCLRTEST.exe FRACTALMICROTEST.exe \
 FRACTALOPTICSTEST.exe SULFHETTEST.exe KAPPAWETRTEST.exe SULFHET_VEHKAMAKI_TEST.exe SULFATE_VEHKAMAKI_TEST.exe \
-SULFATE_CCDON_TEST.exe
+SULFATE_CCDON_TEST.exe \
+SULFATE_2NC_TEST.exe FRACTALOPTICS_2NC_TEST.exe ALUMINUM_2NC_TEST.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)
