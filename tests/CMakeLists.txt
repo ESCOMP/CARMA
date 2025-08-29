@@ -36,4 +36,10 @@ create_standard_test(NAME sulfhet SOURCES atmosphere_mod.F90 carma_sulfhettest.F
 create_standard_test(NAME swell SOURCES atmosphere_mod.F90 carma_swelltest.F90)
 create_standard_test(NAME vdif SOURCES atmosphere_mod.F90 carma_vdiftest.F90)
 
+if(CARMA_ENABLE_NETCDF)
+  create_standard_test(NAME aluminum_netcdf SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_aluminum_2nc_test.F90)
+  create_standard_test(NAME fractal_optics_netcdf SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_fractaloptics_2nc_test.F90)
+  create_standard_test(NAME sulfate_netcdf SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_sulfate_2nc_test.F90)
+endif()
+
 ################################################################################

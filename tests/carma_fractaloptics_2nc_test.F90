@@ -84,7 +84,7 @@ subroutine test_fractaloptics()
   ! Input for Group/element
   integer, parameter    :: I_ALUMINUM = 1
 
-  character(len=80)     :: name_run(NRUN) = (/'fractal', 'standard'/)
+  character(len=80)     :: name_run(NRUN)
   real(kind=f)          :: rmin   = 15.0e-6_f   ! minimum radius [cm]
   real(kind=f)          :: rmrat  = 2.0_f       ! the volume ratio between bins
   real(kind=f)          :: rho    = 3.51_f      ! dry density of particles [g cm-3]
@@ -107,7 +107,8 @@ subroutine test_fractaloptics()
   real(kind=f)          :: rf(NBIN), vpor(NBIN), upor(NBIN), gamma(NBIN), happel(NBIN)
   real(kind=f)          :: perm(NBIN), brinkman(NBIN), epsil(NBIN), omega(NBIN)
 
-
+  name_run(1) = "fractal"
+  name_run(2) = "standard"
 
   df(:,1) = 1.6_f ! fractal
   df(:,2) = 3._f  ! standard

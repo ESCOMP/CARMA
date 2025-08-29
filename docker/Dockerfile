@@ -1,5 +1,8 @@
 FROM fedora:latest
 
+ARG BUILD_TYPE=Release
+ARG ENABLE_NETCDF=ON
+
 RUN dnf -y update \
     && dnf -y install \
         cmake \
@@ -22,10 +25,11 @@ ENV LD_LIBRARY_PATH=/usr/local/lib64
 COPY . /carma
 RUN mkdir build \
       && cd build \
-      && cmake -D CMAKE_BUILD_TYPE=release \
+      && cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+               -D CARMA_ENABLE_NETCDF=${ENABLE_NETCDF} \
                -D CARMA_INSTALL_INCLUDE_DIR=/usr/local/include \
                -D CARMA_INSTALL_MOD_DIR=/usr/local/include \
                /carma \
-      && make install -j 8
+      && make install
 
 WORKDIR /build

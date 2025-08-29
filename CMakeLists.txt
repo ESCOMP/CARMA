@@ -21,6 +21,7 @@ message ( STATUS "CMake build configuration for carma(${CMAKE_BUILD_TYPE}) ${PRO
 # Project wide setup options
 
 option(CARMA_ENABLE_MEMCHECK "Enable memory checking in tests" OFF)
+option(CARMA_ENABLE_NETCDF "Enable NetCDF support" ON)
 
 set(CARMA_MOD_DIR "${PROJECT_BINARY_DIR}/include" CACHE PATH "Directory to find Fortran module files during build")
 set(CARMA_INSTALL_MOD_DIR "${INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}" CACHE PATH "Directory to install Fortran module files")

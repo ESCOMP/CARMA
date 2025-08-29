@@ -1,5 +1,8 @@
 FROM fedora:latest
 
+ARG BUILD_TYPE=Release
+ARG ENABLE_NETCDF=ON
+
 RUN dnf -y update \
     && dnf -y install \
         cmake \
@@ -22,9 +25,10 @@ ENV LD_LIBRARY_PATH=/usr/local/lib64
 COPY . /carma
 RUN mkdir build \
       && cd build \
-      && cmake -D CMAKE_BUILD_TYPE=DEBUG \
+      && cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+               -D CARMA_ENABLE_NETCDF=${ENABLE_NETCDF} \
                -D CARMA_ENABLE_MEMCHECK=ON \
                /carma \
-      && make -j 8
+      && make
 
 WORKDIR /build
