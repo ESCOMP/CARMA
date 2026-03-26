@@ -60,7 +60,7 @@ subroutine test_grow_simple()
 
   integer, parameter        :: nstep        = 5000 / dtime
 
-  integer, parameter        :: I_H2O  = 1
+  !integer, parameter        :: I_H2O  = 1
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
@@ -126,7 +126,6 @@ subroutine test_grow_simple()
   call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, LUNOPRT=LUNOPRT)
   if (rc /=0) stop "    *** CARMA_Create FAILED ***"
   carma_ptr => carma
-
 
   ! Define the groups
   rmrat = 2._f
@@ -276,7 +275,7 @@ subroutine test_grow_simple()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM,&
                              mmr_gas(:,igas), rc, &
                              satliq=satliq(:,igas), &
                              satice=satice(:,igas))

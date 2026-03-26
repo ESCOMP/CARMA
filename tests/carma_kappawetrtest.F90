@@ -58,7 +58,7 @@ subroutine test_kappawetr_simple()
 
   integer, parameter        :: nstep        = 54000 / dtime
 
-  integer, parameter        :: I_H2O  = 1
+  !integer, parameter        :: I_H2O  = 1
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
@@ -109,11 +109,11 @@ subroutine test_kappawetr_simple()
   real(kind=f)          :: t_orig
   real(kind=f)          :: RHO_obc, RHO_SULFATE, RHO_DUST, RHO_SALT
 
-  integer, parameter      :: I_H2SO4          = 1       !! H2SO4 coposition
-  integer, parameter      :: I_OC             = 2       !! OC composition
-  integer, parameter      :: I_BC             = 3       !! BC composition
-  integer, parameter      :: I_DUST           = 4       !! dust composition
-  integer, parameter      :: I_SALT           = 5       !! sea salt composition
+  !integer, parameter      :: I_H2SO4          = 1       !! H2SO4 coposition
+  !integer, parameter      :: I_OC             = 2       !! OC composition
+  !integer, parameter      :: I_BC             = 3       !! BC composition
+  !integer, parameter      :: I_DUST           = 4       !! dust composition
+  !integer, parameter      :: I_SALT           = 5       !! sea salt composition
 
   integer, parameter              :: I_GRP_PRSUL     = 1       !! sulfate aerosol
   integer, parameter              :: I_GRP_MXAER     = 2       !! mixed aerosol
@@ -387,7 +387,7 @@ subroutine test_kappawetr_simple()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM, &
                              mmr_gas(:,igas), rc, &
                              satliq=satliq(:,igas), &
                              satice=satice(:,igas))

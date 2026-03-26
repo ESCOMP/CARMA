@@ -89,7 +89,7 @@ subroutine test_sulfate_simple()
   integer                        :: rc = 0
 
   ! Input for Group/element
-  integer, parameter        :: I_H2SO4  = 1
+  !integer, parameter        :: I_H2SO4  = 1
   real(kind=f)              :: rmin = 2.e-8_f
   real(kind=f)              :: rmrat = 2._f
   real(kind=f)              :: RHO_SULFATE = 1.923_f  ! dry density of sulfate particles (g/cm3)
@@ -413,7 +413,7 @@ subroutine test_sulfate_simple()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM,&
                              mmr_gas(:,igas), rc, &
                              satliq=satliq(:,igas), satice=satice(:,igas), &
                              eqice=ei(:,igas), eqliq=el(:,igas), wtpct=wt(:,igas))

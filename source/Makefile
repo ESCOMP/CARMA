@@ -16,7 +16,7 @@ setupcoag.o smallconc.o step.o supersat.o vaporp.o vertadv.o \
 vertdif.o vertical.o versol.o rhopart.o psolve.o zeromicro.o \
 nsubsteps.o setupgrow.o setupgkern.o setupnuc.o growevapl.o microfast.o \
 gsolve.o actdropl.o freezglaerl_murray2010.o growp.o downgxfer.o \
-gasexchange.o melticel.o upgxfer.o freezdropl.o \
+melticel.o upgxfer.o freezdropl.o \
 downgevapply.o evapp.o evap_poly.o evap_mono.o \
 evap_ingrp.o tsolve.o miess.o vaporp_h2o_buck1981.o wetr.o \
 vaporp_h2o_murphy2005.o maxconc.o setupbdif.o setupvf_std.o \
@@ -26,7 +26,8 @@ freezaerl_mohler2010.o setupvdry.o calcrs.o vaporp_h2o_goff1946.o \
 pheat.o planck.o bhmie.o mie.o vaporp_h2so4_ayers1980.o \
 sulfate_utils.o sulfnuc.o sulfnucrate.o hetnucl.o newstate_calc.o \
 fractal_meanfield_mod.o adgaquad_types_mod.o adgaquad_mod.o \
-sulfhetnucrate.o coremasscheck.o hygroscopicity.o fixcorecol.o
+sulfhetnucrate.o coremasscheck.o hygroscopicity.o fixcorecol.o \
+vaporp_hno3_luo1995_hanson1988.o wtpct_luo_total.o
 
 CARMA_DOC = carma_constants_mod.html carma_types_mod.html carma_enums_mod.html \
 carmagroup_mod.html carmagas_mod.html carmaelement_mod.html carmasolute_mod.html \
@@ -36,7 +37,7 @@ setupcoag.html smallconc.html step.html supersat.html vaporp.html vertadv.html \
 vertdif.html vertical.html versol.html rhopart.html psolve.html zeromicro.html \
 nsubsteps.html setupgrow.html setupgkern.html setupnuc.html growevapl.html microfast.html \
 gsolve.html actdropl.html freezglaerl_murray2010.html growp.html downgxfer.html \
-gasexchange.html melticel.html upgxfer.html freezdropl.html \
+ melticel.html upgxfer.html freezdropl.html \
 downgevapply.html evapp.html evap_poly.html evap_mono.html \
 evap_ingrp.html tsolve.html miess.html vaporp_h2o_buck1981.html wetr.html \
 vaporp_h2o_murphy2005.html  maxconc.html setupbdif.html setupvf_std.html \
@@ -46,7 +47,8 @@ freezaerl_mohler2010.html setupvdry.html calcrs.html  vaporp_h2o_goff1946.html \
 pheat.html planck.html bhmie.html mie.html vaporp_h2so4_ayers1980.html \
 sulfate_utils.html sulfnuc.html sulfnucrate.html hetnucl.html newstate_calc.html \
 fractal_meanfield_mod.html adgaquad_types_mod.html adgaquad_mod.html \
-sulfhetnucrate.html coremasscheck.html hygroscopicity.html fixcorecol.html
+sulfhetnucrate.html coremasscheck.html hygroscopicity.html fixcorecol.html \
+vaporp_hno3_luo1995_hanson1988.html wtpct_luo_total.html
 
 carma_precision_mod.o : carma_precision_mod.F90
 	$(FORTRAN) $(FFLAGS) -c $<
@@ -142,9 +144,6 @@ freezglaerl_murray2010.o : freezglaerl_murray2010.F90 carma_globaer.h carma_mod.
 	$(FORTRAN) $(FFLAGS) -c $<
 
 freezdropl.o : freezdropl.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod
-	$(FORTRAN) $(FFLAGS) -c $<
-
-gasexchange.o : gasexchange.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
 growevapl.o : growevapl.F90 carma_globaer.h carma_mod.mod carmastate_mod.mod carma_types_mod.mod carma_constants_mod.mod carma_enums_mod.mod carma_precision_mod.mod
@@ -319,4 +318,10 @@ hygroscopicity.o : hygroscopicity.F90 carma_globaer.h carma_mod.mod carmastate_m
 	$(FORTRAN) $(FFLAGS) -c $<
 
 fixcorecol.o : fixcorecol.F90 carma_globaer.h carma_precision_mod.mod carma_enums_mod.mod carma_constants_mod.mod carma_types_mod.mod carmastate_mod.mod carma_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+wtpct_luo_total.o : wtpct_luo_total.F90 carma_globaer.h carma_precision_mod.mod carma_enums_mod.mod carma_constants_mod.mod carma_types_mod.mod carmastate_mod.mod carma_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+vaporp_hno3_luo1995_hanson1988.o : vaporp_hno3_luo1995_hanson1988.F90 carma_globaer.h carma_precision_mod.mod carma_enums_mod.mod carma_constants_mod.mod carma_types_mod.mod carmastate_mod.mod carma_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<

@@ -61,7 +61,7 @@ subroutine test_sulfate_simple()
   integer, parameter        :: nstep  = 180000 / int(dtime)
 
 
-  integer, parameter        :: I_H2SO4  = 1
+  !integer, parameter        :: I_H2SO4  = 1
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
@@ -341,7 +341,7 @@ subroutine test_sulfate_simple()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM, &
                              mmr_gas(:,igas), rc, &
                              satliq=satliq(:,igas), &
                              satice=satice(:,igas))

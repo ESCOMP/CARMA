@@ -68,9 +68,9 @@ subroutine test_nuc_ttl()
   real(kind=f)                        :: rhop
   real(kind=f)                        :: rhoa
 
-  integer, parameter                  :: I_H2SO4   = 1               !! sulfate aerosol composition
-  integer, parameter                  :: I_ICE     = 2               !! ice
-  integer, parameter                  :: I_WATER   = 3               !! water
+  !integer, parameter                  :: I_H2SO4   = 1               !! sulfate aerosol composition
+  !integer, parameter                  :: I_ICE     = 2               !! ice
+  !integer, parameter                  :: I_WATER   = 3               !! water
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
@@ -312,7 +312,7 @@ subroutine test_nuc_ttl()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM, &
                               mmr_gas(:,igas), rc, &
                               satliq=satliq(:,igas), &
                               satice=satice(:,igas))
@@ -325,7 +325,7 @@ subroutine test_nuc_ttl()
 
     ! Cool it down ...
     t(1) = t(1) - .05_f
-
+    
     if (mod(istep, 10) .eq. 0) then
 
       ! NOTE: This section adjusts the mmr for the change in the mmr of the

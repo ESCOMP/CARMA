@@ -72,7 +72,7 @@ subroutine test_grow_sub()
   integer, parameter        :: nstep        = 5000 / dtime
 !  integer, parameter        :: nstep        = 50
 
-  integer, parameter        :: I_H2O  = 1
+  !integer, parameter        :: I_H2O  = 1
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
@@ -315,7 +315,7 @@ subroutine test_grow_sub()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM, &
                               mmr_gas(:,igas), &
                               rc, &
                               satliq=satliq(:,igas), &

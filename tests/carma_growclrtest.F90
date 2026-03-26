@@ -73,7 +73,7 @@ subroutine test_growclr_sub()
   integer, parameter        :: nstep        = 5000 / dtime
 !  integer, parameter        :: nstep        = 50
 
-  integer, parameter        :: I_H2O  = 1
+  !integer, parameter        :: I_H2O  = 1
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr
@@ -326,7 +326,7 @@ subroutine test_growclr_sub()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM,&
                               mmr_gas(:,igas), &
                               rc, &
                               satliq=satliq(:,igas), &
@@ -357,7 +357,9 @@ subroutine test_growclr_sub()
     do igas = 1, NGAS
       write(lun,'(i4,3e12.3)') igas, real(mmr_gas(1,igas)), satliq(1,igas), satice(1,igas)
     end do
+
   end do   ! time loop
+
 
   ! Cleanup the carma state objects
   call CARMASTATE_Destroy(cstate, rc)

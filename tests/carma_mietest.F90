@@ -37,7 +37,7 @@ subroutine test_mie()
   integer, parameter    :: NWAVE        = 44
   integer, parameter    :: NREFIDX  = 1               !! Number of refractive indices per element
 
-  integer, parameter    :: I_DUST       = 1
+  !integer, parameter    :: I_DUST       = 1
 
   type(carma_type), target            :: carma
   type(carma_type), pointer           :: carma_ptr

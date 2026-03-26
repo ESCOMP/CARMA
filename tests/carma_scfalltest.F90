@@ -45,8 +45,8 @@ subroutine test_sedimentation_sigma()
 
   real(kind=f), parameter   :: dtime  = 1000._f
 
-  integer, parameter        :: I_DUST       = 1
-  integer, parameter        :: I_ICE        = 2
+  !integer, parameter        :: I_DUST       = 1
+  !integer, parameter        :: I_ICE        = 2
 
   type(carma_type), target  :: carma
   type(carma_type), pointer :: carma_ptr

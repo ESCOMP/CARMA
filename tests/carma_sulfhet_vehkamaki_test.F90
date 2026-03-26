@@ -45,9 +45,9 @@ subroutine test_sulfate_simple()
 
   ! Define any particle compositions that are used. Each composition type
   ! should have a unique number.
-  integer, parameter      :: I_METEOR_SMOKE   = 1       !! meteor smoke
-  integer, parameter      :: I_ICE            = 2       !! ice
-  integer, parameter      :: I_H2SO4          = 3       !! sulfuric acid
+  !integer, parameter      :: I_METEOR_SMOKE   = 1       !! meteor smoke
+  !integer, parameter      :: I_ICE            = 2       !! ice
+  !integer, parameter      :: I_H2SO4          = 3       !! sulfuric acid
 
   ! Define group, element, solute and gas indexes.
   integer, parameter      :: I_GRP_DUST     = 1         !! meteor smoke
@@ -379,7 +379,7 @@ subroutine test_sulfate_simple()
 
     ! Get the updated gas mmr.
     do igas = 1, NGAS
-      call CARMASTATE_GetGas(cstate, igas, &
+      call CARMASTATE_GetGas(cstate, igas, NELEM, &
                              mmr_gas(:,igas), rc, &
                              satliq=satliq(:,igas), &
                              satice=satice(:,igas))

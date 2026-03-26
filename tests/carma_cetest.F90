@@ -65,9 +65,9 @@ subroutine test_conc_elem()
   real(kind=f)              :: rhop
   real(kind=f)              :: rhoa
 
-  integer, parameter        :: I_H2SO4   = 1      !! sulfate aerosol composition
-  integer, parameter        :: I_ICE     = 2      !! ice
-  integer, parameter        :: I_WATER   = 3      !! water
+  !integer, parameter        :: I_H2SO4   = 1      !! sulfate aerosol composition
+  !integer, parameter        :: I_ICE     = 2      !! ice
+  !integer, parameter        :: I_WATER   = 3      !! water
 
   integer, parameter        :: I_GRP_IN  = 1      !! sulfate aerosol composition
   integer, parameter        :: I_GRP_ICE = 2      !! ice
