@@ -61,7 +61,7 @@ subroutine test_fractaloptics()
 
   ! Netcdf variables
   type(nc_type)      :: ncflgs
-  character(len=80)  :: filename_in = "/glade/u/home/iquaglia/Solid_SAI/rindex/alumina.nc" ! input file for refractive index
+  character(len=80)  :: filename_in = "/home/n02/n02/hqmp0145/CARMA/analysis/inputdata/Alumina.nc" ! input file for refractive index
   ! refractive index can be define later  without loading any file
   character(len=80)  :: filename_out = "carma_fractalopticstest.nc"
   integer            :: inid, outid
