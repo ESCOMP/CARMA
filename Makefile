@@ -2,11 +2,12 @@
 # Jamison A. Smith, AKA JAS
 # April 26, 2007
 
-FORTRAN =	ifx
+# FORTRAN =	ifx
 #FORTRAN =	ifort
 #FORTRAN =	pgf90
 #FORTRAN =	pathf90
-#FORTRAN =	gfortran
+# FORTRAN =	gfortran
+FORTRAN =	ftn
 #FORTRAN =	g95
 #FORTRAN =	xlf90
 
@@ -57,6 +58,13 @@ ifeq ($(FORTRAN),ifx)
   # Add options for the netcdf libraries
   LDFLAGS += -L/opt/local/lib -lnetcdff -L/opt/local/lib -Wl,-headerpad_max_install_names -lnetcdf -lnetcdf
 
+endif
+
+ifeq ($(FORTRAN),ftn)
+  FFLAGS  += -ffree-line-length-none
+  FFLAGS  += -g -fbounds-check -ffpe-trap=zero,invalid,overflow -fbacktrace
+  FFLAGS  += -fopenmp
+  LDFLAGS = $(FFLAGS)
 endif
 
 # Add options for the Portland Group compiler.
