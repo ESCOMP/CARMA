@@ -6,18 +6,18 @@
 !! @author  Chuck Bardeen
 !! @version June-2013
 
-program carma_sulfhettest
+program carma_mixedsulfate_2nc_test
   implicit none
 
-  write(*,*) "Sulfate Heterogeneous Test"
+  write(*,*) "Mixed Sulphate Test"
 
-  call test_sulfate_simple()
+  call test_mixedsulfate_simple()
 end program
 
 !! Just have one grid box. In that grid box, but an initial concentration
 !! of drops at the smallest size, then allow that to grow using a gas. The
 !! total mas of drops + gas should be conserved.
-subroutine test_sulfate_simple()
+subroutine test_mixedsulfate_simple()
   use carma_precision_mod
   use carma_constants_mod
   use carma_enums_mod
@@ -439,4 +439,4 @@ subroutine test_sulfate_simple()
 
   call CARMA_Destroy(carma, rc)
   if (rc /=0) stop "    *** CARMA_Destroy FAILED ***"
-end subroutine
+end subroutine test_mixedsulfate_simple
