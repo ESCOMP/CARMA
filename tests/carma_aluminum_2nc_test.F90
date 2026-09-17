@@ -106,7 +106,7 @@ subroutine test_aluminum_simple()
   real(kind=f)              :: vf_const = 0.0_f
 
   ! Input for optics
-  character(len=80)     :: file_optics = "/glade/u/home/iquaglia/carma_box/run/carma/carma_fractalopticstest.nc"
+  character(len=80)     :: file_optics = "/home/n02/n02/hqmp0145/CARMA/run/carma/carma_fractalopticstest.nc"
   integer               :: idx_vis = 5
   integer               :: inid, wave_varid, bin_varid, qext_varid
   real(kind=f)          :: wave(NWAVE)
