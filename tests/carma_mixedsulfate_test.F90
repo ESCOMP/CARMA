@@ -28,6 +28,9 @@ subroutine test_mixedsulfate_simple()
   use carmastate_mod
   use carma_mod
   use atmosphere_mod
+  use nc_types_mod
+  use test2nc_mod
+  use carmadiags_mod
 
   implicit none
 
