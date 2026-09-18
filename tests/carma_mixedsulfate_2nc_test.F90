@@ -86,11 +86,40 @@ subroutine test_mixedsulfate_simple()
   type(carmastate_type)          :: cstate
   integer                        :: rc = 0
 
-  ! Input for Group/element
-  integer, parameter        :: I_H2SO4  = 1
-  real(kind=f)              :: rmin = 2.e-8_f
-  real(kind=f)              :: rmrat = 2._f
-  real(kind=f)              :: RHO_SULFATE = 1.923_f  ! dry density of sulfate particles (g/cm3)
+!   ! Input for Group/element
+!   integer, parameter        :: I_H2SO4  = 1
+!   real(kind=f)              :: rmin = 2.e-8_f
+!   real(kind=f)              :: rmrat = 2._f
+!   real(kind=f)              :: RHO_SULFATE = 1.923_f  ! dry density of sulfate particles (g/cm3)
+
+  ! Define any particle compositions that are used. Each composition type
+  ! should have a unique number.
+  integer, parameter      :: I_METEOR_SMOKE   = 1       !! meteor smoke
+  integer, parameter      :: I_ICE            = 2       !! ice
+  integer, parameter      :: I_H2SO4          = 3       !! sulfuric acid
+
+  ! Define group, element, solute and gas indexes.
+  integer, parameter      :: I_GRP_DUST     = 1         !! meteor smoke
+  integer, parameter      :: I_GRP_SULFATE  = 2         !! sulfate aerosol
+
+  integer, parameter      :: I_ELEM_DUST    = 1         !! meteor smoke
+  integer, parameter      :: I_ELEM_SULFATE = 2         !! sulfate aerosol
+  integer, parameter      :: I_ELEM_SULCORE = 3         !! meteor smoke core in sulfate
+
+  integer, parameter      :: I_GAS_H2O      = 1         !! water vapor
+  integer, parameter      :: I_GAS_H2SO4    = 2         !! sulphuric acid
+
+  real(kind=f), parameter :: WTMOL_H2SO4    = 98.078479_f    !! molecular weight of sulphuric acid
+  real(kind=f), parameter :: RHO_METEOR_SMOKE = 2.0_f      ! density of meteor smoke particles (g/cm)
+  real(kind=f), parameter :: RHO_SULFATE      = 1.923_f    ! dry density of sulfate particles (g/cm3)
+
+
+  real(kind=f), parameter            :: rmin             = 2e-8_f     ! minimum radius (cm)
+  real(kind=f), parameter            :: vmrat            = 2.0_f     ! volume ratio (adjusted for 28 bins from 2.4 for 30 bins)
+    !  Set radius of smallest bin such that mass is that of 2 molecules of H2SO4:
+  real(kind=f), parameter            :: rmin_sulfate     = 3.43230298e-8_f  ! minimum radius (cm)
+  real(kind=f), parameter            :: vmrat_sulfate    = 2.56_f     ! volume ratio (adjusted for 28 bins from 2.4 for 30 bins)
+
 
   ! Output for Atmospheric variables
   real(kind=f) :: zc(NZ), zl(NZP1), p(NZ), pl(NZP1), t(NZ), rhoa(NZ), rlheat(NZ), deltaT(NZ)
@@ -117,7 +146,7 @@ subroutine test_mixedsulfate_simple()
 
   ! Netcdf variable
   type(nc_type)     :: ncflgs
-  character(len=80) :: filename_out = "sulfatetest_test.nc"
+  character(len=80) :: filename_out = "mixedsulfatetest_test.nc"
   integer           :: outid
   integer           :: date = 00010101
   real(kind=f)      :: fill_value =-9.255963134931783e+061_f
@@ -138,13 +167,31 @@ subroutine test_mixedsulfate_simple()
   carma_ptr => carma
 
   ! Create Groups
-  call CARMAGROUP_Create(carma, 1, "sulfate", rmin, rmrat, I_SPHERE, 1._f, .false., &
-          rc, irhswell=I_WTPCT_H2SO4, do_drydep=.true., do_mie=.false., &
-                        shortname="PRSUL", is_sulfate=.true.)
+  call CARMAGROUP_Create(carma, I_GRP_DUST, "meteor smoke", 2e-8_f, 2.0_f, I_SPHERE, 1._f, .false., &
+                        rc, do_drydep=.true., shortname="DUST")
+  if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
+  
+!   call CARMAGROUP_Create(carma, 1, "sulfate", rmin, rmrat, I_SPHERE, 1._f, .false., &
+!           rc, irhswell=I_WTPCT_H2SO4, do_drydep=.true., do_mie=.false., &
+!                         shortname="PRSUL", is_sulfate=.true.)
+!   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
+    call CARMAGROUP_Create(carma, I_GRP_SULFATE, "sulfate", 3.43230298e-8_f, 2.56_f, I_SPHERE, 1._f, .false., &
+                        rc, irhswell=I_WTPCT_H2SO4, do_drydep=.true., &
+                        shortname="SULF", is_sulfate=.true.)
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
 
+
   ! Define the elements
-  call CARMAELEMENT_Create(carma, 1, 1, "Sulfate", RHO_SULFATE, I_VOLATILE, I_H2SO4, rc, shortname="SULF")
+!   call CARMAELEMENT_Create(carma, 1, 1, "Sulfate", RHO_SULFATE, I_VOLATILE, I_H2SO4, rc, shortname="SULF")
+!   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
+
+  call CARMAELEMENT_Create(carma, I_ELEM_DUST, I_GRP_DUST, "meteor smoke", RHO_METEOR_SMOKE, I_INVOLATILE, I_METEOR_SMOKE, rc, shortname="DUST")
+  if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
+
+  call CARMAELEMENT_Create(carma, I_ELEM_SULFATE, I_GRP_SULFATE, "sulfate", RHO_SULFATE, I_VOLATILE, I_H2SO4, rc, shortname="SULFATE")
+  if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
+
+  call CARMAELEMENT_Create(carma, I_ELEM_SULCORE, I_GRP_SULFATE, "sulfate core", RHO_METEOR_SMOKE, I_COREMASS, I_METEOR_SMOKE, rc, shortname="SFCORE")
   if (rc /=0) stop "    *** CARMAELEMENT_Create FAILED ***"
 
   ! Define the gases
@@ -157,14 +204,28 @@ subroutine test_mixedsulfate_simple()
   if (rc /=0) stop "    *** CARMAGAS_Create FAILED ***"
 
 
-  ! Setup the CARMA processes
-  call CARMA_AddGrowth(carma, 1, 2, rc)   ! set H2SO4 to be the condensing gas
+!   ! Setup the CARMA processes
+!   call CARMA_AddGrowth(carma, 1, 2, rc)   ! set H2SO4 to be the condensing gas
+!   if (rc /=0) stop "    *** CARMA_AddGrowth FAILED ***"
+
+!    call CARMA_AddNucleation(carma, 1, 1, I_HOMNUC, 0._f, rc, igas=2)
+!   if (rc /=0) stop "    *** CARMA_AddNucleation FAILED ***"
+
+!    call CARMA_AddCoagulation(carma, 1, 1, 1, I_COLLEC_FUCHS, rc)
+!   if (rc /=0) stop "    *** CARMA_AddCoagulation FAILED ***"
+
+    ! Setup the CARMA processes to exercise
+  call CARMA_AddGrowth(carma, I_ELEM_SULFATE, I_GAS_H2SO4, rc)
   if (rc /=0) stop "    *** CARMA_AddGrowth FAILED ***"
 
-   call CARMA_AddNucleation(carma, 1, 1, I_HOMNUC, 0._f, rc, igas=2)
+  call CARMA_AddNucleation(carma, I_ELEM_SULFATE, I_ELEM_SULFATE, I_HOMNUC, 0._f, rc, igas=I_GAS_H2SO4)
   if (rc /=0) stop "    *** CARMA_AddNucleation FAILED ***"
 
-   call CARMA_AddCoagulation(carma, 1, 1, 1, I_COLLEC_FUCHS, rc)
+  ! Also need nucleation with meteor smoke.
+  call CARMA_AddNucleation(carma, I_ELEM_DUST, I_ELEM_SULCORE, I_HETNUCSULF, 0._f, rc, igas=I_GAS_H2SO4, ievp2elem=I_ELEM_DUST)
+  if (rc /=0) stop "    *** CARMA_AddNucleation FAILED ***"
+
+  call CARMA_AddCoagulation(carma, I_GRP_SULFATE, I_GRP_SULFATE, I_GRP_SULFATE, I_COLLEC_FUCHS, rc)
   if (rc /=0) stop "    *** CARMA_AddCoagulation FAILED ***"
 
 
