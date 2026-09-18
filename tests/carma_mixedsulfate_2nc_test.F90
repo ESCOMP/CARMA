@@ -167,7 +167,7 @@ subroutine test_mixedsulfate_simple()
   carma_ptr => carma
 
   ! Create Groups
-  call CARMAGROUP_Create(carma, I_GRP_DUST, "meteor smoke", 2e-8_f, 2.0_f, I_SPHERE, 1._f, .false., &
+  call CARMAGROUP_Create(carma, I_GRP_DUST, "meteor smoke", rmin, vmrat, I_SPHERE, 1._f, .false., &
                         rc, do_drydep=.true., shortname="DUST")
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
   
@@ -175,7 +175,7 @@ subroutine test_mixedsulfate_simple()
 !           rc, irhswell=I_WTPCT_H2SO4, do_drydep=.true., do_mie=.false., &
 !                         shortname="PRSUL", is_sulfate=.true.)
 !   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
-    call CARMAGROUP_Create(carma, I_GRP_SULFATE, "sulfate", 3.43230298e-8_f, 2.56_f, I_SPHERE, 1._f, .false., &
+    call CARMAGROUP_Create(carma, I_GRP_SULFATE, "sulfate", rmin_sulfate, vmrat_sulfate, I_SPHERE, 1._f, .false., &
                         rc, irhswell=I_WTPCT_H2SO4, do_drydep=.true., &
                         shortname="SULF", is_sulfate=.true.)
   if (rc /=0) stop "    *** CARMAGROUP_Create FAILED ***"
