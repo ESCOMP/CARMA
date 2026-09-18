@@ -51,6 +51,17 @@ NUCTEST test routine and to have the run performed in a directory named nuctest
   make-carma.csh NUCTEST.exe
   run-carma.csh NUCTEST.exe
 ```
+
+For a legacy Makefile build with a separate debugger-friendly output directory,
+use `make-carma-debug.csh`:
+
+```
+make-carma-debug.csh MIXEDSULFATE_2NC_TEST.exe
+gdb ./build/carma-debug/MIXEDSULFATE_2NC_TEST.exe
+```
+
+This sets `CARMA_BUILD=carma-debug`, enables the `DEBUG` preprocessor symbol,
+and retains the existing compiler debug flags for the selected Fortran compiler.
 NOTE: bash and ksh users will need to use export rather than setenv.
 
 Plotting routines have been created for each test in IDL. If you set CARMA_IDL
@@ -106,6 +117,27 @@ before using the run script.
 Several test cases have been developed to show how the CARMA model
 can be used and to test that the model physics is performing correctly. The
 source code for these tests are located in the tests subdirectory.
+
+### Developing and debugging CMake tests
+
+The CMake test targets are named `test_<name>` and are registered with CTest.
+To create a new test, add its Fortran source to `tests/` and register it in
+`tests/CMakeLists.txt`, for example:
+
+```
+create_standard_test(NAME mytest SOURCES atmosphere_mod.F90 carma_mytest.F90)
+```
+
+In VS Code, run the `Debug CARMA test` launch configuration and enter `mytest`
+when prompted. The included task configures a `build-debug` directory, builds
+the selected target with debug symbols, and starts GDB. Set breakpoints in the
+Fortran source before launching. The equivalent terminal workflow is:
+
+```
+cmake -S . -B build-debug -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_COMPILER=ftn "-DCMAKE_Fortran_FLAGS_DEBUG=-ffree-line-length-none -g -O0 -fbacktrace -fbounds-check" -DCARMA_ENABLE_NETCDF=ON
+cmake --build build-debug --target test_mytest
+gdb ./build-debug/test_mytest
+```
 
 To run all of the tests interactively, use the command
 ```

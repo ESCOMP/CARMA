@@ -1,4 +1,5 @@
 build
+build-debug
 *.html
 *.exe
 *.nc

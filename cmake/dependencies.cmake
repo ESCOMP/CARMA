@@ -36,12 +36,18 @@ endif()
 if(CARMA_ENABLE_NETCDF)
   find_package(PkgConfig REQUIRED)
 
-  pkg_check_modules(netcdff REQUIRED IMPORTED_TARGET netcdf-fortran)
-  pkg_check_modules(netcdfc REQUIRED IMPORTED_TARGET netcdf)
+  pkg_check_modules(netcdff QUIET IMPORTED_TARGET netcdf-fortran)
+  if(NOT netcdff_FOUND)
+    pkg_check_modules(netcdff REQUIRED IMPORTED_TARGET netcdf-fortran_parallel)
+  endif()
+  pkg_check_modules(netcdfc QUIET IMPORTED_TARGET netcdf)
+  if(NOT netcdfc_FOUND)
+    pkg_check_modules(netcdfc REQUIRED IMPORTED_TARGET netcdf_parallel)
+  endif()
 
   # Get the include directories from pkg-config
   execute_process(
-    COMMAND pkg-config --variable=includedir netcdf-fortran
+    COMMAND pkg-config --variable=includedir ${netcdff_MODULE_NAME}
     OUTPUT_VARIABLE NETCDF_FORTRAN_INCLUDE_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )

@@ -19,6 +19,9 @@ TGZ =		CARMA.tar
 FFLAGS =
 #FFLAGS += -DSINGLE                    # for single precision
 #FFLAGS += -DDEBUG                     # for debug print statements
+ifneq ($(CARMA_DEBUG),)
+  FFLAGS += -DDEBUG
+endif
 
 
 # Add options for the Intel Fortran compiler.
@@ -64,7 +67,7 @@ ifeq ($(FORTRAN),ftn)
   FFLAGS  += -ffree-line-length-none
   FFLAGS  += -g -fbounds-check -ffpe-trap=zero,invalid,overflow -fbacktrace
   FFLAGS  += -fopenmp
-  LDFLAGS = $(FFLAGS)
+  LDFLAGS = $(FFLAGS) -L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_82 -lnetcdff -lnetcdf
 endif
 
 # Add options for the Portland Group compiler.
