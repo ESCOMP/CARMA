@@ -59,7 +59,7 @@ subroutine test_mixedsulfate_simple()
     !  real(kind=f), parameter   :: dtime  = 5000._f
     !  real(kind=f), parameter   :: dtime  = 10000._f
     !  real(kind=f), parameter   :: dtime  = 50000._f 
-  real(kind=f), parameter   :: dArea = 10000._f
+  ! real(kind=f), parameter   :: dArea = 10000._f
   real(kind=f), parameter   :: deltaz = 10000._f
   real(kind=f), parameter   :: zmin   = 145000._f
   integer, parameter        :: nstep  = 180000 / int(dtime)
@@ -430,7 +430,7 @@ subroutine test_mixedsulfate_simple()
     ! Write initial conditions in NetCDF file
     if (istep == 2) then
         call carmadiags(cstate, carma, NZ, NBIN, NELEM, NGROUP,NWAVE,  &
-                dArea, deltaz, &
+                 deltaz, &
                 nd=nd(:, :), ad=ad(:, :), md=md(:, :), re=re(:, :), rew=rew(:, :), &
                 rm=rm(:, :), jn=jn(:, :), mr=mr(:, :), pa=pa(:, :), &
                 ar=ar(:, :), vm=vm(:, :), ex=ex(:,:), od=od(:,:), &
@@ -482,7 +482,7 @@ subroutine test_mixedsulfate_simple()
     ! Writing output in NETCDF
 
     call carmadiags(cstate, carma, NZ, NBIN, NELEM, NGROUP, NWAVE, &
-                dArea, deltaz,  &
+                deltaz,  &
                 nd=nd(:, :), ad=ad(:, :), md=md(:, :), re=re(:, :), rew=rew(:, :), &
                 rm=rm(:, :), jn=jn(:, :), mr=mr(:, :), pa=pa(:, :), &
                 ar=ar(:, :), vm=vm(:, :), ex=ex(:,:), od=od(:,:), &
