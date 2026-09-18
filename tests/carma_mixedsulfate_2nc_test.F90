@@ -35,7 +35,7 @@ subroutine test_mixedsulfate_simple()
   integer, parameter        :: NZP1         = NZ+1
   integer, parameter        :: NELEM        = 3
   integer, parameter        :: NGROUP       = 2
-  integer, parameter        :: NBIN         = 22
+  integer, parameter        :: NBIN         = 28
   integer, parameter        :: NSOLUTE      = 0
   integer, parameter        :: NGAS         = 2
   integer, parameter        :: NWAVE        = 0
