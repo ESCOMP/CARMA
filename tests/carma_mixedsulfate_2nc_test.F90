@@ -276,7 +276,12 @@ subroutine test_mixedsulfate_simple()
    ! Initial H2O and H2SO4 concentrations
    mmr_gas(:,1)  = 100.e-6_f     ! H2O g/g
    mmr_gas(:,2)  = 0.1e-9_f * (98._f / 29._f)    ! H2SO4
-   mmr(:,:,:)   = 0._f ! Initial element concentration
+  !  mmr(:,:,:)   = 0._f ! Initial element concentration
+
+    ! Initial sulfate and dust concentration
+   mmr(:,:,:)     = 0._f
+   mmr(:,1,1)     = 1e-11_f
+  !  mmr(:,1,18:20) = 1e-11_f
 
    ! ---------------- Create a NETCDF file  --------------------
    ! Get flags for definition/creation of variables in the netcdf file
