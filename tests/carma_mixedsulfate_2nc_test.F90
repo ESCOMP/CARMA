@@ -338,7 +338,7 @@ subroutine test_mixedsulfate_simple()
            ncflgs%f_nc_group(igroup)%f_nc_wr_bin = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_nd_bin = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_ro_bin = .TRUE.
-           ncflgs%f_nc_group(igroup)%f_nc_mr_bin = .TRUE.
+!             ncflgs%f_nc_group(igroup)%f_nc_mr_bin = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_vd_bin = .TRUE.
   end do
 
