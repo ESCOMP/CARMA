@@ -14,7 +14,8 @@ carma_vdiftest.o carma_test.o atmosphere_mod.o carma_scfalltest.o carma_growsubt
 carma_growintest.o carma_fractalmicrotest.o carma_fractalopticstest.o carma_sulfhettest.o \
 carma_sulfate_vehkamaki_test.o carma_sulfhet_vehkamaki_test.o \
 carma_sulfatetest.o carma_sulfate_ccdon_test.o \
-carma_sulfate_2nc_test.o carma_fractaloptics_2nc_test.o carma_aluminum_2nc_test.o carma_mixedsulfate_2nc_test.o
+carma_sulfate_2nc_test.o carma_fractaloptics_2nc_test.o carma_aluminum_2nc_test.o \
+carma_mixedsulfate_2nc_test.o carma_alumsulf_2nc_test.o
 
 TEST_DOC = carma_bcoctest.html carma_bc2gtest.html carma_coagtest.html carma_drydeptest.html \
 carma_falltest.html carma_growtest.html carma_inittest.html carma_kappawetrtest.html \
@@ -24,7 +25,8 @@ carma_vdiftest.html carma_test.html atmosphere_mod.html carma_scfalltest.html ca
 carma_growintest.html carma_fractalmicrotest.html carma_fractalopticstest.html carma_sulfhettest.html \
 carma_sulfate_vehkamaki_test.html carma_sulfhet_vehkamaki_test.html \
 carma_sulfatetest.html carma_sulfate_ccdon_test.html \
-carma_sulfate_2nc_test.html carma_fractaloptics_2nc_test.html carma_aluminum_2nc_test.html carma_mixedsulfate_2nc_test.html
+carma_sulfate_2nc_test.html carma_fractaloptics_2nc_test.html carma_aluminum_2nc_test.html \ 
+carma_mixedsulfate_2nc_test.html carma_alumsulf_2nc_test.html
 
 atmosphere_mod.o : atmosphere_mod.F90
 	$(FORTRAN) $(FFLAGS) -c $<
@@ -141,4 +143,7 @@ carma_aluminum_2nc_test.o : carma_aluminum_2nc_test.F90 atmosphere_mod.mod ncio_
 	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_mixedsulfate_2nc_test.o : carma_mixedsulfate_2nc_test.F90 atmosphere_mod.mod ncio_mod.mod test2nc_mod.mod carmadiags_mod.mod nc_types_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_alumsulf_2nc_test.o : carma_alumsulf_2nc_test.F90 atmosphere_mod.mod ncio_mod.mod test2nc_mod.mod carmadiags_mod.mod nc_types_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<

@@ -214,6 +214,8 @@ ALUMINUM_2NC_TEST.exe : $(CARMA_OBJ) carma_aluminum_2nc_test.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o ALUMINUM_2NC_TEST.exe carma_aluminum_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
 MIXEDSULFATE_2NC_TEST.exe : $(CARMA_OBJ) carma_mixedsulfate_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
 	$(FORTRAN) $(LDFLAGS) -o MIXEDSULFATE_2NC_TEST.exe carma_mixedsulfate_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
+ALUMSULF_2NC_TEST.exe : $(CARMA_OBJ) carma_alumsulf_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o ALUMSULF_2NC_TEST.exe carma_alumsulf_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
 
 # Compile everything.
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
