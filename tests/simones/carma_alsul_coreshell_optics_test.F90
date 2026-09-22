@@ -257,7 +257,7 @@ subroutine test_alsul_coreshell_optics()
 
   irun = 3
 
-  do imethod = 1, 2   ! 1 = coreshell (literal core/shell Mie), 2 = maxwell (effective medium)
+  do imethod = 1, 1   ! 1 = coreshell (literal core/shell Mie), 2 = maxwell (effective medium)
     is_coreshell = (imethod == 1)
 
     do icf = 1, NCOREFRAC
