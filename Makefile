@@ -216,9 +216,9 @@ MIXEDSULFATE_2NC_TEST.exe : $(CARMA_OBJ) carma_mixedsulfate_2nc_test.o carma_tes
 	$(FORTRAN) $(LDFLAGS) -o MIXEDSULFATE_2NC_TEST.exe carma_mixedsulfate_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
 ALUMSULF_2NC_TEST.exe : $(CARMA_OBJ) carma_alumsulf_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
 	$(FORTRAN) $(LDFLAGS) -o ALUMSULF_2NC_TEST.exe carma_alumsulf_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
-ALSUL_CORESHELL_OPTICS_TEST.exe : $(CARMA_OBJ) carma_alsul_coreshell_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
-	$(FORTRAN) $(LDFLAGS) -o ALSUL_CORESHELL_OPTICS_TEST.exe carma_alsul_coreshell_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
-
+ALSUL_CORESHELL_OPTICS_TEST.exe : $(CARMA_OBJ) carma_alsul_coreshell_optics_test.o carma_alsul_optics_common_mod.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o ALSUL_CORESHELL_OPTICS_TEST.exe carma_alsul_coreshell_optics_test.o carma_alsul_optics_common_mod.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o nc_types_mod.o $(CARMA_OBJ)
+  
 # Compile everything.
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \

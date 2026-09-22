@@ -15,7 +15,8 @@ carma_growintest.o carma_fractalmicrotest.o carma_fractalopticstest.o carma_sulf
 carma_sulfate_vehkamaki_test.o carma_sulfhet_vehkamaki_test.o \
 carma_sulfatetest.o carma_sulfate_ccdon_test.o \
 carma_sulfate_2nc_test.o carma_fractaloptics_2nc_test.o carma_aluminum_2nc_test.o \
-carma_mixedsulfate_2nc_test.o carma_alumsulf_2nc_test.o carma_alsul_coreshell_optics_test.o
+carma_mixedsulfate_2nc_test.o carma_alumsulf_2nc_test.o carma_alsul_coreshell_optics_test.o \
+carma_alsul_optics_common_mod.o
 
 TEST_DOC = carma_bcoctest.html carma_bc2gtest.html carma_coagtest.html carma_drydeptest.html \
 carma_falltest.html carma_growtest.html carma_inittest.html carma_kappawetrtest.html \
@@ -26,7 +27,8 @@ carma_growintest.html carma_fractalmicrotest.html carma_fractalopticstest.html c
 carma_sulfate_vehkamaki_test.html carma_sulfhet_vehkamaki_test.html \
 carma_sulfatetest.html carma_sulfate_ccdon_test.html \
 carma_sulfate_2nc_test.html carma_fractaloptics_2nc_test.html carma_aluminum_2nc_test.html \
-carma_mixedsulfate_2nc_test.html carma_alumsulf_2nc_test.html carma_alsul_coreshell_optics_test.html
+carma_mixedsulfate_2nc_test.html carma_alumsulf_2nc_test.html carma_alsul_coreshell_optics_test.html \
+carma_alsul_optics_common_mod.html
 
 atmosphere_mod.o : atmosphere_mod.F90
 	$(FORTRAN) $(FFLAGS) -c $<
@@ -148,5 +150,8 @@ carma_mixedsulfate_2nc_test.o : carma_mixedsulfate_2nc_test.F90 atmosphere_mod.m
 carma_alumsulf_2nc_test.o : carma_alumsulf_2nc_test.F90 atmosphere_mod.mod ncio_mod.mod test2nc_mod.mod carmadiags_mod.mod nc_types_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
-carma_alsul_coreshell_optics_test.o : carma_alsul_coreshell_optics_test.F90 atmosphere_mod.mod ncio_mod.mod test2nc_mod.mod carmadiags_mod.mod nc_types_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+carma_alsul_coreshell_optics_test.o : carma_alsul_coreshell_optics_test.F90 atmosphere_mod.mod ncio_mod.mod test2nc_mod.mod carmadiags_mod.mod nc_types_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod carma_alsul_optics_common_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_alsul_optics_common_mod.o : carma_alsul_optics_common_mod.F90 carma_precision_mod.mod carma_constants_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
