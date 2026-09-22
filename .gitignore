@@ -5,3 +5,4 @@ build-debug
 *.nc
 .venv/*
 doc/
+*.pyc
