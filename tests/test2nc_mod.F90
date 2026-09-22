@@ -102,6 +102,10 @@ module test2nc_mod
                                 if (ncflgs%f_nc_group(i)%f_nc_wr_bin) call ncdefreal(outid, nlev, nlat, nlon, trim(vname)//"WR", "Wet radius", "cm", fill_value)
                                 if (ncflgs%f_nc_group(i)%f_nc_ro_bin) call ncdefreal(outid, nlev, nlat, nlon, trim(vname)//"RO", "Wet particle density", "g/cm3", fill_value)
                                 if (ncflgs%f_nc_group(i)%f_nc_mr_bin) call ncdefreal(outid, nlev, nlat, nlon, trim(vname)//"MR", "Mass mixing ratio", "kg/kg", fill_value)
+                                if (ncflgs%f_nc_group(i)%f_nc_adh2so4_bin) call ncdefreal(outid, nlev, nlat, nlon, trim(vname)//"ADH2SO4", "H2SO4-coated surface area density", "um2/cm3", fill_value)
+                                if (ncflgs%f_nc_group(i)%f_nc_adsolid_bin) call ncdefreal(outid, nlev, nlat, nlon, trim(vname)//"ADSOLID", "Uncoated solid surface area density", "um2/cm3", fill_value)
+                                if (ncflgs%f_nc_group(i)%f_nc_corefrac_bin) call ncdefreal(outid, nlev, nlat, nlon, trim(vname)//"COREFRAC", "Core (alumina) volume fraction of the wet particle", "1", fill_value)
+                                if (ncflgs%f_nc_group(i)%f_nc_shellthick_bin) call ncdefreal(outid, nlev, nlat, nlon, trim(vname)//"SHELLTHICK", "H2SO4/H2O shell thickness (wet radius minus core radius)", "cm", fill_value)
                         end do
 
                 end do
@@ -160,7 +164,8 @@ module test2nc_mod
                         p, t, z, dT, rhoa, rlheat, &
                         mmr, si, sl, ei, el, wt, &
                         nd, ad, md, re, rew, rm, jn, mr, pa, ar, vm, ex_vis, od_vis, &
-                        vd_bin, nd_bin, wr_bin, ro_bin, mr_bin, mr_elm_bin)
+                        vd_bin, nd_bin, wr_bin, ro_bin, mr_bin, mr_elm_bin, &
+                        adh2so4_bin, adsolid_bin, corefrac_bin, shellthick_bin)
 
 
                 ! Input
@@ -181,6 +186,8 @@ module test2nc_mod
 
                 real(kind=f), intent(in), optional :: vd_bin(nlev,ngroup,nbin), nd_bin(nlev,ngroup,nbin), wr_bin(nlev,ngroup,nbin)
                 real(kind=f), intent(in), optional :: ro_bin(nlev,ngroup,nbin), mr_bin(nlev,ngroup,nbin)
+                real(kind=f), intent(in), optional :: adh2so4_bin(nlev,ngroup,nbin), adsolid_bin(nlev,ngroup,nbin)
+                real(kind=f), intent(in), optional :: corefrac_bin(nlev,ngroup,nbin), shellthick_bin(nlev,ngroup,nbin)
 
                 real(kind=f), intent(in), optional :: mr_elm_bin(nlev,nelem,nbin)
                 
@@ -189,6 +196,7 @@ module test2nc_mod
                 character(len=80)       :: sname, vname
 
                 ! Time variable
+                write(*,*) 'time variable', istep, time, secsperday, date
                 call ncwrttime(outid, istep, time / secsperday, date)
                 
                 ! Atmospheric variables
@@ -244,6 +252,10 @@ module test2nc_mod
                                 if (ncflgs%f_nc_group(i)%f_nc_wr_bin) call ncwrtreal(outid, trim(vname)//"WR", istep, nlev, nlat, nlon, lat, lon, wr_bin(:,i,ib))
                                 if (ncflgs%f_nc_group(i)%f_nc_ro_bin) call ncwrtreal(outid, trim(vname)//"RO", istep, nlev, nlat, nlon, lat, lon, ro_bin(:,i,ib))
                                 if (ncflgs%f_nc_group(i)%f_nc_mr_bin) call ncwrtreal(outid, trim(vname)//"MR", istep, nlev, nlat, nlon, lat, lon, mr_bin(:,i,ib))
+                                if (ncflgs%f_nc_group(i)%f_nc_adh2so4_bin) call ncwrtreal(outid, trim(vname)//"ADH2SO4", istep, nlev, nlat, nlon, lat, lon, adh2so4_bin(:,i,ib))
+                                if (ncflgs%f_nc_group(i)%f_nc_adsolid_bin) call ncwrtreal(outid, trim(vname)//"ADSOLID", istep, nlev, nlat, nlon, lat, lon, adsolid_bin(:,i,ib))
+                                if (ncflgs%f_nc_group(i)%f_nc_corefrac_bin) call ncwrtreal(outid, trim(vname)//"COREFRAC", istep, nlev, nlat, nlon, lat, lon, corefrac_bin(:,i,ib))
+                                if (ncflgs%f_nc_group(i)%f_nc_shellthick_bin) call ncwrtreal(outid, trim(vname)//"SHELLTHICK", istep, nlev, nlat, nlon, lat, lon, shellthick_bin(:,i,ib))
                         end do
                end do
 
@@ -272,6 +284,10 @@ module test2nc_mod
                 call ncdefreal_optics(outid, nwave, 1, "refidx_i", "Refractive index - imaginary", "")
                  do i = 1, nrun
                         sname = sname_run(i)
+                        ! Per-run composite refractive index (used when different runs represent
+                        ! different compositions/mixing methods, not just different geometries).
+                        call ncdefreal_optics(outid, nwave, 1, trim(sname)//"_refidx_r", "Refractive index used for this run - real", "")
+                        call ncdefreal_optics(outid, nwave, 1, trim(sname)//"_refidx_i", "Refractive index used for this run - imaginary", "")
                         if (nbin.gt.1) then
                                 call ncdefbin(outid, nbin, trim(sname)//"_r", "Bin radius", "cm") 
                                 call ncdefbin(outid, nbin, trim(sname)//"_rmass", "Mass bins", "g")
@@ -296,8 +312,9 @@ module test2nc_mod
         end subroutine ncdef_optics
 
 
-        subroutine ncwrt_optics(outid, nwave, nbin, nrun, wave, bins, sname_run,  & 
-                r_refidx, i_refidx, r, rmass, vol, dr, dm, rrat, rprat, arat, nmon, rg, rp, df, qext, asy, ssa)
+        subroutine ncwrt_optics(outid, nwave, nbin, nrun, wave, bins, sname_run,  &
+                r_refidx, i_refidx, r, rmass, vol, dr, dm, rrat, rprat, arat, nmon, rg, rp, df, qext, asy, ssa, &
+                r_refidx_run, i_refidx_run)
 
         ! Input
         integer, intent(in)           :: outid,nwave, nbin, nrun
@@ -305,10 +322,12 @@ module test2nc_mod
         real(kind=f), intent(in)      :: wave(nwave), r_refidx(nwave), i_refidx(nwave)
         character(len=80), intent(in) :: sname_run(nrun)
 
-        real(kind=f), intent(in), optional :: r(nbin,nrun), rmass(nbin,nrun), vol(nbin,nrun), dr(nbin,nrun), dm(nbin,nrun) 
+        real(kind=f), intent(in), optional :: r(nbin,nrun), rmass(nbin,nrun), vol(nbin,nrun), dr(nbin,nrun), dm(nbin,nrun)
         real(kind=f), intent(in), optional :: rrat(nbin,nrun), rprat(nbin,nrun), arat(nbin,nrun), nmon(nbin,nrun), df(nbin,nrun)
         real(kind=f), intent(in), optional :: rg(nbin,nrun), rp(nbin,nrun)
         real(kind=f), intent(in), optional :: qext(nwave, nbin, nrun), asy(nwave, nbin, nrun), ssa(nwave, nbin, nrun)
+        ! Per-run composite refractive index actually used for that run's mie() calculation.
+        real(kind=f), intent(in), optional :: r_refidx_run(nwave, nrun), i_refidx_run(nwave, nrun)
 
         ! Working variables
         integer                 :: i
@@ -320,7 +339,9 @@ module test2nc_mod
 
         do i = 1, nrun
                 sname = sname_run(i)
-                if (present(r))     call ncwrtbin(outid, trim(sname)//"_r", nbin, r(:,i)) 
+                if (present(r_refidx_run)) call ncwrtreal_optics(outid, trim(sname)//"_refidx_r", nwave, 1, r_refidx_run(:,i))
+                if (present(i_refidx_run)) call ncwrtreal_optics(outid, trim(sname)//"_refidx_i", nwave, 1, i_refidx_run(:,i))
+                if (present(r))     call ncwrtbin(outid, trim(sname)//"_r", nbin, r(:,i))
                 if (present(rmass)) call ncwrtbin(outid, trim(sname)//"_rmass", nbin, rmass(:,i) )
                 if (present(vol))   call ncwrtbin(outid, trim(sname)//"_vol", nbin, vol(:,i) )
                 if (present(dr))    call ncwrtbin(outid, trim(sname)//"_dr", nbin, dr(:,i) )
