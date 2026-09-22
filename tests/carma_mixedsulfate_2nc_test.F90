@@ -62,7 +62,7 @@ subroutine test_mixedsulfate_simple()
   ! real(kind=f), parameter   :: dArea = 10000._f
   real(kind=f), parameter   :: deltaz = 10000._f
   real(kind=f), parameter   :: zmin   = 145000._f
-  integer, parameter        :: nstep  = 180000 / int(dtime)
+  integer, parameter        :: nstep  = 1800000 / int(dtime)
   real(kind=f), parameter   :: secsperday = 24._f * 3600._f
 
   integer               :: nsubsteps
@@ -343,7 +343,7 @@ subroutine test_mixedsulfate_simple()
            ncflgs%f_nc_group(igroup)%f_nc_wr_bin = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_nd_bin = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_ro_bin = .TRUE.
-!             ncflgs%f_nc_group(igroup)%f_nc_mr_bin = .TRUE.
+          !  ncflgs%f_nc_group(igroup)%f_nc_mr_bin = .TRUE.
            ncflgs%f_nc_group(igroup)%f_nc_vd_bin = .TRUE.
   end do
 
