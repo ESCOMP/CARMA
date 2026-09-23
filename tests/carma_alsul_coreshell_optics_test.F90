@@ -124,7 +124,7 @@ subroutine test_alsul_coreshell_optics()
   logical      :: is_wet, is_coreshell
 
   integer            :: outid
-  character(len=80)  :: filename_out = "carma_alsul_coreshell_optics_test_cf90,99,1.nc"
+  character(len=80)  :: filename_out = "carma_SDPSul_CS_optics_test_cf30,50,70,90.nc"
 
   rc = 0
 
