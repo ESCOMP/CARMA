@@ -70,8 +70,8 @@ subroutine test_alsul_coreshell_optics()
   integer, parameter :: NREFIDX = 1
 
   ! Use one assumed dry-particle alumina (core) volume fraction initially.
-  integer, parameter      :: NCOREFRAC = 3
-  real(kind=f), parameter :: core_frac_vals(NCOREFRAC) = (/ 0.9_f, 0.99_f, 1.0_f /)
+  integer, parameter      :: NCOREFRAC = 4
+  real(kind=f), parameter :: core_frac_vals(NCOREFRAC) = (/ 0.9_f, 0.7_f, 0.5_f, 0.3_f /)
 
   ! 1 PRSUL reference + 2 ALSUL_fixed (dry/wet) + coreshell (dry/wet)
   integer, parameter :: NRUN = 1 + 2 + 2 * NCOREFRAC
