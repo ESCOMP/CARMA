@@ -95,11 +95,11 @@ subroutine test_alsul_coreshell_optics()
   integer :: ibin, iwave, irun, imethod, icf
 
   ! Group geometry.
-  real(kind=f) :: df(NBIN, NGROUP)
+  ! real(kind=f) :: df(NBIN, NGROUP) ! Fractal property
   real(kind=f) :: rhogroup(NBIN)
   real(kind=f) :: r(NBIN,NGROUP), rmass(NBIN,NGROUP), vol(NBIN,NGROUP)
   real(kind=f) :: rlow(NBIN,NGROUP), rup(NBIN,NGROUP), dr(NBIN,NGROUP), dm(NBIN,NGROUP)
-  real(kind=f) :: nmon(NBIN,NGROUP)
+  ! real(kind=f) :: nmon(NBIN,NGROUP) ! Fractal property
 
   ! Refractive indices.
   complex(kind=f) :: refidx_alum(NWAVE_RRTMG)
@@ -140,11 +140,13 @@ subroutine test_alsul_coreshell_optics()
        rc, irhswell=I_WTPCT_H2SO4, do_drydep=.false., is_sulfate=.true., shortname="PRSUL")
   if (rc < 0) stop "    *** CARMAGROUP_Create (PRSUL) FAILED ***"
 
-  df(:,I_GRP_ALSUL)       = df_ALSUL_value
   rhogroup(:)             = RHO_ALUMINUM
   call CARMAGROUP_Create(carma, I_GRP_ALSUL, "alumina", rmin_ALUM, rmrat_ALUM, I_SPHERE, 1._f, .false., &
        rc, irhswell=I_PETTERS, do_drydep=.false., is_sulfate=.true., shortname="ALSUL", &
-       is_fractal=.TRUE., rmon=rmon_ALUM, df=df(:,I_GRP_ALSUL), falpha=falpha_ALUM, rho=rhogroup)
+      is_fractal=.FALSE., rho=rhogroup)
+    ! To restore fractal properties, use the following setup instead:
+    ! df(:,I_GRP_ALSUL) = df_ALSUL_value
+    ! is_fractal=.TRUE., rmon=rmon_ALUM, df=df(:,I_GRP_ALSUL), falpha=falpha_ALUM, rho=rhogroup)
   if (rc < 0) stop "    *** CARMAGROUP_Create (ALSUL) FAILED ***"
 
   call CARMAELEMENT_Create(carma, I_ELEM_PRSUL, I_GRP_PRSUL, "Sulfate", &
@@ -167,8 +169,8 @@ subroutine test_alsul_coreshell_optics()
   if (rc < 0) stop "    *** CARMAGROUP_Get (PRSUL) FAILED ***"
 
   call CARMAGROUP_Get(carma, I_GRP_ALSUL, rc, r=r(:,I_GRP_ALSUL), rlow=rlow(:,I_GRP_ALSUL), rup=rup(:,I_GRP_ALSUL), &
-       dr=dr(:,I_GRP_ALSUL), rmass=rmass(:,I_GRP_ALSUL), dm=dm(:,I_GRP_ALSUL), vol=vol(:,I_GRP_ALSUL), &
-       nmon=nmon(:,I_GRP_ALSUL))
+      dr=dr(:,I_GRP_ALSUL), rmass=rmass(:,I_GRP_ALSUL), dm=dm(:,I_GRP_ALSUL), vol=vol(:,I_GRP_ALSUL))
+      ! for fractal particles, add nmon=nmon(:,I_GRP_ALSUL)
   if (rc < 0) stop "    *** CARMAGROUP_Get (ALSUL) FAILED ***"
 
   do ibin = 1, NBIN
