@@ -121,22 +121,56 @@ source code for these tests are located in the tests subdirectory.
 ### Developing and debugging CMake tests
 
 The CMake test targets are named `test_<name>` and are registered with CTest.
-To create a new test, add its Fortran source to `tests/` and register it in
-`tests/CMakeLists.txt`, for example:
+To add and debug a new test:
+
+1. Add the test source file under `tests/`. The source must contain a Fortran
+  program, for example `carma_mytest.F90`.
+2. Choose a short CMake name. The name becomes both the CTest name and the
+  executable suffix, so `mytest` produces `test_mytest`.
+3. Register the test in `tests/CMakeLists.txt` with `create_standard_test`.
+  Include `atmosphere_mod.F90` when the test follows the usual CARMA test
+  pattern:
 
 ```
 create_standard_test(NAME mytest SOURCES atmosphere_mod.F90 carma_mytest.F90)
 ```
 
-In VS Code, run the `Debug CARMA test` launch configuration and enter `mytest`
-when prompted. The included task configures a `build-debug` directory, builds
-the selected target with debug symbols, and starts GDB. Set breakpoints in the
-Fortran source before launching. The equivalent terminal workflow is:
+4. Add every other source file that provides a module used by the test. For
+  example, a NetCDF test commonly needs `test2nc_mod.F90`, `nc_types_mod.F90`,
+  `ncio_mod.F90`, and `carmadiags_mod.F90`; a test using a shared local module
+  must list that module source too. Put NetCDF-only registrations inside the
+  existing `if(CARMA_ENABLE_NETCDF)` block.
+5. Configure the debug build with NetCDF enabled. CMake 3.21 or newer is
+  required. On the Cray environment, set the MPICH pkg-config path first so
+  CMake can find the parallel NetCDF dependencies. If `cmake --version`
+  reports an older version, use the supported CMake executable configured for
+  this environment:
 
+```sh
+export PKG_CONFIG_PATH="/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib/pkgconfig:${PKG_CONFIG_PATH}"
+/mnt/lustre/a2fs-work4/work/y07/shared/utils/core/cmake/3.29.4/bin/cmake -S . -B build-debug -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_COMPILER=ftn "-DCMAKE_Fortran_FLAGS_DEBUG=-ffree-line-length-none -g -O0 -fbacktrace -fbounds-check" -DCARMA_ENABLE_NETCDF=ON
 ```
-cmake -S . -B build-debug -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_COMPILER=ftn "-DCMAKE_Fortran_FLAGS_DEBUG=-ffree-line-length-none -g -O0 -fbacktrace -fbounds-check" -DCARMA_ENABLE_NETCDF=ON
-cmake --build build-debug --target test_mytest
-gdb ./build-debug/test_mytest
+
+In the multiline command, each `\` must be the final character on its line;
+do not put spaces after it. If copying multiline commands is inconvenient,
+run the same command on one line instead.
+
+6. Build only the new executable. Replace `mytest` with the `NAME` from step 3:
+
+```sh
+cmake --build build-debug --target test_mytest --parallel
+```
+
+7. Start debugging in VS Code by selecting `Debug CARMA test` in the Run and
+  Debug view and entering `mytest` when prompted. The configuration builds
+  `build-debug/test_mytest`, starts GDB, and uses `build-debug` as the working
+  directory. Set breakpoints in the Fortran source before launching.
+
+8. If the test writes files, check that its output appears in `build-debug`.
+  You can also run the executable directly:
+
+```sh
+./build-debug/test_mytest
 ```
 
 To run all of the tests interactively, use the command
