@@ -82,8 +82,8 @@ module carma_alsul_optics_common_mod
   ! Group/element geometry, matching carma_alumsulf_2nc_test.F90.
   real(kind=f), parameter :: rmin_PRSUL  = 3.43e-8_f    ! sulfate bin 1 radius [cm]
   real(kind=f), parameter :: rmrat_PRSUL = 3.67_f        ! sulfate volume ratio between bins
-  real(kind=f), parameter :: rmin_ALUM   = 3.4e-8_f      ! SDP bin 1 radius = monomer radius [cm]
-  real(kind=f), parameter :: rmrat_ALUM  = 1.9628_f      ! SDP volume ratio between bins
+  real(kind=f), parameter :: rmin_ALUM   = 1.0e-9_f      ! SDP bin 1 radius = monomer radius [cm]
+  real(kind=f), parameter :: rmrat_ALUM  = 2.15443469_f      ! SDP volume ratio between bins
   real(kind=f), parameter :: rmon_ALUM   = 24.e-6_f      ! alumina monomer radius [cm]
   real(kind=f), parameter :: falpha_ALUM = 1._f          ! fractal packing coefficient
   real(kind=f), parameter :: df_ALSUL_value = 2.6_f      ! fractal dimension

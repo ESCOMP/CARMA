@@ -63,7 +63,7 @@ subroutine test_alsul_coreshell_optics()
 
   ! Model dimensions.
   integer, parameter :: NELEM   = 3
-  integer, parameter :: NBIN    = 20
+  integer, parameter :: NBIN    = 28
   integer, parameter :: NGROUP  = 2
   integer, parameter :: NSOLUTE = 0
   integer, parameter :: NGAS    = 0
@@ -124,7 +124,7 @@ subroutine test_alsul_coreshell_optics()
   logical      :: is_wet, is_coreshell
 
   integer            :: outid
-  character(len=80)  :: filename_out = "carma_SDPSul_CS_optics_test_cf30,50,70,90.nc"
+  character(len=80)  :: filename_out = "carma_SDPSul_CS_optics_test_cf30,50,70,90_bin1,1000nm.nc"
 
   rc = 0
 
