@@ -57,6 +57,11 @@ endif
 # Execute the make file in the build directory.
 cd $blddir
 $MAKETOOL $bldtgt
+set build_status=$status
+if ($build_status != 0) then
+  echo "Build failed with status $build_status"
+  exit $build_status
+endif
 
 # Create the documentation.
 if ($bldtgt != tar) then
@@ -72,4 +77,6 @@ if ($bldtgt != tar) then
   cd $docdir
   $MAKETOOL doc
 endif
+
+exit $build_status
 

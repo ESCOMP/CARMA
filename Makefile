@@ -2,11 +2,12 @@
 # Jamison A. Smith, AKA JAS
 # April 26, 2007
 
-FORTRAN =	ifx
+# FORTRAN =	ifx
 #FORTRAN =	ifort
 #FORTRAN =	pgf90
 #FORTRAN =	pathf90
-#FORTRAN =	gfortran
+# FORTRAN =	gfortran
+FORTRAN =	ftn
 #FORTRAN =	g95
 #FORTRAN =	xlf90
 
@@ -18,6 +19,9 @@ TGZ =		CARMA.tar
 FFLAGS =
 #FFLAGS += -DSINGLE                    # for single precision
 #FFLAGS += -DDEBUG                     # for debug print statements
+ifneq ($(CARMA_DEBUG),)
+  FFLAGS += -DDEBUG
+endif
 
 
 # Add options for the Intel Fortran compiler.
@@ -57,6 +61,13 @@ ifeq ($(FORTRAN),ifx)
   # Add options for the netcdf libraries
   LDFLAGS += -L/opt/local/lib -lnetcdff -L/opt/local/lib -Wl,-headerpad_max_install_names -lnetcdf -lnetcdf
 
+endif
+
+ifeq ($(FORTRAN),ftn)
+  FFLAGS  += -ffree-line-length-none
+  FFLAGS  += -g -fbounds-check -ffpe-trap=zero,invalid,overflow -fbacktrace
+  FFLAGS  += -fopenmp
+  LDFLAGS = $(FFLAGS) -L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_82 -lnetcdff -lnetcdf
 endif
 
 # Add options for the Portland Group compiler.
@@ -201,7 +212,13 @@ FRACTALOPTICS_2NC_TEST.exe : $(CARMA_OBJ) carma_fractaloptics_2nc_test.o carma_t
 	$(FORTRAN) $(LDFLAGS) -o FRACTALOPTICS_2NC_TEST.exe carma_fractaloptics_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o nc_types_mod.o $(CARMA_OBJ)
 ALUMINUM_2NC_TEST.exe : $(CARMA_OBJ) carma_aluminum_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
 	$(FORTRAN) $(LDFLAGS) -o ALUMINUM_2NC_TEST.exe carma_aluminum_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
-
+MIXEDSULFATE_2NC_TEST.exe : $(CARMA_OBJ) carma_mixedsulfate_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o MIXEDSULFATE_2NC_TEST.exe carma_mixedsulfate_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
+ALUMSULF_2NC_TEST.exe : $(CARMA_OBJ) carma_alumsulf_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o ALUMSULF_2NC_TEST.exe carma_alumsulf_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
+ALSUL_CORESHELL_OPTICS_TEST.exe : $(CARMA_OBJ) carma_alsul_coreshell_optics_test.o carma_alsul_optics_common_mod.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o nc_types_mod.o
+	$(FORTRAN) $(LDFLAGS) -o ALSUL_CORESHELL_OPTICS_TEST.exe carma_alsul_coreshell_optics_test.o carma_alsul_optics_common_mod.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o nc_types_mod.o $(CARMA_OBJ)
+  
 # Compile everything.
 all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
@@ -209,7 +226,7 @@ SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
 SULFATETEST.exe NUC2TEST.exe GROWINTEST.exe GROWCLRTEST.exe FRACTALMICROTEST.exe \
 FRACTALOPTICSTEST.exe SULFHETTEST.exe KAPPAWETRTEST.exe SULFHET_VEHKAMAKI_TEST.exe SULFATE_VEHKAMAKI_TEST.exe \
 SULFATE_CCDON_TEST.exe \
-SULFATE_2NC_TEST.exe FRACTALOPTICS_2NC_TEST.exe ALUMINUM_2NC_TEST.exe
+SULFATE_2NC_TEST.exe FRACTALOPTICS_2NC_TEST.exe ALUMINUM_2NC_TEST.exe MIXEDSULFATE_2NC_TEST.exe ALUMSULF_2NC_TEST.exe
 
 # Compile all of the documentation.
 doc : $(CARMA_DOC) $(TEST_DOC)

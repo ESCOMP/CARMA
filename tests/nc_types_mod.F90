@@ -58,6 +58,10 @@ module nc_types_mod
                 logical :: f_nc_ro_bin
                 logical :: f_nc_mr_bin
                 logical :: f_nc_vd_bin
+                logical :: f_nc_adh2so4_bin
+                logical :: f_nc_adsolid_bin
+                logical :: f_nc_corefrac_bin
+                logical :: f_nc_shellthick_bin
         end type ncgroup_type
 
         type :: ncelem_type
@@ -148,7 +152,11 @@ module nc_types_mod
                                 ncflgs%f_nc_group(igroup)%f_nc_nd_bin = .FALSE.
                                 ncflgs%f_nc_group(igroup)%f_nc_ro_bin = .FALSE.
                                 ncflgs%f_nc_group(igroup)%f_nc_mr_bin = .FALSE.
-                                ncflgs%f_nc_group(igroup)%f_nc_vd_bin = .FALSE. 
+                                ncflgs%f_nc_group(igroup)%f_nc_vd_bin = .FALSE.
+                                ncflgs%f_nc_group(igroup)%f_nc_adh2so4_bin = .FALSE.
+                                ncflgs%f_nc_group(igroup)%f_nc_adsolid_bin = .FALSE.
+                                ncflgs%f_nc_group(igroup)%f_nc_corefrac_bin = .FALSE.
+                                ncflgs%f_nc_group(igroup)%f_nc_shellthick_bin = .FALSE.
                         end do
                 end if
 

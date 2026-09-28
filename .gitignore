@@ -1,1 +1,8 @@
 build
+build-debug
+*.html
+*.exe
+*.nc
+.venv/*
+doc/
+*.pyc

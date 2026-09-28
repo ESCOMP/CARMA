@@ -40,6 +40,9 @@ if(CARMA_ENABLE_NETCDF)
   create_standard_test(NAME aluminum_netcdf SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_aluminum_2nc_test.F90)
   create_standard_test(NAME fractal_optics_netcdf SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_fractaloptics_2nc_test.F90)
   create_standard_test(NAME sulfate_netcdf SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_sulfate_2nc_test.F90)
+  create_standard_test(NAME mixedsulfate_2nc SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_mixedsulfate_2nc_test.F90)
+  create_standard_test(NAME alumsulf_2nc SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_alumsulf_2nc_test.F90)
+  create_standard_test(NAME alsul_coreshell_optics SOURCES atmosphere_mod.F90 test2nc_mod.F90 nc_types_mod.F90 ncio_mod.F90 carmadiags_mod.F90 carma_alsul_optics_common_mod.F90 carma_alsul_coreshell_optics_test.F90)
 endif()
 
 ################################################################################

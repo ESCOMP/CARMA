@@ -1,0 +1,50 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure CARMA debug build",
+            "type": "shell",
+            "command": "/mnt/lustre/a2fs-work4/work/y07/shared/utils/core/cmake/3.29.4/bin/cmake",
+            "args": [
+                "-S", "${workspaceFolder}",
+                "-B", "${workspaceFolder}/build-debug",
+                "-G", "Unix Makefiles",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DCMAKE_Fortran_COMPILER=ftn",
+                "-DCMAKE_Fortran_FLAGS_DEBUG=-ffree-line-length-none -g -O0 -fbacktrace -fbounds-check",
+                "-DCARMA_ENABLE_NETCDF=ON"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PKG_CONFIG_PATH": "/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib/pkgconfig:${env:PKG_CONFIG_PATH}"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build selected CARMA test",
+            "type": "shell",
+            "command": "/mnt/lustre/a2fs-work4/work/y07/shared/utils/core/cmake/3.29.4/bin/cmake",
+            "args": [
+                "--build", "${workspaceFolder}/build-debug",
+                "--target", "test_${input:testName}",
+                "--parallel"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "dependsOn": "Configure CARMA debug build",
+            "dependsOrder": "sequence",
+            "problemMatcher": ["$gcc"]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testName",
+            "type": "promptString",
+            "description": "CMake test name, without the test_ prefix",
+            "default": "version"
+        }
+    ]
+}
