@@ -51,6 +51,8 @@ subroutine test_fractaloptics()
   integer, parameter    :: NRUN         = 2  ! NRUN max value is 2, one for fractal and one for standard
   integer, parameter    :: NWAVE        = 30
 
+  integer, parameter    :: lun          = 42 ! logical unit number for the text output
+
   ! Model grid
   integer               :: bins(NBIN)
 
@@ -61,7 +63,7 @@ subroutine test_fractaloptics()
 
   ! Netcdf variables
   type(nc_type)      :: ncflgs
-  character(len=80)  :: filename_in = "/glade/u/home/iquaglia/Solid_SAI/rindex/alumina.nc" ! input file for refractive index
+  character(len=80)  :: filename_in = "Alumina.nc" ! input file for refractive index
   ! refractive index can be define later  without loading any file
   character(len=80)  :: filename_out = "carma_fractalopticstest.nc"
   integer            :: inid, outid
@@ -157,7 +159,6 @@ subroutine test_fractaloptics()
 
         ! Test1: do fractal optics calulcation
         if (name_run(irun) .EQ. 'fractal') then
-               print*,name_run(irun)
                 call CARMAGROUP_Create(carma, 1, "fractal", rmin, rmrat, &
                         I_SPHERE, 1._f, .FALSE., rc, is_fractal=.TRUE., &
                         do_mie=.true., imiertn=I_MIERTN_BOTET1997, &
@@ -230,6 +231,32 @@ subroutine test_fractaloptics()
 
   ! Close the output NETCDF file
   call ncclose(outid)
+
+  ! Write a text file for comparison with the regression benchmark
+  open(unit=lun,file="carma_fractaloptics_2nc_test.txt",status="unknown")
+
+  write(lun,*) NRUN, NWAVE, NBIN
+
+  do iwave = 1, NWAVE
+    write(lun,'(i3,e10.3,2(x,e10.3))') iwave, wave(iwave), r_refidx(iwave), i_refidx(iwave)
+  end do
+
+  do irun = 1, NRUN
+    write(lun,*) trim(name_run(irun))
+
+    do ibin = 1, NBIN
+      write(lun,'(i3,6(x,e10.3))') ibin, r(ibin,irun), rmass(ibin,irun), nmon(ibin,irun), &
+        rg(ibin,irun), rp(ibin,irun), df(ibin,irun)
+    end do
+
+    do iwave = 1, NWAVE
+      do ibin = 1, NBIN
+        write(lun,'(2i3,3(x,e10.3))') iwave, ibin, qext(iwave,ibin,irun), ssa(iwave,ibin,irun), asy(iwave,ibin,irun)
+      end do
+    end do
+  end do
+
+  close(unit=lun)
 
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
