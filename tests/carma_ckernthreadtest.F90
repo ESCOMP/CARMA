@@ -26,13 +26,26 @@
 !!   2) reproducibility : every column must give the same kernel as the reference
 !!      column computed serially before the parallel loop.
 !!
-!! With the bug, the (2,1) kernel picks up a spurious van der Waals sticking factor in
-!! some columns but not others, depending on which thread computed the column and what
-!! that thread had on its stack. Run it with several thread counts, e.g.
+!! Because the bad value is whatever happens to be on the stack, simply running the
+!! model only exposes the bug some of the time. To make the failure deterministic, the
+!! stack is "poisoned" before setupckern is called: a helper routine fills a large
+!! region of the stack with a known bit pattern, and then setupckern is called directly
+!! from the same routine, so its local arrays (including use_vw) occupy the poisoned
+!! memory. Each column's kernel is computed twice, once with the stack filled with
+!! zeros (reads as .false.) and once with all bits set (reads as .true. for any
+!! logical convention). A correct setupckern gives identical kernels; with the bug the
+!! all-ones pass applies the van der Waals factor to the (2,1) pair. Run it with
+!! several thread counts, e.g.
 !!
 !!   setenv CARMA_THREADS 4 ; run-carma.csh CKERNTHREADTEST.exe
 !!
-!! The test stops with a non-zero exit status if any mismatch is found.
+!! The test stops with a non-zero exit status (error stop 1) if any mismatch is found.
+!!
+!! NOTE: The poisoning relies on setupckern's automatic arrays living on the stack,
+!! which is the case for ifx/ifort (with -qopenmp or without -heap-arrays). Compilers
+!! that put automatic arrays on the heap may still miss the bug. On the master thread
+!! the OpenMP runtime overwrites the poisoned word on entry to setupckern, so the
+!! parallel loop always uses at least 2 threads, even when CARMA_THREADS=1.
 program carma_ckernthreadtest
   implicit none
 
@@ -77,6 +90,11 @@ subroutine test_ckern_threads()
   real(kind=f), parameter   :: zmin   = 0._f
   real(kind=f), parameter   :: rtol   = 1.e-12_f
 
+  ! Stack poisoning: number of 8-byte words to fill, and the two fill patterns.
+  integer, parameter        :: NPOISON      = 32768        ! 256 KB
+  integer(kind=8), parameter :: POISON_ZERO = 0_8
+  integer(kind=8), parameter :: POISON_ONES = -1_8         ! all bits set
+
   type(carma_type), target  :: carma
   type(carma_type), pointer :: carma_ptr
   type(carmastate_type), allocatable :: cstate(:)
@@ -87,16 +105,22 @@ subroutine test_ckern_threads()
   real(kind=f)              :: lat, lon, time
 
   ! Coagulation kernels for the 1-2 and 2-1 group pairs.
+  ! (ck*_ref: serial reference; ck*: zero-poisoned stack; cp*: ones-poisoned stack)
   real(kind=f), allocatable :: ck12_ref(:,:,:), ck21_ref(:,:,:)
   real(kind=f), allocatable :: ck12(:,:,:,:), ck21(:,:,:,:)
+  real(kind=f), allocatable :: cp12(:,:,:,:), cp21(:,:,:,:)
 
   integer               :: icol, ithread, nthreads, i1, i2, k
   integer               :: col_thread(NCOL)
-  logical               :: col_asym(NCOL), col_diff(NCOL)
-  integer               :: nasym, ndiff
+  logical               :: col_asym(NCOL), col_diff(NCOL), col_pois(NCOL)
+  integer               :: nasym, ndiff, npois
 
+  ! Always use at least 2 threads in the parallel loop. On the master thread, the
+  ! OpenMP runtime call that ifx inserts at the start of setupckern (it contains a
+  ! CRITICAL section) overwrites part of the poisoned stack, so only columns computed
+  ! by worker threads are guaranteed to see the poison pattern.
   nthreads = 1
-  !$ nthreads = omp_get_max_threads()
+  !$ nthreads = max(2, omp_get_max_threads())
   write(*,*) "  Number of OpenMP threads : ", nthreads
   write(*,*) "  Number of columns        : ", NCOL
 
@@ -149,9 +173,11 @@ subroutine test_ckern_threads()
   allocate(cstate(nthreads))
   allocate(ck12_ref(NZ,NBIN,NBIN), ck21_ref(NZ,NBIN,NBIN))
   allocate(ck12(NZ,NBIN,NBIN,NCOL), ck21(NZ,NBIN,NBIN,NCOL))
+  allocate(cp12(NZ,NBIN,NBIN,NCOL), cp21(NZ,NBIN,NBIN,NCOL))
 
-  ! Reference column, computed serially by the master thread before the parallel region.
-  call do_column(cstate(1), ck12_ref, ck21_ref)
+  ! Reference column, computed serially by the master thread before the parallel region
+  ! (with a zero-poisoned stack, i.e. the "benign" garbage).
+  call do_column(cstate(1), ck12_ref, ck21_ref, cp12(:,:,:,1), cp21(:,:,:,1))
 
   write(*,*) ""
   write(*,*) "  Reference column (serial):"
@@ -161,27 +187,33 @@ subroutine test_ckern_threads()
   ! carmastate object, as in carma_test.F90 and in CAM.
   col_thread(:) = 0
 
-  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(icol, ithread) SCHEDULE(STATIC)
+  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(icol, ithread) SCHEDULE(STATIC) NUM_THREADS(nthreads)
   do icol = 1, NCOL
     ithread = 1
     !$ ithread = omp_get_thread_num() + 1
     col_thread(icol) = ithread
 
-    call do_column(cstate(ithread), ck12(:,:,:,icol), ck21(:,:,:,icol))
+    call do_column(cstate(ithread), ck12(:,:,:,icol), ck21(:,:,:,icol), &
+                   cp12(:,:,:,icol), cp21(:,:,:,icol))
   end do
   !$OMP END PARALLEL DO
 
   ! Check the results.
   nasym = 0
   ndiff = 0
+  npois = 0
   do icol = 1, NCOL
     col_asym(icol) = .false.
     col_diff(icol) = .false.
+    col_pois(icol) = .false.
 
     do i2 = 1, NBIN
       do i1 = 1, NBIN
         do k = 1, NZ
           if (abs(ck12(k,i1,i2,icol) - ck21(k,i2,i1,icol)) > rtol * abs(ck12(k,i1,i2,icol))) col_asym(icol) = .true.
+          if (abs(cp12(k,i1,i2,icol) - cp21(k,i2,i1,icol)) > rtol * abs(cp12(k,i1,i2,icol))) col_asym(icol) = .true.
+          if (cp12(k,i1,i2,icol) /= ck12(k,i1,i2,icol)) col_pois(icol) = .true.
+          if (cp21(k,i1,i2,icol) /= ck21(k,i1,i2,icol)) col_pois(icol) = .true.
           if (ck21(k,i1,i2,icol) /= ck21_ref(k,i1,i2)) col_diff(icol) = .true.
           if (ck12(k,i1,i2,icol) /= ck12_ref(k,i1,i2)) col_diff(icol) = .true.
         end do
@@ -190,6 +222,7 @@ subroutine test_ckern_threads()
 
     if (col_asym(icol)) nasym = nasym + 1
     if (col_diff(icol)) ndiff = ndiff + 1
+    if (col_pois(icol)) npois = npois + 1
   end do
 
 !!$  write(*,*) ""
@@ -201,12 +234,13 @@ subroutine test_ckern_threads()
   write(*,*) ""
   write(*,*) "  Columns with an asymmetric 1-2 kernel     : ", nasym, " of ", NCOL
   write(*,*) "  Columns that differ from the reference    : ", ndiff, " of ", NCOL
+  write(*,*) "  Columns that depend on stack contents     : ", npois, " of ", NCOL
 
   ! Cleanup
   do ithread = 1, nthreads
     call CARMASTATE_Destroy(cstate(ithread), rc)
   end do
-  deallocate(cstate, ck12_ref, ck21_ref, ck12, ck21)
+  deallocate(cstate, ck12_ref, ck21_ref, ck12, ck21, cp12, cp21)
 
   call CARMA_Destroy(carma, rc)
   if (rc /= 0) stop "    *** CARMA_Destroy FAILED ***"
@@ -215,19 +249,22 @@ subroutine test_ckern_threads()
   if (nasym > 0 .or. ndiff > 0) then
     write(*,*) "  *** FAILED *** The coagulation kernel depends on uninitialized data"
     write(*,*) "                 (use_vw lower triangle in setupckern.F90)."
-    !error stop 1
+    error stop 1
   else
     write(*,*) "  PASSED: kernel is symmetric and identical in every column."
   end if
 
 contains
 
-  !! Create a carmastate for one column, step it (which calls setupckern), and
-  !! return the 1-2 and 2-1 coagulation kernels.
-  subroutine do_column(cs, k12, k21)
+  !! Create a carmastate for one column and step it, then recompute the coagulation
+  !! kernel twice by calling setupckern directly, first with the stack filled with
+  !! zeros and then with all bits set. Return the 1-2 and 2-1 kernels from both passes.
+  subroutine do_column(cs, k12, k21, p12, p21)
     type(carmastate_type), intent(inout) :: cs
-    real(kind=f), intent(out)            :: k12(NZ,NBIN,NBIN)
+    real(kind=f), intent(out)            :: k12(NZ,NBIN,NBIN)   ! zero-poisoned
     real(kind=f), intent(out)            :: k21(NZ,NBIN,NBIN)
+    real(kind=f), intent(out)            :: p12(NZ,NBIN,NBIN)   ! ones-poisoned
+    real(kind=f), intent(out)            :: p21(NZ,NBIN,NBIN)
 
     integer :: lrc, ie, ib
 
@@ -242,12 +279,39 @@ contains
       end do
     end do
 
+    ! Step once so that the wet radii, etc. used by setupckern are set up.
     call CARMASTATE_Step(cs, lrc)
     if (lrc /= 0) stop "    *** CARMASTATE_Step FAILED ***"
 
+    ! setupckern is called from this routine right after poison_stack, so its stack
+    ! frame (and the automatic array use_vw) lands in the memory just poisoned.
+    call poison_stack(POISON_ZERO)
+    call setupckern(carma_ptr, cs, lrc)
+    if (lrc /= 0) stop "    *** setupckern FAILED ***"
     k12(:,:,:) = cs%f_ckernel(:,:,:,I_SULF,I_MIX)
     k21(:,:,:) = cs%f_ckernel(:,:,:,I_MIX,I_SULF)
+
+    call poison_stack(POISON_ONES)
+    call setupckern(carma_ptr, cs, lrc)
+    if (lrc /= 0) stop "    *** setupckern FAILED ***"
+    p12(:,:,:) = cs%f_ckernel(:,:,:,I_SULF,I_MIX)
+    p21(:,:,:) = cs%f_ckernel(:,:,:,I_MIX,I_SULF)
   end subroutine do_column
+
+  !! Fill a large region of the current thread's stack with a bit pattern. The routine
+  !! is recursive so that buf is a true stack variable (not SAVEd), and buf is volatile
+  !! so the stores can not be optimized away.
+  recursive subroutine poison_stack(pattern)
+    integer(kind=8), intent(in) :: pattern
+
+    integer(kind=8), volatile   :: buf(NPOISON)
+    integer                     :: i
+
+    do i = 1, NPOISON
+      buf(i) = pattern
+    end do
+    if (buf(1) /= pattern) write(*,*) "poison_stack: unexpected value"
+  end subroutine poison_stack
 
   subroutine report_symmetry(k12, k21)
     real(kind=f), intent(in) :: k12(NZ,NBIN,NBIN)
