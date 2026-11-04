@@ -98,8 +98,25 @@ ifeq ($(FORTRAN),gfortran)
   # Open/MP
   FFLAGS  += -fopenmp
 
+  # Location of the netcdf-fortran installation (override with: make NETCDF_CONFIG=...)
+  NETCDF_CONFIG ?= nf-config
+  NETCDF_INC    := $(shell $(NETCDF_CONFIG) --includedir)
+  NETCDF_LIBDIR := $(shell $(NETCDF_CONFIG) --prefix)/lib
+
+  # Include path for netcdf.mod (needed at compile time)
+  FFLAGS += -I$(NETCDF_INC)
+
   # The -llapack flag if for linking to LAPACK lib
   LDFLAGS = $(FFLAGS) -llapack
+
+  # Add options for the netcdf libraries; rpath so the executables
+  # don't depend on LD_LIBRARY_PATH at run time
+  LDFLAGS += $(shell $(NETCDF_CONFIG) --flibs) -Wl,-rpath,$(NETCDF_LIBDIR)
+
+  # rpath to this compiler's own runtime (libgfortran, libgomp), so the system's
+  # older libgfortran isn't picked up instead
+  GFORTRAN_LIBDIR := $(realpath $(dir $(shell $(FORTRAN) -print-file-name=libgfortran.so)))
+  LDFLAGS += -Wl,-rpath,$(GFORTRAN_LIBDIR)
 endif
 
 # Add options for the IBM XL Fortran compiler.
@@ -149,6 +166,8 @@ SIGMAFALLTEST.exe : $(CARMA_OBJ) carma_sigmafalltest.o carma_testutils.o atmosph
 	$(FORTRAN) $(LDFLAGS) -o SIGMAFALLTEST.exe carma_sigmafalltest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 COAGTEST.exe : $(CARMA_OBJ) carma_coagtest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o COAGTEST.exe carma_coagtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
+CKERNTHREADTEST.exe : $(CARMA_OBJ) carma_ckernthreadtest.o carma_testutils.o atmosphere_mod.o
+	$(FORTRAN) $(LDFLAGS) -o CKERNTHREADTEST.exe carma_ckernthreadtest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 BCOCTEST.exe : $(CARMA_OBJ) carma_bcoctest.o carma_testutils.o atmosphere_mod.o
 	$(FORTRAN) $(LDFLAGS) -o BCOCTEST.exe carma_bcoctest.o carma_testutils.o atmosphere_mod.o $(CARMA_OBJ)
 BC2GTEST.exe : $(CARMA_OBJ) carma_bc2gtest.o carma_testutils.o atmosphere_mod.o
@@ -203,7 +222,7 @@ ALUMINUM_2NC_TEST.exe : $(CARMA_OBJ) carma_aluminum_2nc_test.o carma_testutils.o
 	$(FORTRAN) $(LDFLAGS) -o ALUMINUM_2NC_TEST.exe carma_aluminum_2nc_test.o carma_testutils.o atmosphere_mod.o ncio_mod.o test2nc_mod.o carmadiags_mod.o nc_types_mod.o $(CARMA_OBJ)
 
 # Compile everything.
-all : FALLTEST.exe COAGTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
+all : FALLTEST.exe COAGTEST.exe CKERNTHREADTEST.exe BCOCTEST.exe BC2GTEST.exe CETEST.exe GROWTEST.exe INITTEST.exe \
 MIETEST.exe NUCTEST.exe SIGMAFALLTEST.exe SWELLTEST.exe VDIFTEST.exe DRYDEPTEST.exe \
 SIGMADRYDEPTEST.exe PHEATTEST.exe SCFALLTEST.exe CARMA.exe GROWSUBTEST.exe \
 SULFATETEST.exe NUC2TEST.exe GROWINTEST.exe GROWCLRTEST.exe FRACTALMICROTEST.exe \

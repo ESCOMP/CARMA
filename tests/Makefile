@@ -7,7 +7,7 @@
 # NOTE: In the future (or in parnet models) this could be replaced
 # by automatic dependency generation.
 
-TEST_OBJ = carma_bcoctest.o carma_bc2gtest.o carma_coagtest.o carma_drydeptest.o carma_falltest.o \
+TEST_OBJ = carma_bcoctest.o carma_bc2gtest.o carma_coagtest.o carma_ckernthreadtest.o carma_drydeptest.o carma_falltest.o \
 carma_growtest.o carma_inittest.o carma_kappawetrtest.o carma_mietest.o carma_nuctest.o \
 carma_pheattest.o carma_sigmadrydeptest.o carma_sigmafalltest.o carma_swelltest.o \
 carma_vdiftest.o carma_test.o atmosphere_mod.o carma_scfalltest.o carma_growsubtest.o \
@@ -16,7 +16,7 @@ carma_sulfate_vehkamaki_test.o carma_sulfhet_vehkamaki_test.o \
 carma_sulfatetest.o carma_sulfate_ccdon_test.o \
 carma_sulfate_2nc_test.o carma_fractaloptics_2nc_test.o carma_aluminum_2nc_test.o
 
-TEST_DOC = carma_bcoctest.html carma_bc2gtest.html carma_coagtest.html carma_drydeptest.html \
+TEST_DOC = carma_bcoctest.html carma_bc2gtest.html carma_coagtest.html carma_ckernthreadtest.html carma_drydeptest.html \
 carma_falltest.html carma_growtest.html carma_inittest.html carma_kappawetrtest.html \
 carma_mietest.html carma_nuctest.html \
 carma_pheattest.html carma_sigmadrydeptest.html carma_sigmafalltest.html carma_swelltest.html \
@@ -54,6 +54,9 @@ carma_cetest.o : carma_cetest.F90 atmosphere_mod.mod carma_mod.mod carma_constan
 	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_coagtest.o : carma_coagtest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
+	$(FORTRAN) $(FFLAGS) -c $<
+
+carma_ckernthreadtest.o : carma_ckernthreadtest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
 	$(FORTRAN) $(FFLAGS) -c $<
 
 carma_drydeptest.o : carma_drydeptest.F90 atmosphere_mod.mod carma_mod.mod carma_constants_mod.mod carma_precision_mod.mod
