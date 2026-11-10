@@ -1,5 +1,25 @@
 ===============================================================
 
+Tag name: v4.13
+Originator(s): Francis Vitt (fvitt)
+
+Fix netcdf fractal optics test
+
+M       run-all.csh
+M       run-carma.csh
+M       run-regress.csh
+M       tests/CMakeLists.txt
+A       tests/bench/carma_fractaloptics_2nc_test.txt
+M       tests/carma_fractaloptics_2nc_test.F90
+A       tests/data/Alumina.nc
+
+The path to alumina.nc input file no longer exists. This replaces the
+absolute path is a file copied to the test directory which is stored
+in the repo. This also adds code to output to a text file which can be
+compared to stored bench data when regression tested.
+
+===============================================================
+
 Tag name: v4.12
 Originator(s): Francis Vitt (fvitt)
 
