@@ -21,10 +21,10 @@ subroutine check(status)
   implicit none
   integer, intent ( in) :: status
 
-    if(status /= nf90_noerr) then
-      print *, trim(nf90_strerror(status))
-      stop "Stopped"
-    end if
+  if(status /= nf90_noerr) then
+     print *, trim(nf90_strerror(status))
+     stop "Stopped"
+  end if
 end subroutine check
 
 subroutine test_fractaloptics()
@@ -57,9 +57,9 @@ subroutine test_fractaloptics()
   integer               :: bins(NBIN)
 
   ! CARMA object
-  type(carma_type), target            :: carma
-  type(carma_type), pointer           :: carma_ptr
-  integer                             :: rc = 0
+  type(carma_type), target  :: carma
+  type(carma_type), pointer :: carma_ptr
+  integer                   :: rc = 0
 
   ! Netcdf variables
   type(nc_type)      :: ncflgs
@@ -143,7 +143,7 @@ subroutine test_fractaloptics()
 
   ! Create bin
   do ibin = 1,NBIN
-        bins(ibin) = ibin
+     bins(ibin) = ibin
   end do
 
 
@@ -153,80 +153,80 @@ subroutine test_fractaloptics()
 
   ! Define the particle-grid extent of the CARMA test
   do irun = 1, NRUN
-        call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, wave=wave, NREFIDX=NREFIDX)
-        if (rc < 0) stop "    *** CARMA_Create FAILED ***"
-        carma_ptr => carma
+     call CARMA_Create(carma, NBIN, NELEM, NGROUP, NSOLUTE, NGAS, NWAVE, rc, wave=wave, NREFIDX=NREFIDX)
+     if (rc < 0) stop "    *** CARMA_Create FAILED ***"
+     carma_ptr => carma
 
-        ! Test1: do fractal optics calulcation
-        if (name_run(irun) .EQ. 'fractal') then
-                call CARMAGROUP_Create(carma, 1, "fractal", rmin, rmrat, &
-                        I_SPHERE, 1._f, .FALSE., rc, is_fractal=.TRUE., &
-                        do_mie=.true., imiertn=I_MIERTN_BOTET1997, &
-                        rmon=rmon, df=df, falpha=falpha)
+     ! Test1: do fractal optics calulcation
+     if (name_run(irun) .EQ. 'fractal') then
+        call CARMAGROUP_Create(carma, 1, "fractal", rmin, rmrat, &
+             I_SPHERE, 1._f, .FALSE., rc, is_fractal=.TRUE., &
+             do_mie=.true., imiertn=I_MIERTN_BOTET1997, &
+             rmon=rmon, df=df, falpha=falpha)
 
-                if (rc < 0) stop "    *** irun 1 CARMAGROUP_Create FAILED ***"
+        if (rc < 0) stop "    *** irun 1 CARMAGROUP_Create FAILED ***"
 
-                ! Define the element
-                call CARMAELEMENT_Create(carma, 1, 1, "Aerosol", rho, I_INVOLATILE, I_ALUMINUM, rc, refidx=refidx(:,1) )
-                if (rc < 0) stop "    *** irun 1 CARMAELEMENT_Create FAILED ***"
+        ! Define the element
+        call CARMAELEMENT_Create(carma, 1, 1, "Aerosol", rho, I_INVOLATILE, I_ALUMINUM, rc, refidx=refidx(:,1) )
+        if (rc < 0) stop "    *** irun 1 CARMAELEMENT_Create FAILED ***"
 
 
         ! Test2: do standard mie calculation for comparison
-        else if (name_run(irun) .EQ. 'standard') then
-                call CARMAGROUP_Create(carma, 1, "sphere", rmin, rmrat, &
-                         I_SPHERE, 1._f, .FALSE., rc, is_fractal=.FALSE., &
-                         do_mie=.true., imiertn=I_MIERTN_TOON1981)
-                if (rc < 0) stop "    ***  irun 2 CARMAGROUP_CreateFAILED ***"
+     else if (name_run(irun) .EQ. 'standard') then
+        call CARMAGROUP_Create(carma, 1, "sphere", rmin, rmrat, &
+             I_SPHERE, 1._f, .FALSE., rc, is_fractal=.FALSE., &
+             do_mie=.true., imiertn=I_MIERTN_TOON1981)
+        if (rc < 0) stop "    ***  irun 2 CARMAGROUP_CreateFAILED ***"
 
-                ! Define the element
-                call CARMAELEMENT_Create(carma, 1, 1, "Aerosol", rho, I_INVOLATILE, I_ALUMINUM, rc, refidx=refidx(:,1) )
-                if (rc < 0) stop "    *** irun 2 CARMAELEMENT_Create FAILED ***"
-        end if
+        ! Define the element
+        call CARMAELEMENT_Create(carma, 1, 1, "Aerosol", rho, I_INVOLATILE, I_ALUMINUM, rc, refidx=refidx(:,1) )
+        if (rc < 0) stop "    *** irun 2 CARMAELEMENT_Create FAILED ***"
+     end if
 
 
-        ! Setup the CARMA processes to exercise
-        call CARMA_Initialize(carma, rc, do_pheat=.TRUE.)
+     ! Setup the CARMA processes to exercise
+     call CARMA_Initialize(carma, rc, do_pheat=.TRUE.)
 
-        if (rc < 0) stop "    *** CARMA_Initialize FAILED ***"
-        do igroup = 1, NGROUP
-                call CARMAGROUP_Get(carma, igroup, rc, r=r(:,irun), dr=dr(:,irun), rmass=rmass(:,irun), dm=dm(:,irun), vol=vol(:,irun), &
-                        qext=qext(:,:,irun), ssa=ssa(:,:,irun), asym=asy(:,:,irun), arat=arat(:,irun), rrat=rrat(:,irun), &
-                        rprat=rprat(:,irun), nmon=nmon(:,irun))
-        end do
+     if (rc < 0) stop "    *** CARMA_Initialize FAILED ***"
+     do igroup = 1, NGROUP
+        call CARMAGROUP_Get(carma, igroup, rc, r=r(:,irun), dr=dr(:,irun), rmass=rmass(:,irun), dm=dm(:,irun), &
+             vol=vol(:,irun), qext=qext(:,:,irun), ssa=ssa(:,:,irun), asym=asy(:,:,irun), arat=arat(:,irun), &
+             rrat=rrat(:,irun), rprat=rprat(:,irun), nmon=nmon(:,irun))
+     end do
 
-        ! Calculation of agglomerate radius and mobility radius
-        if (name_run(irun) .EQ. 'fractal') then
+     ! Calculation of agglomerate radius and mobility radius
+     if (name_run(irun) .EQ. 'fractal') then
 
         ! agglomerate radius
         rg(:,irun) = falpha * rmon * nmon(:,irun)**(1.0_f/df(:,irun))
 
         ! mobility radius for permeable aggregates from Vainshtein et al 2003
-                rf(:) = (1.0_f/falpha)**(1.0_f/df(:,irun)) * r(:,irun)**(3.0_f/df(:,irun)) * rmon**(1.0_f-3.0_f/df(:,irun))
-                vpor(:) = 1.0_f - (nmon(:,irun))**(1.0_f - 3.0_f/df(:,irun))           ! Volume average porosity (eq. 3.2)
-                upor(:) = 1.0_f - (1.0_f - vpor(:)) * sqrt(df(:,irun)/3.0_f)                ! Uniform poroisty (eq. 3.10)
-                gamma(:) = (1.0_f - upor(:))**(1.0_f/3.0_f)
-                happel(:) = 2.0_f/(9.0_f*(1.0_f-upor(:)))*   &                            ! Happel permeability model
-                         (3.0_f-4.5_f*gamma(:)+4.5_f*gamma(:)**5.0_f-3.0_f*gamma(:)**6.0_f)/  &
-                         (3.0_f+2.0_f*gamma(:)**5.0_f)
-                perm(:) = happel(:) * rmon**2.0_f                                         ! Permeability (eq. 3.3)
-                brinkman(:) = nmon(:,irun)**(1.0_f/df(:,irun)) * 1.0_f/sqrt(happel(:))    ! Brinkman parameter (eq. 3.9)
-                epsil(:) = 1.0_f - brinkman(:)**(-1.0_f)*tanh(brinkman(:))                    !
-                omega(:) = 2.0_f/3.0_f*epsil(:)/(2.0_f/3.0_f+epsil(:)/brinkman(:)**2.0_f)     ! drag coefficient (eq. 2.7)
-                rp(:,irun) = rf(:) * omega(:)                                                                   ! mobility radius for permeable aggregates
-        else
-            rg(:,irun) = falpha * rmon * nmon(:,irun)**(1.0_f/df(:,irun))
-            rp(:,irun) = r(:,irun)
-        end if
+        rf(:) = (1.0_f/falpha)**(1.0_f/df(:,irun)) * r(:,irun)**(3.0_f/df(:,irun)) * rmon**(1.0_f-3.0_f/df(:,irun))
+        vpor(:) = 1.0_f - (nmon(:,irun))**(1.0_f - 3.0_f/df(:,irun))           ! Volume average porosity (eq. 3.2)
+        upor(:) = 1.0_f - (1.0_f - vpor(:)) * sqrt(df(:,irun)/3.0_f)           ! Uniform poroisty (eq. 3.10)
+        gamma(:) = (1.0_f - upor(:))**(1.0_f/3.0_f)
+        happel(:) = 2.0_f/(9.0_f*(1.0_f-upor(:)))*   &                         ! Happel permeability model
+             (3.0_f-4.5_f*gamma(:)+4.5_f*gamma(:)**5.0_f-3.0_f*gamma(:)**6.0_f)/  &
+             (3.0_f+2.0_f*gamma(:)**5.0_f)
+        perm(:) = happel(:) * rmon**2.0_f                                      ! Permeability (eq. 3.3)
+        brinkman(:) = nmon(:,irun)**(1.0_f/df(:,irun)) * 1.0_f/sqrt(happel(:)) ! Brinkman parameter (eq. 3.9)
+        epsil(:) = 1.0_f - brinkman(:)**(-1.0_f)*tanh(brinkman(:))
+        omega(:) = 2.0_f/3.0_f*epsil(:)/(2.0_f/3.0_f+epsil(:)/brinkman(:)**2.0_f)! drag coefficient (eq. 2.7)
+        rp(:,irun) = rf(:) * omega(:)                                            ! mobility radius for permeable aggregates
+     else
+        rg(:,irun) = falpha * rmon * nmon(:,irun)**(1.0_f/df(:,irun))
+        rp(:,irun) = r(:,irun)
+     end if
 
-        call CARMA_Destroy(carma, rc)
-        if (rc /=0) stop "    *** CARMA_Destroy FAILED ***"
+     call CARMA_Destroy(carma, rc)
+     if (rc /=0) stop "    *** CARMA_Destroy FAILED ***"
 
   end do
 
   ! Write NETCDF file
   call ncwrt_optics(outid, NWAVE, NBIN, NRUN, wave, bins, name_run,  &
-                r_refidx=r_refidx, i_refidx=i_refidx, r=r, rmass=rmass, vol=vol, dr=dr, dm=dm, &
-                rrat=rrat, rprat=rprat, arat=arat, df=df,rp=rp, rg=rg, qext=qext, asy=asy, ssa=ssa, nmon=nmon)
+       r_refidx=r_refidx, i_refidx=i_refidx, r=r, rmass=rmass, vol=vol, dr=dr, dm=dm, &
+       rrat=rrat, rprat=rprat, arat=arat, df=df,rp=rp, rg=rg, qext=qext, asy=asy, ssa=ssa, nmon=nmon)
 
 
   ! Close the output NETCDF file
@@ -238,26 +238,26 @@ subroutine test_fractaloptics()
   write(lun,*) NRUN, NWAVE, NBIN
 
   do iwave = 1, NWAVE
-    write(lun,'(i3,e10.3,2(x,e10.3))') iwave, wave(iwave), r_refidx(iwave), i_refidx(iwave)
+     write(lun,'(i3,e10.3,2(x,e10.3))') iwave, wave(iwave), r_refidx(iwave), i_refidx(iwave)
   end do
 
   do irun = 1, NRUN
-    write(lun,*) trim(name_run(irun))
+     write(lun,*) trim(name_run(irun))
 
-    do ibin = 1, NBIN
-      write(lun,'(i3,6(x,e10.3))') ibin, r(ibin,irun), rmass(ibin,irun), nmon(ibin,irun), &
-        rg(ibin,irun), rp(ibin,irun), df(ibin,irun)
-    end do
+     do ibin = 1, NBIN
+        write(lun,'(i3,6(x,e10.3))') ibin, r(ibin,irun), rmass(ibin,irun), nmon(ibin,irun), &
+             rg(ibin,irun), rp(ibin,irun), df(ibin,irun)
+     end do
 
-    do iwave = 1, NWAVE
-      do ibin = 1, NBIN
-        write(lun,'(2i3,3(x,e10.3))') iwave, ibin, qext(iwave,ibin,irun), ssa(iwave,ibin,irun), asy(iwave,ibin,irun)
-      end do
-    end do
+     do iwave = 1, NWAVE
+        do ibin = 1, NBIN
+           write(lun,'(2i3,3(x,e10.3))') iwave, ibin, qext(iwave,ibin,irun), ssa(iwave,ibin,irun), asy(iwave,ibin,irun)
+        end do
+     end do
   end do
 
   close(unit=lun)
 
   if (rc /=0) write(*, *) "    *** FAILED ***, rc=", rc
 
-end subroutine
+end subroutine test_fractaloptics
