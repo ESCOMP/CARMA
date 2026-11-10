@@ -54,6 +54,7 @@ mkdir -p $rundir
 
 # Copy the executable to the run directory.
 cp $blddir/$runtgt $rundir
+cp tests/data/* $rundir
 
 if (-f $testdir/$idlfile) then
   

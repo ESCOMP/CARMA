@@ -64,6 +64,7 @@ mkdir -p $rundir
 
 # Copy the executable to the run directory.
 cp $blddir/*TEST.exe $rundir
+cp tests/data/* $rundir
 
 # Prepare for multiple threads, assuming Intel Compiler.
 setenv OMP_NUM_THREADS $CARMA_THREADS
