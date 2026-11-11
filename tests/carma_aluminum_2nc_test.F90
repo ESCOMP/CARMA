@@ -1,7 +1,7 @@
-!! This code is to test the impact of particle swelling from
-!! relative humidity on sedimentation. Upon execution, a text
-!! file (carma_swelltest.txt) is generated.  The text file can
-!! be read with the IDL procedure read_swelltest.pro.
+!! This code tests coagulation of fractal aluminum oxide particles in a
+!! single stratospheric grid box. Upon execution, a netcdf file
+!! (alumina-215nm_test.nc) and a text file (carma_aluminum_2nc_test.txt)
+!! are generated. The text file is used for benchmark comparisons.
 !!
 
 program carma_aluminum_2nc_test
@@ -100,12 +100,12 @@ subroutine test_aluminum_simple()
   integer, parameter        :: I_ELEM_ALUM = 1
 
   real(kind=f)              :: rmrat = 2._f
-  real(kind=f)              :: rmin = 21.5e-6_f
-  real(kind=f)              :: rmon = 21.5e-6_f
+  real(kind=f)              :: rmin = 21.5e-6_f ! minimum radius [cm]
+  real(kind=f)              :: rmon = 21.5e-6_f ! monomer radius [cm] == rmin
   real(kind=f)              :: df(NBIN,NGROUP) = 1.6_f ! satellite aerosol fractal dimension, aluminum oxide,
                                                        ! Weisenstein 2015, Karasev et al., 2001, 2004
   real(kind=f)              :: falpha = 1._f           ! satellite aerosol fractal packing coefficient, UPDATED VALUE NEEDED!!!
-  real(kind=f)              :: RHO_ALUMINUM = 3.95_f   ! dry density of sulfate particles (g/cm3)
+  real(kind=f)              :: RHO_ALUMINUM = 3.95_f   ! dry density of particles [g cm-3]
   real(kind=f)              :: vf_const = 0.0_f
 
   ! Input for optics
@@ -122,6 +122,10 @@ subroutine test_aluminum_simple()
   integer            :: outid
   integer            :: date = 00010101
   real(kind=f)       :: fill_value = -9.255963134931783e+061_f
+
+  ! Text output for benchmark comparisons
+  integer, parameter :: lun = 42
+  character(len=*), parameter :: filename_txt = "carma_aluminum_2nc_test.txt"
 
   ! Output for Atmospheric variables
   real(kind=f) :: zc(NZ), zl(NZP1), p(NZ), pl(NZP1), t(NZ), rhoa(NZ), rlheat(NZ), deltaT(NZ)
@@ -295,6 +299,15 @@ subroutine test_aluminum_simple()
           df=df(:,igroup), nmon=nmon(:,igroup))
   end do
 
+  ! Write the particle grid to the text output
+  open(unit=lun, file=filename_txt, status="unknown")
+  write(lun,*) NBIN, NELEM, NGROUP, nstep
+  do igroup = 1, NGROUP
+     do ibin = 1, NBIN
+        write(lun,'(2i4,3(1x,e12.5))') igroup, ibin, r(ibin,igroup), rmass(ibin,igroup), nmon(ibin,igroup)
+     end do
+  end do
+
 
   ! Creation of ncfile and variable definition
   call ncdef(ncflgs, filename_out, fill_value, NZ, NY, NX, NBIN, NGAS, NELEM, NGROUP, &
@@ -354,6 +367,8 @@ subroutine test_aluminum_simple()
              nd=nd, ad=ad, md=md, re=re, rew=rew, rm=rm, mr=mr, pa=pa, &
              ar=ar, vm=vm, ex_vis=ex, od_vis=od, &
              vd_bin=vd_bin, nd_bin=nd_bin, wr_bin=wr_bin, ro_bin=ro_bin, mr_bin=mr_bin)
+
+        call write_txt(0._f)
      end if
 
      ! Execute the step
@@ -396,7 +411,11 @@ subroutine test_aluminum_simple()
           ar=ar, vm=vm, ex_vis=ex, od_vis=od, &
           vd_bin=vd_bin, nd_bin=nd_bin, wr_bin=wr_bin, ro_bin=ro_bin, mr_bin=mr_bin)
 
+     call write_txt(time)
+
   end do   ! time loop
+
+  close(unit=lun)
 
 
   ! Close the output NETCDF file
@@ -409,4 +428,23 @@ subroutine test_aluminum_simple()
 
   call CARMA_Destroy(carma, rc)
   if (rc /=0) error stop "    *** CARMA_Destroy FAILED ***"
+
+contains
+
+  !! Write the state at the given model time to the text output:
+  !! the bin mass mixing ratios followed by the group diagnostics.
+  subroutine write_txt(model_time)
+    real(kind=f), intent(in) :: model_time
+
+    write(lun,'(f12.0)') model_time
+    do ielem = 1, NELEM
+       do ibin = 1, NBIN
+          write(lun,'(2i4,1x,e12.5)') ielem, ibin, mmr(1,ielem,ibin)
+       end do
+    end do
+    do igroup = 1, NGROUP
+       write(lun,'(i4,4(1x,e12.5))') igroup, nd(1,igroup), re(1,igroup), ex(1,igroup), od(1,igroup)
+    end do
+  end subroutine write_txt
+
 end subroutine test_aluminum_simple
