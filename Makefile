@@ -98,8 +98,14 @@ ifeq ($(FORTRAN),gfortran)
   # Open/MP
   FFLAGS  += -fopenmp
 
+  # netCDF include path (for netcdf.mod)
+  FFLAGS  += $(shell nf-config --fflags)
+
   # The -llapack flag if for linking to LAPACK lib
   LDFLAGS = $(FFLAGS) -llapack
+
+  # Add options for the netcdf libraries
+  LDFLAGS += $(shell nf-config --flibs)
 endif
 
 # Add options for the IBM XL Fortran compiler.

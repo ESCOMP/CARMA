@@ -221,7 +221,7 @@ subroutine test_grow_simple()
 
   write(lun,*) 0
 
-  write(lun,*) 0._f, 0._f
+  write(lun,*) ' '
 
   do ielem = 1, NELEM
     do ibin = 1, NBIN
