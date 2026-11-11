@@ -2,11 +2,11 @@
 # Jamison A. Smith, AKA JAS
 # April 26, 2007
 
-FORTRAN =	ifx
+#FORTRAN =	ifx
 #FORTRAN =	ifort
 #FORTRAN =	pgf90
 #FORTRAN =	pathf90
-#FORTRAN =	gfortran
+FORTRAN =	gfortran
 #FORTRAN =	g95
 #FORTRAN =	xlf90
 

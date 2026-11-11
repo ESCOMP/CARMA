@@ -10,6 +10,8 @@ program carma_aluminum_2nc_test
   write(*,*) "Aluminum Test"
 
   call test_aluminum_simple()
+
+  write(*,*) "Done"
 end program carma_aluminum_2nc_test
 
 subroutine check(status)
