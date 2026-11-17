@@ -1,7 +1,24 @@
 ===============================================================
 
+Tag name: v4.14
+Originator(s): Francis Vitt (fvitt)
+Date: 17 Nov 2026
+
+Store input file for aluminum test in repo; misc clean up
+
+M       Makefile
+M       tests/CMakeLists.txt
+A       tests/bench/carma_aluminum_2nc_test.txt
+M       tests/bench/carma_growtest.txt
+M       tests/carma_aluminum_2nc_test.F90
+M       tests/carma_growtest.F90
+A       tests/data/aluminum_optics.nc
+
+===============================================================
+
 Tag name: v4.13
 Originator(s): Francis Vitt (fvitt)
+Date: 10 Nov 2026
 
 Fix netcdf fractal optics test
 
@@ -22,6 +39,7 @@ compared to stored bench data when regression tested.
 
 Tag name: v4.12
 Originator(s): Francis Vitt (fvitt)
+Date: 26 Mar 2026
 
 Update Makefile for intel's ifx compiler
 
@@ -38,7 +56,7 @@ produced differences in growtest bench results.
 
 Tag name: v4.11
 Originator(s): Ilaria Quaglia (ilaria-quaglia)
-Date: 28 Aug 2005
+Date: 28 Aug 2025
 
 Introduce tests that write output to netcdf and provide corresponding
 Jupyter notebooks for visualizing the output
